@@ -33,6 +33,8 @@ const INDEX = `<!doctype html>
       persistAuthorization: true,
       tryItOutEnabled: false,
       docExpansion: 'list',
+      // 比照 Hexschool 文件，不顯示底部的 Schemas 區塊
+      defaultModelsExpandDepth: -1,
     });
   </script>
 </body>

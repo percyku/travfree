@@ -15,6 +15,7 @@
 - 62 個整合測試，使用 H2 PostgreSQL 模式。
 - `docs/` 專案文件。
 - `docs/openapi.yaml`：手寫的 OpenAPI 3.0.3 契約，涵蓋全部端點，是前後端唯一的 API 規格。
+  分組名稱與順序比照 Hexschool 文件（`管理控制台 - 產品 (Products)` 等），範例取自 Hexschool 匯入的真實資料，mock server 也會回傳這些範例。
 - 契約測試：所有 MockMvc 整合測試的回應都會自動對 `openapi.yaml` 驗證。
 - 根目錄 `package.json`：`openapi:lint`、`openapi:preview`、`openapi:mock`（Redocly CLI、Swagger UI、Prism）。`openapi:preview` 在 `http://localhost:8081` 提供 Swagger UI。
 - 專案納入 git；`backend/CLAUDE.md`、`frontend/CLAUDE.md` 分別記錄各區規則。
