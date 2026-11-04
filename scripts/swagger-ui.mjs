@@ -56,6 +56,11 @@ createServer(async (req, res) => {
     res.writeHead(e.code === 'ENOENT' ? 404 : 500, { 'Content-Type': 'text/plain; charset=utf-8' })
       .end(e.code === 'ENOENT' ? 'Not found' : String(e));
   }
+}).on('error', (e) => {
+  if (e.code !== 'EADDRINUSE') throw e;
+  console.error(`port ${PORT} 已被佔用，可能已有 Swagger UI 在執行，直接開啟 http://localhost:${PORT}/ 即可。`);
+  console.error(`要改用其他 port：PORT=8082 npm run openapi:preview`);
+  process.exit(1);
 }).listen(PORT, 'localhost', () => {
   console.log(`Swagger UI：http://localhost:${PORT}/  （spec：docs/openapi.yaml）`);
 });
