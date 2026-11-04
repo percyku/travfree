@@ -30,6 +30,15 @@ cd frontend
 VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
 ```
 
+前端的 `.env.local` 不在 git 裡，新環境需要自行建立：
+
+```bash
+VITE_APP_API_BASE=https://ec-course-api.hexschool.io/V2
+VITE_APP_API_PATH=react-week2-api
+VITE_APP_API_COOKIE_PATH=/
+VITE_APP_TOKEN_NAME=react-week2-token
+```
+
 第 3 步的環境變數優先於 `frontend/.env.local`，所以不用改任何前端檔案。少了它，前端會繼續連線到 Hexschool。若 5173 已有開發伺服器在跑，要先關掉重開，環境變數才會生效。
 
 開啟 `http://localhost:5173/#/login`，以預設管理者登入：
@@ -39,6 +48,17 @@ VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
 | `admin@gmail.com` | `Test123456` |
 
 登入頁預設帶入的是另一組帳號（`Login.jsx:19`），需要手動改掉。新資料庫沒有任何產品或文章，請先到後台建立，前台才會有內容。
+
+## API 契約
+
+`docs/openapi.yaml` 是前後端唯一的 API 規格。根目錄的工具：
+
+```bash
+npm install              # 第一次使用時執行
+npm run openapi:lint     # 檢查 spec
+npm run openapi:preview  # 在瀏覽器預覽 API 文件
+npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010），前端可先用它開發
+```
 
 ## 環境變數
 
@@ -58,6 +78,7 @@ VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
 
 | 文件 | 內容 |
 |---|---|
+| [openapi.yaml](openapi.yaml) | **API 契約**：所有端點的請求、回應與錯誤情境 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 系統架構、路由表、DB Schema、資料流、與 Hexschool 的差異 |
 | [FEATURES.md](FEATURES.md) | 功能狀態與行為描述（查詢參數、業務邏輯、錯誤情境） |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | 開發規範、命名規則、新增功能流程 |

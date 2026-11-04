@@ -9,6 +9,30 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
 
 不需要 Docker。測試使用 `test` profile 與 H2 記憶體資料庫的 PostgreSQL 模式，設定在 `src/test/resources/application-test.properties`。
 
+## 契約驗證
+
+`OpenApiContractConfig` 讓**所有** MockMvc 回應都自動對 `docs/openapi.yaml` 驗證（`swagger-request-validator-mockmvc`）。繼承 `ApiTestSupport` 的測試都會套用，不需要另外撰寫。
+
+- 只驗證回應，不驗證請求，因為測試會刻意送出錯誤的請求來測錯誤情境。
+- 失敗時會丟出 `OpenApiValidationException`，訊息會指出欄位與 schema 位置。先判斷是實作錯還是 spec 錯，不可以只為了讓測試通過而放寬 spec。
+- spec 位置寫死為 `../docs/openapi.yaml`，所以要在 `backend/` 執行 `./mvnw test`。
+- `HttpContractTest` 走真實 Tomcat、不經過 MockMvc，不在驗證範圍內。
+
+要對正在執行的後端驗證，可以用 Prism 的 proxy 模式，回應不符合 spec 時，Prism 會在 header 加上 `sl-violations`：
+
+```bash
+npx prism proxy docs/openapi.yaml http://localhost:8080/v2 --port 4011 --errors
+```
+
+Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端。
+
+## 測試策略
+
+完整的單元測試與前後端整合測試，延後到主要功能完成後再做。在那之前，後端每個新 API 至少要有：
+
+- 通過契約驗證的成功情境。
+- 主要錯誤情境的狀態碼與訊息。
+
 ## 測試結構
 
 整合測試為主，用 `@SpringBootTest` 啟動完整應用，走真實的 Security、JWT 與資料庫流程，不 mock service。這個專案的主要風險是 API 契約與前端不一致，單元測試抓不到這類問題。
@@ -23,6 +47,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
 | `UploadApiTest` | 圖片上傳與讀取、內容檢查、大小限制 |
 | `HttpContractTest` | 走真實 Tomcat：`/v2` 前綴、CORS、超過上傳上限的回應 |
 | `BackendApplicationTests` | 應用程式可以啟動 |
+| `OpenApiContractConfig` | 不是測試，讓所有 MockMvc 回應都對 spec 驗證 |
 
 `ApiTestSupport` 是共用基底：每個測試前清空業務資料並重新登入，也提供建立產品、加入購物車、結帳等輔助方法。
 

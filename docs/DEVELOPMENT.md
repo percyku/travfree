@@ -12,6 +12,15 @@
 
 已發現的前端問題記錄在 [ARCHITECTURE.md](ARCHITECTURE.md) 的已知限制。
 
+## API 契約
+
+`docs/openapi.yaml` 是前後端唯一的 API 規格，流程是**先改 spec，再實作**：
+
+- 後端的整合測試會驗證每個回應都符合 spec（見 [TESTING.md](TESTING.md)）。
+- 前端只依 spec 開發，後端未完成的 API 可先接 `npm run openapi:mock`。
+- 回應 schema 標 `additionalProperties: false`，後端多回傳的欄位也要先寫進 spec。
+- spec 是手寫的，不從程式碼自動產生，否則規格會變成跟著實作走。
+
 ## API 相容性
 
 這個後端的主要目標是讓現有前端無縫運作，所以 API 的欄位名稱與格式不能憑慣例調整：
@@ -45,14 +54,14 @@
 
 以新增一個 Admin 資源為例：
 
-1. **確認規格**：看前端的呼叫方式與讀取欄位，再對照 Swagger。
+1. **寫規格**：先更新 `docs/openapi.yaml`，在根目錄執行 `npm run openapi:lint`。修改既有 API 時，先看前端的呼叫方式與讀取欄位，再對照 Hexschool。
 2. **Entity**：在 `entity/` 新增，繼承 `BaseEntity`，資料表用複數 snake_case。
 3. **Repository**：在 `repository/` 新增。
 4. **DTO**：Request 加上驗證註解，訊息比照 `xxx 屬性不得為空`；Response 用 `@JsonProperty` 指定欄位名，並標 `@JsonInclude(NON_NULL)`。
 5. **Service**：分頁用 `PagedResult.fetch(...)`，找不到資料丟 `ApiException.notFound(...)`。
 6. **Controller**：Admin 路由用 `@RequestMapping("/api/${app.api-path}/admin")`，寫入參數用 `@Valid @RequestBody DataRequest<T>`。
 7. **權限**：`/api/*/admin/**` 自動要求 admin。公開路由若需要登入，要在 `SecurityConfig` 加規則，放在 `/api/**` permitAll **之前**，因為規則依序比對。
-8. **測試**：見 [TESTING.md](TESTING.md)，新的權限規則也要有測試。
+8. **測試**：見 [TESTING.md](TESTING.md)。測試會自動驗證回應符合 spec；新的權限規則也要有測試。
 9. **文件**：更新 `FEATURES.md`（狀態表與行為描述）、`ARCHITECTURE.md`（路由表、Schema）、`CHANGELOG.md`。
 
 ## 文件維護

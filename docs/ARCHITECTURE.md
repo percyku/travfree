@@ -264,5 +264,6 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 - `AdminOrders.jsx:40` 使用未定義的 `navigate`，token 失效時訂單頁會出錯，而不是導回登入頁。
 - `NavAdmin.jsx` 登出只清 cookie，沒有呼叫 `POST /logout`，token 在到期前（預設 7 天）仍然有效。
 - 前端沒有優惠券與付款的 UI，這兩組 API 目前只能直接呼叫。
+- `.env.local` 被 `frontend/.gitignore` 排除，新 clone 的環境沒有設定檔，需要依 [README.md](README.md) 自行建立。
 - `AdminArticleModal` 沒有 `content` 欄位，新文章的 `content` 一律是 `"default"`；`SingleArticle` 也不顯示 `content`。
 - Bootstrap 只有在開啟動畫（約 0.5 秒）結束後才接受 `hide()`。本機 API 回應很快，若開啟 modal 後立刻送出，資料會成功但 modal 不會自動關閉，按取消即可。

@@ -1,0 +1,15 @@
+{
+  "name": "travfree",
+  "private": true,
+  "description": "FreeTrav 根目錄工具：OpenAPI 契約的檢查、預覽與 mock server。前後端各自的指令在 frontend/、backend/。",
+  "scripts": {
+    "openapi:lint": "redocly lint docs/openapi.yaml",
+    "openapi:preview": "redocly preview --project-dir docs",
+    "openapi:build": "redocly build-docs docs/openapi.yaml -o docs/openapi.html",
+    "openapi:mock": "prism mock docs/openapi.yaml --port 4010"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.66.0",
+    "@stoplight/prism-cli": "5.16.0"
+  }
+}

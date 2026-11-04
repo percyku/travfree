@@ -14,9 +14,14 @@
 - `backend/docker-compose.yml` 提供 PostgreSQL 16。
 - 62 個整合測試，使用 H2 PostgreSQL 模式。
 - `docs/` 專案文件。
+- `docs/openapi.yaml`：手寫的 OpenAPI 3.0.3 契約，涵蓋全部端點，是前後端唯一的 API 規格。
+- 契約測試：所有 MockMvc 整合測試的回應都會自動對 `openapi.yaml` 驗證。
+- 根目錄 `package.json`：`openapi:lint`、`openapi:preview`、`openapi:build`、`openapi:mock`（Redocly CLI、Prism）。
+- 專案納入 git；`backend/CLAUDE.md`、`frontend/CLAUDE.md` 分別記錄各區規則。
 
 ### Changed
 
+- `backend/pom.xml` 新增 test scope 的 `swagger-request-validator-mockmvc`。
 - `backend/pom.xml` 新增 test scope 的 H2 相依性。
 
 ### Fixed

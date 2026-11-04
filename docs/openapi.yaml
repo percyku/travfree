@@ -1,0 +1,1234 @@
+openapi: 3.0.3
+info:
+  title: FreeTrav API
+  version: 0.1.0
+  description: |
+    FreeTrav 旅遊電商的後端 API，仿照六角學院電商 API，讓既有前端不需修改即可串接。
+
+    **這份文件是前後端的契約。** 修改 API 時先改這裡，後端實作完成後由契約測試確認回應符合本文件，
+    前端只需依照本文件開發。
+
+    ## 共通規則
+
+    - **回應格式**：成功時 `success: true`；失敗時一律是 `{ success: false, message }`。
+    - **寫入格式**：除了登入，寫入 API 的內容都包在 `{ "data": { ... } }` 裡，多傳的欄位（例如 `id`、`num`）會被忽略。
+    - **分頁**：查詢參數 `page`，每頁 10 筆，新到舊。`page` 無效時視為第 1 頁，超過末頁時回傳最後一頁；
+      沒有資料時 `total_pages` 與 `current_page` 都是 0。清單中每筆的 `num` 是它在整份清單中的名次。
+    - **欄位命名**：混用 snake_case 與 camelCase（`origin_price`、`imageUrl`、`isPublic`），這是 Hexschool 的原樣，請照抄。
+    - **時間單位不一致，請特別注意**：訂單與優惠券是 Unix **秒**；登入的 `expired` 是**毫秒**；
+      文章的 `create_at` 原值保存（前端傳 `Date.now()` 毫秒）。
+    - **金額**：都是整數，傳小數會回 400 `資料格式不正確`。
+    - **認證**：`Authorization` header 放登入取得的 token，裸 token 或 `Bearer <token>` 皆可。
+servers:
+  - url: http://localhost:8080/v2
+    description: 本機開發
+tags:
+  - name: 認證
+    description: 登入、登出與登入狀態檢查
+  - name: Admin 產品
+    description: 後台產品管理，需要 admin token
+  - name: Admin 文章
+    description: 後台文章管理，需要 admin token
+  - name: Admin 訂單
+    description: 後台訂單管理，需要 admin token
+  - name: Admin 優惠券
+    description: 後台優惠券管理，需要 admin token（前端目前沒有 UI）
+  - name: Admin 上傳
+    description: 後台圖片上傳，需要 admin token
+  - name: 產品
+    description: 前台產品瀏覽，只含上架產品
+  - name: 文章
+    description: 前台文章瀏覽，只含公開文章
+  - name: 購物車
+    description: 購物車與套用優惠券，全站共用一台
+  - name: 訂單
+    description: 結帳、查詢與付款
+  - name: 圖片
+    description: 讀取上傳的圖片
+
+paths:
+  # ───────────────────────── 認證 ─────────────────────────
+  /admin/signin:
+    post:
+      tags: [認證]
+      summary: 管理者登入
+      description: Body **不包** `data`。帳號不存在與密碼錯誤回應相同，不透露是哪一項錯誤。
+      operationId: signin
+      security: []  # 公開
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SigninInput' }
+      responses:
+        '200':
+          description: 登入成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, uid, token, expired]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: 登入成功 }
+                  uid: { type: string, description: 管理者帳號 }
+                  token: { type: string, description: JWT，預設 7 天有效 }
+                  expired:
+                    type: integer
+                    format: int64
+                    description: 到期時間，Unix **毫秒**，前端直接用來設定 cookie 期限
+                    example: 1793799088000
+        '400': { $ref: '#/components/responses/BadRequest' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /logout:
+    post:
+      tags: [認證]
+      summary: 登出
+      description: 帶有效 token 時，該帳號**所有**既有 token 立即失效。沒帶或無效 token 也回 200。
+      operationId: logout
+      security: [{}, { AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/check:
+    post:
+      tags: [認證]
+      summary: 檢查登入狀態
+      operationId: checkUser
+      security: [{ AdminToken: [] }]
+      responses:
+        '200':
+          description: token 有效
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, uid]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  uid: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── Admin 產品 ─────────────────────────
+  /api/react-week2-api/admin/products/all:
+    get:
+      tags: [Admin 產品]
+      summary: 全部產品（不分頁）
+      description: 包含未上架產品。`products` 是**以 id 為 key 的物件**，不是陣列，舊到新。
+      operationId: adminListAllProducts
+      security: [{ AdminToken: [] }]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, products]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  products:
+                    type: object
+                    additionalProperties: { $ref: '#/components/schemas/Product' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/products:
+    get:
+      tags: [Admin 產品]
+      summary: 產品分頁
+      description: 包含未上架產品。
+      operationId: adminListProducts
+      security: [{ AdminToken: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Category'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, products, pagination, messages]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  products:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  pagination: { $ref: '#/components/schemas/Pagination' }
+                  messages: { $ref: '#/components/schemas/Messages' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/product:
+    post:
+      tags: [Admin 產品]
+      summary: 新增產品
+      operationId: adminCreateProduct
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/ProductInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/product/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Admin 產品]
+      summary: 更新產品
+      description: 整筆覆寫。id 不存在回 404 `id 不存在`。
+      operationId: adminUpdateProduct
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/ProductInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: [Admin 產品]
+      summary: 刪除產品
+      description: 同時移除購物車內的該產品；歷史訂單有快照，不受影響。id 不存在回 404 `找不到產品`。
+      operationId: adminDeleteProduct
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── Admin 上傳 ─────────────────────────
+  /api/react-week2-api/admin/upload:
+    post:
+      tags: [Admin 上傳]
+      summary: 上傳圖片
+      description: |
+        jpg、jpeg、png，3MB 以內。會檢查檔案內容是否與副檔名相符，存檔時以 UUID 重新命名。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 格式不符、空檔案、欄位名稱錯誤 | 400 `檔案格式錯誤` |
+        | 超過 3MB | 400 `檔案大小不得超過 3MB` |
+      operationId: adminUploadImage
+      security: [{ AdminToken: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file-to-upload]
+              properties:
+                file-to-upload: { type: string, format: binary }
+      responses:
+        '200':
+          description: 上傳成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, imageUrl]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  imageUrl:
+                    type: string
+                    description: 圖片網址，開頭由後端的 `app.public-base-url` 決定
+                    example: http://localhost:8080/v2/uploads/0b6a4f1e-3c9d-4f0e-9b1a-2f7c8d9e0a1b.png
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /uploads/{filename}:
+    get:
+      tags: [圖片]
+      summary: 讀取上傳的圖片
+      description: 公開。`imageUrl` 直接指向這裡。
+      operationId: getUploadedImage
+      security: []  # 公開
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 圖片
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+            image/jpeg:
+              schema: { type: string, format: binary }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── Admin 文章 ─────────────────────────
+  /api/react-week2-api/admin/articles:
+    get:
+      tags: [Admin 文章]
+      summary: 文章分頁
+      description: 包含未公開文章，依 `create_at` 新到舊。**包含 `content`**（Hexschool 不含），前端編輯時直接用清單資料帶入內文。
+      operationId: adminListArticles
+      security: [{ AdminToken: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, articles, pagination, messages]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  articles:
+                    type: array
+                    items: { $ref: '#/components/schemas/Article' }
+                  pagination: { $ref: '#/components/schemas/Pagination' }
+                  messages: { $ref: '#/components/schemas/Messages' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/article:
+    post:
+      tags: [Admin 文章]
+      summary: 新增文章
+      operationId: adminCreateArticle
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/ArticleInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/article/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Admin 文章]
+      summary: 單篇文章
+      description: 不存在回 404 `找不到文章`。
+      operationId: adminGetArticle
+      security: [{ AdminToken: [] }]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, article]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  article: { $ref: '#/components/schemas/Article' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+    put:
+      tags: [Admin 文章]
+      summary: 更新文章
+      description: '`create_at` 未傳時保留原值。'
+      operationId: adminUpdateArticle
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/ArticleInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: [Admin 文章]
+      summary: 刪除文章
+      operationId: adminDeleteArticle
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── Admin 訂單 ─────────────────────────
+  /api/react-week2-api/admin/orders:
+    get:
+      tags: [Admin 訂單]
+      summary: 訂單分頁
+      operationId: adminListOrders
+      security: [{ AdminToken: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200': { $ref: '#/components/responses/OrderPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/order/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Admin 訂單]
+      summary: 更新付款與外送狀態
+      description: |
+        前端會把整筆訂單傳回來，但**只有 `is_paid` 與 `status` 會生效**，其餘欄位忽略。
+
+        `is_paid` 由 false 改為 true 時，伺服器寫入 `paid_date`；改回 false 時清除。
+        已付款的訂單重複送 true 不會改變付款時間。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 訂單不存在 | 404 `找不到訂單` |
+        | `status` 超出範圍 | 400 `status 必須介於 0 到 3` |
+      operationId: adminUpdateOrder
+      security: [{ AdminToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/OrderUpdateInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: [Admin 訂單]
+      summary: 刪除訂單
+      operationId: adminDeleteOrder
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/orders/all:
+    delete:
+      tags: [Admin 訂單]
+      summary: 刪除全部訂單
+      operationId: adminDeleteAllOrders
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── Admin 優惠券 ─────────────────────────
+  /api/react-week2-api/admin/coupons:
+    get:
+      tags: [Admin 優惠券]
+      summary: 優惠券分頁
+      operationId: adminListCoupons
+      security: [{ AdminToken: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, coupons, pagination, messages]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  coupons:
+                    type: array
+                    items: { $ref: '#/components/schemas/Coupon' }
+                  pagination: { $ref: '#/components/schemas/Pagination' }
+                  messages: { $ref: '#/components/schemas/Messages' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/coupon:
+    post:
+      tags: [Admin 優惠券]
+      summary: 新增優惠券
+      description: '`code` 重複回 400 `code 已存在`。'
+      operationId: adminCreateCoupon
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/CouponInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/admin/coupon/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Admin 優惠券]
+      summary: 更新優惠券
+      description: id 不存在回 404 `id 不存在`。
+      operationId: adminUpdateCoupon
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/CouponInput' }
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: [Admin 優惠券]
+      summary: 刪除優惠券
+      description: 同時清除購物車對它的引用，購物車回到原價；歷史訂單有快照，不受影響。id 不存在回 404 `找不到優惠券`。
+      operationId: adminDeleteCoupon
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── 產品（前台） ─────────────────────────
+  /api/react-week2-api/products/all:
+    get:
+      tags: [產品]
+      summary: 全部上架產品（不分頁）
+      description: 只含 `is_enabled = 1`，舊到新，不含 `num`。前端用來計算分類清單與搜尋。
+      operationId: listAllProducts
+      security: []  # 公開
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, products]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  products:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/products:
+    get:
+      tags: [產品]
+      summary: 上架產品分頁
+      description: 只含 `is_enabled = 1`。查詢的分類會出現在 `pagination.category`。注意此端點**沒有** `messages`。
+      operationId: listProducts
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Category'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, products, pagination]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  products:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  pagination: { $ref: '#/components/schemas/Pagination' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/product/{id}:
+    get:
+      tags: [產品]
+      summary: 單一產品
+      description: 不存在或已下架都回 404 `找不到產品`。
+      operationId: getProduct
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, product]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  product: { $ref: '#/components/schemas/Product' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── 文章（前台） ─────────────────────────
+  /api/react-week2-api/articles:
+    get:
+      tags: [文章]
+      summary: 公開文章分頁
+      description: 只含 `isPublic = true`。清單**不含 `content`**，要用單篇 API 取得內文。
+      operationId: listArticles
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, articles, pagination, messages]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  articles:
+                    type: array
+                    items: { $ref: '#/components/schemas/Article' }
+                  pagination: { $ref: '#/components/schemas/Pagination' }
+                  messages: { $ref: '#/components/schemas/Messages' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/article/{id}:
+    get:
+      tags: [文章]
+      summary: 單篇公開文章
+      description: 含 `content`。不存在或未公開回 404 `找不到文章`。
+      operationId: getArticle
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, article]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  article: { $ref: '#/components/schemas/Article' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── 購物車 ─────────────────────────
+  /api/react-week2-api/cart:
+    get:
+      tags: [購物車]
+      summary: 取得購物車
+      description: |
+        **全站共用一台購物車**（前端匿名呼叫，後端無法區分訪客）。
+        `total` 是原價小計、`final_total` 是折扣後小計，都依**目前售價**即時計算。
+      operationId: getCart
+      security: []  # 公開
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, data, messages]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  data: { $ref: '#/components/schemas/Cart' }
+                  messages: { $ref: '#/components/schemas/Messages' }
+        default: { $ref: '#/components/responses/Failure' }
+    post:
+      tags: [購物車]
+      summary: 加入購物車
+      description: |
+        同一產品重複加入時**累加數量**。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 產品不存在 | 404 `找不到產品` |
+        | 產品已下架 | 400 `產品已下架` |
+        | `qty` 小於 1 | 400 `qty 不得小於 1` |
+        | `qty` 或累加後超過 9999 | 400 `qty 不得大於 9999` |
+      operationId: addToCart
+      security: []  # 公開
+      requestBody: { $ref: '#/components/requestBodies/CartInput' }
+      responses:
+        '200':
+          description: 已加入購物車
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, data]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: 已加入購物車 }
+                  data: { $ref: '#/components/schemas/LineItem' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/cart/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 購物車**品項** id（不是產品 id）
+        schema: { type: string }
+    put:
+      tags: [購物車]
+      summary: 設定品項數量
+      description: |
+        直接設定數量（不累加）。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 品項不存在 | 404 `找不到購物車品項` |
+        | `product_id` 與品項不符 | 400 `product_id 與購物車品項不符` |
+      operationId: updateCartItem
+      security: []  # 公開
+      requestBody: { $ref: '#/components/requestBodies/CartInput' }
+      responses:
+        '200':
+          description: 已更新購物車
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, data]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: 已更新購物車 }
+                  data:
+                    type: object
+                    additionalProperties: false
+                    required: [product_id, qty]
+                    properties:
+                      product_id: { type: string }
+                      qty: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: [購物車]
+      summary: 刪除單一品項
+      operationId: deleteCartItem
+      security: []  # 公開
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/carts:
+    delete:
+      tags: [購物車]
+      summary: 清空購物車
+      operationId: clearCart
+      security: []  # 公開
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/coupon:
+    post:
+      tags: [購物車]
+      summary: 套用優惠券
+      description: |
+        只套用在**目前購物車內**的品項，之後才加入的品項不帶優惠。
+        每個品項 `final_total = round(total × percent ÷ 100)`。到期日只在套用時檢查。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 找不到或已停用 | 404 `找不到優惠券` |
+        | 已過期 | 400 `優惠券已過期` |
+        | 購物車是空的 | 400 `購物車無資料` |
+      operationId: applyCoupon
+      security: []  # 公開
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [code]
+                  properties:
+                    code: { type: string, example: TEST80 }
+      responses:
+        '200':
+          description: 已套用
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, data]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: '已套用優惠券:TEST80' }
+                  data:
+                    type: object
+                    additionalProperties: false
+                    required: [final_total]
+                    properties:
+                      final_total: { type: integer, format: int64 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── 訂單（前台） ─────────────────────────
+  /api/react-week2-api/order:
+    post:
+      tags: [訂單]
+      summary: 結帳
+      description: |
+        在單一交易內建立訂單、寫入品項快照並清空購物車。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 購物車是空的 | 400 `購物車無資料` |
+        | 購物車含已下架產品 | 400 `購物車內有已下架產品` |
+        | 缺少 `user` | 400 `user 屬性不得為空` |
+        | Email 格式錯誤 | 400 `email 格式不正確` |
+      operationId: createOrder
+      security: []  # 公開
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/OrderCreateInput' }
+      responses:
+        '200':
+          description: 已建立訂單
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, total, create_at, orderId]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: 已建立訂單 }
+                  total: { type: integer, format: int64, description: 折扣後總額 }
+                  create_at: { type: integer, format: int64, description: Unix **秒** }
+                  orderId: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/orders:
+    get:
+      tags: [訂單]
+      summary: 訂單分頁（需要 admin）
+      description: '**與 Hexschool 不同**：需要 admin token，因為回應含全部訂單的個資。'
+      operationId: listOrders
+      security: [{ AdminToken: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200': { $ref: '#/components/responses/OrderPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/order/{id}:
+    get:
+      tags: [訂單]
+      summary: 單筆訂單
+      description: '公開，訂單 id 是 UUID。**找不到時回 200 `{ success: true, order: null }`**，與 Hexschool 相同。'
+      operationId: getOrder
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: 成功（找不到時 `order` 為 null）
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, order]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  order:
+                    description: 找不到時為 null
+                    oneOf:
+                      - $ref: '#/components/schemas/Order'
+                      # OpenAPI 3.0 表示「只能是 null」的寫法
+                      - type: object
+                        nullable: true
+                        enum: [null]
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/react-week2-api/pay/{id}:
+    post:
+      tags: [訂單]
+      summary: 付款
+      description: |
+        設定 `is_paid = true` 與 `paid_date`，只標記狀態，沒有串接金流。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 訂單不存在 | 404 `找不到訂單` |
+        | 已付款 | 400 `訂單已付款` |
+      operationId: payOrder
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { $ref: '#/components/responses/Message' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Failure' }
+
+components:
+  securitySchemes:
+    AdminToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 登入取得的 token。裸 token 或 `Bearer <token>` 皆可。前端存在 cookie，但後端只讀這個 header。
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      description: 頁碼，從 1 開始。缺少、不是數字或小於 1 時視為第 1 頁；超過末頁回傳最後一頁。
+      schema: { type: string, example: '1' }
+    Category:
+      name: category
+      in: query
+      required: false
+      description: 分類名稱，完全相符才會列出。
+      schema: { type: string, example: 亞洲 }
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+  requestBodies:
+    ProductInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/ProductInput' }
+    ArticleInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/ArticleInput' }
+    CouponInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/CouponInput' }
+    CartInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: object
+                required: [product_id, qty]
+                properties:
+                  product_id: { type: string }
+                  qty: { type: integer, minimum: 1, maximum: 9999 }
+
+  responses:
+    Message:
+      description: 成功訊息
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+    OrderPage:
+      description: 成功
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [success, orders, pagination, messages]
+            properties:
+              success: { type: boolean, enum: [true] }
+              orders:
+                type: array
+                items: { $ref: '#/components/schemas/Order' }
+              pagination: { $ref: '#/components/schemas/Pagination' }
+              messages: { $ref: '#/components/schemas/Messages' }
+    BadRequest:
+      description: 請求內容錯誤。多個欄位錯誤時以「、」串接，例如 `title 屬性不得為空`。
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+    Unauthorized:
+      description: 未帶 token、token 無效或已登出
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+          example: { success: false, message: '驗證錯誤, 請重新登入' }
+    NotFound:
+      description: 資源不存在
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+    Failure:
+      description: 其他錯誤（403、405、415、500 等），格式相同
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+
+  schemas:
+    Failure:
+      type: object
+      additionalProperties: false
+      required: [success, message]
+      properties:
+        success: { type: boolean, enum: [false] }
+        message: { type: string }
+    Message:
+      type: object
+      additionalProperties: false
+      required: [success, message]
+      properties:
+        success: { type: boolean, enum: [true] }
+        message: { type: string }
+    Messages:
+      type: array
+      description: 固定為空陣列，比照 Hexschool 保留
+      maxItems: 0
+      items: {}
+    Pagination:
+      type: object
+      additionalProperties: false
+      required: [total_pages, current_page, has_pre, has_next, category]
+      properties:
+        total_pages: { type: integer, minimum: 0 }
+        current_page: { type: integer, minimum: 0, description: 沒有資料時為 0 }
+        has_pre: { type: boolean }
+        has_next: { type: boolean }
+        category: { type: string, description: 查詢的分類，未指定時為空字串 }
+
+    SigninInput:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, example: admin@gmail.com }
+        password: { type: string, example: Test123456 }
+
+    Product:
+      type: object
+      additionalProperties: false
+      required: [id, title, category, unit, origin_price, price, is_enabled, imagesUrl]
+      properties:
+        id: { type: string }
+        title: { type: string, example: 台北3日遊 }
+        category: { type: string, example: 亞洲 }
+        unit: { type: string, example: 人 }
+        origin_price: { type: integer }
+        price: { type: integer, description: 售價 }
+        description: { type: string, description: 未設定時不出現 }
+        content: { type: string, description: 未設定時不出現 }
+        is_enabled: { type: integer, enum: [0, 1], description: 1 為上架 }
+        imageUrl: { type: string, description: 主圖，未設定時不出現 }
+        imagesUrl:
+          type: array
+          items: { type: string }
+        num: { type: integer, description: 只在分頁清單出現 }
+    ProductInput:
+      type: object
+      required: [title, category, unit, origin_price, price]
+      properties:
+        title: { type: string }
+        category: { type: string }
+        unit: { type: string }
+        origin_price: { type: integer, minimum: 0 }
+        price: { type: integer, minimum: 0 }
+        description: { type: string }
+        content: { type: string }
+        is_enabled: { type: integer, enum: [0, 1], description: 未傳視為 0 }
+        imageUrl: { type: string }
+        imagesUrl:
+          type: array
+          items: { type: string }
+          description: 未傳視為空陣列
+
+    Article:
+      type: object
+      additionalProperties: false
+      required: [id, title, description, tag, create_at, author, isPublic]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        image: { type: string, description: 未設定時不出現 }
+        tag:
+          type: array
+          items: { type: string }
+        create_at:
+          type: integer
+          format: int64
+          description: 原值保存，不換算單位。前端傳 `Date.now()`（毫秒）
+        author: { type: string }
+        isPublic: { type: boolean }
+        content: { type: string, description: 前台清單不含；單篇與後台清單含 }
+        num: { type: integer, description: 只在分頁清單出現 }
+    ArticleInput:
+      type: object
+      required: [title, description, author, content]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        image: { type: string }
+        tag:
+          type: array
+          items: { type: string }
+        create_at:
+          type: integer
+          format: int64
+          description: 新增時未傳則用目前毫秒；更新時未傳則保留原值
+        author: { type: string }
+        isPublic: { type: boolean }
+        content: { type: string }
+
+    Coupon:
+      type: object
+      additionalProperties: false
+      required: [id, title, code, percent, due_date, is_enabled]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        code: { type: string }
+        percent: { type: integer, minimum: 0, maximum: 100, description: '**實付比例**，80 代表付 80%' }
+        due_date: { type: integer, format: int64, description: 到期時間，Unix **秒** }
+        is_enabled: { type: integer, enum: [0, 1] }
+        num: { type: integer, description: 只在分頁清單出現 }
+    CouponInput:
+      type: object
+      required: [title, code, percent, due_date]
+      properties:
+        title: { type: string }
+        code: { type: string }
+        percent: { type: integer, minimum: 0, maximum: 100 }
+        due_date: { type: integer, format: int64, description: Unix **秒** }
+        is_enabled: { type: integer, enum: [0, 1] }
+
+    LineItem:
+      type: object
+      description: 購物車與訂單共用的品項格式
+      additionalProperties: false
+      required: [id, product_id, qty, total, final_total, product]
+      properties:
+        id: { type: string, description: 品項 id }
+        product_id: { type: string }
+        qty: { type: integer }
+        total: { type: integer, format: int64, description: 原價小計 }
+        final_total: { type: integer, format: int64, description: 折扣後小計 }
+        coupon:
+          allOf:
+            - $ref: '#/components/schemas/Coupon'
+          description: 有套用優惠券時才出現
+        product: { $ref: '#/components/schemas/Product' }
+    Cart:
+      type: object
+      additionalProperties: false
+      required: [carts, total, final_total]
+      properties:
+        carts:
+          type: array
+          items: { $ref: '#/components/schemas/LineItem' }
+        total: { type: integer, format: int64 }
+        final_total: { type: integer, format: int64 }
+
+    OrderUser:
+      type: object
+      additionalProperties: false
+      required: [name, email, tel, address]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        tel: { type: string }
+        address: { type: string }
+    OrderCreateInput:
+      type: object
+      required: [user]
+      properties:
+        user:
+          type: object
+          required: [name, email, tel, address]
+          description: 前端會在這裡多傳 `message`，會被忽略
+          properties:
+            name: { type: string }
+            email: { type: string, format: email }
+            tel: { type: string }
+            address: { type: string }
+        message: { type: string }
+    OrderUpdateInput:
+      type: object
+      description: 前端會傳整筆訂單，只有 `is_paid` 與 `status` 生效
+      properties:
+        is_paid: { type: boolean }
+        status:
+          description: 外送進度 0 未確認、1 已確認、2 外送中、3 已送達。前端從 `<select>` 送字串（`"2"`），也接受整數
+          oneOf:
+            - { type: integer, minimum: 0, maximum: 3 }
+            - { type: string, enum: ['0', '1', '2', '3'] }
+    Order:
+      type: object
+      additionalProperties: false
+      required: [id, create_at, is_paid, status, total, user, products]
+      properties:
+        id: { type: string, format: uuid }
+        create_at: { type: integer, format: int64, description: Unix **秒** }
+        is_paid: { type: boolean }
+        paid_date: { type: integer, format: int64, description: 付款時間，Unix **秒**；未付款時不出現 }
+        message: { type: string, description: 未填時不出現 }
+        status: { type: integer, enum: [0, 1, 2, 3] }
+        total: { type: integer, format: int64, description: 折扣後總額 }
+        user: { $ref: '#/components/schemas/OrderUser' }
+        products:
+          type: object
+          description: '**以品項 id 為 key 的物件**，不是陣列，前端用 `Object.values` 讀取'
+          additionalProperties: { $ref: '#/components/schemas/LineItem' }
+        num: { type: integer, description: 只在分頁清單出現 }

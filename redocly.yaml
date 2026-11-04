@@ -1,0 +1,12 @@
+extends:
+  - recommended
+apis:
+  freetrav:
+    root: docs/openapi.yaml
+rules:
+  # 個人專案，不需要授權條款
+  info-license: off
+  # 錯誤回應統一用 default 描述，不要求每支 API 都列 4xx
+  operation-4xx-response: off
+  # 目前只有本機開發環境
+  no-server-example.com: off
