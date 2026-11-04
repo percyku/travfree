@@ -18,7 +18,7 @@ Vite + React 前端（`frontend/`）搭配 Spring Boot 後端（`backend/`）。
 ```bash
 npm install              # 根目錄工具，第一次使用時執行
 npm run openapi:lint     # 檢查 spec
-npm run openapi:preview  # 預覽文件
+npm run openapi:preview  # 產生 docs/openapi.html 並開啟
 npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010）
 ```
 

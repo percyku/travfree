@@ -56,7 +56,7 @@ VITE_APP_TOKEN_NAME=react-week2-token
 ```bash
 npm install              # 第一次使用時執行
 npm run openapi:lint     # 檢查 spec
-npm run openapi:preview  # 在瀏覽器預覽 API 文件
+npm run openapi:preview  # 產生 docs/openapi.html 並用瀏覽器開啟（不進 git）
 npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010），前端可先用它開發
 ```
 

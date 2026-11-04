@@ -16,7 +16,7 @@
 - `docs/` 專案文件。
 - `docs/openapi.yaml`：手寫的 OpenAPI 3.0.3 契約，涵蓋全部端點，是前後端唯一的 API 規格。
 - 契約測試：所有 MockMvc 整合測試的回應都會自動對 `openapi.yaml` 驗證。
-- 根目錄 `package.json`：`openapi:lint`、`openapi:preview`、`openapi:build`、`openapi:mock`（Redocly CLI、Prism）。
+- 根目錄 `package.json`：`openapi:lint`、`openapi:preview`、`openapi:mock`（Redocly CLI、Prism）。
 - 專案納入 git；`backend/CLAUDE.md`、`frontend/CLAUDE.md` 分別記錄各區規則。
 
 ### Changed
