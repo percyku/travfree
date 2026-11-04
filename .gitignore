@@ -1,0 +1,12 @@
+# 作業系統
+.DS_Store
+
+# 根目錄的 Node 工具（openapi lint 等）
+node_modules/
+
+# 原始空殼專案的備份
+backend.zip
+
+# IDE 工具產生的升級紀錄
+.github/modernize/
+backend/.github/modernize/

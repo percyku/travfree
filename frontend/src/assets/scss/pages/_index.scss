@@ -1,0 +1,53 @@
+.index-banner {
+  background-image: url(../../images/hero-bg.png);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  padding-top: 112px;
+  min-height: 40vh;
+  .btn {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 992px) {
+  .index-banner {
+    min-height: 100vh;
+    .btn {
+      font-size: 16px;
+    }
+  }
+}
+
+.index-recommend {
+  background-color: #221f1e;
+  .card {
+    width: 277px;
+  }
+}
+
+@media (min-width: 992px) {
+  .index-recommend {
+    .card {
+      .btn {
+        display: none !important;
+      }
+      width: 25%;
+      max-width: 416px;
+      height: 600px;
+      transition: width 1s;
+      &:hover {
+        width: 100%;
+        .btn {
+          display: flex !important;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 992px) {
+  .offset-row {
+    transform: translateX(80px);
+  }
+}

@@ -1,0 +1,40 @@
+.margin-top {
+  margin-top: 64px;
+}
+
+.cart-bg {
+  background-color: $neutral-46;
+  min-height: 85vh;
+}
+
+.cart-img-size {
+  width: 131px;
+  height: 131px;
+}
+
+.cart-empty-img-size {
+  width: 240px;
+  height: 240px;
+}
+
+@media (min-width: 992px) {
+  .margin-top {
+    margin-top: 88px;
+  }
+}
+
+.cart-recommend {
+  background-color: $neutral-46;
+  .deco-img-heart {
+    opacity: 0.4;
+    border-radius: 12px;
+    background-color: $neutral-80;
+  }
+  .card-1 {
+    width: 306px;
+  }
+  img {
+    width: 100%;
+    height: 212px;
+  }
+}

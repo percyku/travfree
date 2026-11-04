@@ -1,0 +1,20 @@
+@import "bootstrap/scss/functions";
+@import "./utilities/variables";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+@import "./base/base";
+
+@import "./layout/header";
+
+@import "./pages/index";
+@import "./pages/login-page";
+@import "./pages/travel";
+@import "./pages/cart";
+
+// @import "./utilities/margin-top";
+@import "./utilities/card-img-top";
+@import "./utilities/img-cover";
+@import "./utilities/loading";
+@import "./utilities/active-link";

@@ -1,0 +1,41 @@
+.travel-bg {
+  background-color: $primary-10;
+  min-height: 85vh;
+}
+
+.index-inspire {
+  .deco-img {
+    width: 162px;
+    height: 80px;
+  }
+  .deco-text {
+    font-size: 100px;
+    color: #dfd2cd;
+    z-index: 1000;
+    font-style: italic;
+  }
+  .card {
+    // width: 400px;
+    // height: 610px;
+    img {
+      width: 280px;
+      height: 200px;
+    }
+  }
+}
+
+@media (min-width: 992px) {
+  .index-inspire {
+    .deco-text {
+      font-size: 100px;
+    }
+    .card {
+      // width: 560px;
+      height: 400px;
+      img {
+        width: 300px;
+        height: 320px;
+      }
+    }
+  }
+}
