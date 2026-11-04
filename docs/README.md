@@ -56,9 +56,11 @@ VITE_APP_TOKEN_NAME=react-week2-token
 ```bash
 npm install              # 第一次使用時執行
 npm run openapi:lint     # 檢查 spec
-npm run openapi:preview  # 產生 docs/openapi.html 並用瀏覽器開啟（不進 git）
+npm run openapi:preview  # Swagger UI：http://localhost:8081，可用 Try it out 直接打本機後端
 npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010），前端可先用它開發
 ```
+
+在 Swagger UI 測試需要登入的 API：先用 `POST /admin/signin` 取得 `token`，按右上角 **Authorize** 貼上，之後的請求就會帶這個 token。改完 `openapi.yaml` 重新整理頁面即可，不需要重啟。
 
 ## 環境變數
 
@@ -70,7 +72,7 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 | `DB_USERNAME` / `DB_PASSWORD` | `travfree` / `travfree` | 資料庫帳密 |
 | `JWT_SECRET` | 開發用字串 | 簽章金鑰，至少 32 bytes，否則啟動失敗 |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@gmail.com` / `Test123456` | 預設管理者，只在帳號不存在時建立 |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | 允許的前端來源，逗號分隔 |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081` | 允許的前端來源，逗號分隔 |
 | `PUBLIC_BASE_URL` | `http://localhost:8080/v2` | 上傳圖片網址的開頭 |
 | `UPLOAD_DIR` | `./uploads` | 圖片存放目錄 |
 

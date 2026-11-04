@@ -10,4 +10,3 @@ backend.zip
 # IDE 工具產生的升級紀錄
 .github/modernize/
 backend/.github/modernize/
-docs/openapi.html
