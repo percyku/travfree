@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createAsyncMessage } from "./messageSlice";
 import axios from "axios";
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 export const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -29,7 +29,7 @@ export const createAsyncGetCart = createAsyncThunk(
   async (_, { dispatch }) => {
     try {
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/cart`,
+        `${VITE_APP_API_BASE}/api/cart`,
       );
       dispatch(updateCart(res.data.data));
     } catch (error) {
@@ -53,7 +53,7 @@ export const createAsyncAddCart = createAsyncThunk(
     };
     try {
       dispatch(updateLoading(true));
-      const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/cart`;
+      const url = `${VITE_APP_API_BASE}/api/cart`;
       const res = await axios.post(url, { data });
 
       dispatch(
@@ -87,7 +87,7 @@ export const createAsyncUpdateCart = createAsyncThunk(
     };
     try {
       dispatch(updateLoading(true));
-      const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/cart/${cartId}`;
+      const url = `${VITE_APP_API_BASE}/api/cart/${cartId}`;
       const res = await axios.put(url, { data });
       dispatch(
         createAsyncMessage({
@@ -116,7 +116,7 @@ export const createAsyncDeleteCart = createAsyncThunk(
   async (id, { dispatch }) => {
     try {
       dispatch(updateLoading(true));
-      const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/cart/${id}`;
+      const url = `${VITE_APP_API_BASE}/api/cart/${id}`;
       await axios.delete(url);
       dispatch(
         createAsyncMessage({
@@ -145,7 +145,7 @@ export const createAsyncDeleteAllCart = createAsyncThunk(
   async (_, { dispatch }) => {
     try {
       dispatch(updateLoading(true));
-      const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/carts`;
+      const url = `${VITE_APP_API_BASE}/api/carts`;
       await axios.delete(url);
 
       dispatch(

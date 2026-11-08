@@ -36,7 +36,7 @@ import com.percyku.backend.security.LoginAttemptLimiter;
 @Import(OpenApiContractConfig.class)
 abstract class ApiTestSupport {
 
-	static final String API = "/api/react-week2-api";
+	static final String API = "/api";
 
 	@Autowired
 	MockMvc mockMvc;

@@ -16,7 +16,7 @@ const Login = () => {
     formState: { errors },
   } = useForm({
     mode: "onChange",
-    defaultValues: { username: "percyku19@gmail.com", password: "" },
+    defaultValues: { username: "", password: "" },
   });
 
   useEffect(() => {

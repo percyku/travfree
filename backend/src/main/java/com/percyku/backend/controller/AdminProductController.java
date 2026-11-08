@@ -20,7 +20,7 @@ import com.percyku.backend.service.ProductService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/${app.api-path}/admin")
+@RequestMapping("/api/admin")
 public class AdminProductController {
 
 	private final ProductService productService;

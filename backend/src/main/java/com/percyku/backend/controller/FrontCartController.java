@@ -22,7 +22,7 @@ import com.percyku.backend.service.CartService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/${app.api-path}")
+@RequestMapping("/api")
 public class FrontCartController {
 
 	private final CartService cartService;

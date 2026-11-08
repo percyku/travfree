@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createAsyncMessage } from "./messageSlice";
 import axios from "axios";
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 
 export const productSlice = createSlice({
   name: "product",
@@ -87,7 +87,7 @@ export const createAsyncGetAllProducts = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/products/all`,
+        `${VITE_APP_API_BASE}/api/products/all`,
       );
       const result = [
         "all",
@@ -115,7 +115,7 @@ export const createAsyncGetSearchProducts = createAsyncThunk(
       dispatch(updateLoading(true));
       dispatch(updateSearchProducts());
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/products/all`,
+        `${VITE_APP_API_BASE}/api/products/all`,
       );
       const result = res.data.products.filter(
         (product) =>
@@ -143,7 +143,7 @@ export const createAsyncGetProducts = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/products`,
+        `${VITE_APP_API_BASE}/api/products`,
         {
           params: {
             page,
@@ -173,7 +173,7 @@ export const createAsyncGetProduct = createAsyncThunk(
       dispatch(updateLoading(true));
       dispatch(updateProduct());
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/product/${id}`,
+        `${VITE_APP_API_BASE}/api/product/${id}`,
       );
       dispatch(updateProduct(res.data.product));
     } catch (error) {

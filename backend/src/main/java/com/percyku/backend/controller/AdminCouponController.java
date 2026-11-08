@@ -20,7 +20,7 @@ import com.percyku.backend.service.CouponService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/${app.api-path}/admin")
+@RequestMapping("/api/admin")
 public class AdminCouponController {
 
 	private final CouponService couponService;

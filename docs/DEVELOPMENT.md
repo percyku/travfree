@@ -6,11 +6,9 @@
 - Maven 用專案內的 `./mvnw`，不需另外安裝。
 - PostgreSQL 由 `backend/docker-compose.yml` 提供。`docker compose down -v` 會連資料一起刪除，適合重置環境；重新啟動後端會再建立預設 admin。
 
-## 前端調整原則
+## 前端開發
 
-目前的原則是**不修改 `frontend/` 任何檔案，也不修正其中的 bug**。切換後端靠啟動時的環境變數，見 [README.md](README.md)。
-
-已發現的前端問題記錄在 [ARCHITECTURE.md](ARCHITECTURE.md) 的已知限制。
+2026-11-08 起進入前端開發，規則見 `frontend/CLAUDE.md`。前端只依 `openapi.yaml` 開發，已發現的前端問題記錄在 [ARCHITECTURE.md](ARCHITECTURE.md) 的已知限制，修正後從清單移除。
 
 ## API 契約
 
@@ -59,7 +57,7 @@
 3. **Repository**：在 `repository/` 新增。
 4. **DTO**：Request 加上驗證註解，訊息比照 `xxx 屬性不得為空`；Response 用 `@JsonProperty` 指定欄位名，並標 `@JsonInclude(NON_NULL)`。
 5. **Service**：分頁用 `PagedResult.fetch(...)`，找不到資料丟 `ApiException.notFound(...)`。
-6. **Controller**：Admin 路由用 `@RequestMapping("/api/${app.api-path}/admin")`，寫入參數用 `@Valid @RequestBody DataRequest<T>`。
+6. **Controller**：Admin 路由用 `@RequestMapping("/api/admin")`，Front 路由用 `@RequestMapping("/api")`，寫入參數用 `@Valid @RequestBody DataRequest<T>`。
 7. **權限**：`/api/*/admin/**` 自動要求 admin。公開路由若需要登入，要在 `SecurityConfig` 加規則，放在 `/api/**` permitAll **之前**，因為規則依序比對。
 8. **測試**：見 [TESTING.md](TESTING.md)。測試會自動驗證回應符合 spec；新的權限規則也要有測試。
 9. **文件**：更新 `FEATURES.md`（狀態表與行為描述）、`ARCHITECTURE.md`（路由表、Schema）、`CHANGELOG.md`。

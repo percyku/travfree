@@ -46,7 +46,7 @@ class HttpContractTest {
 	@Test
 	void servesApiUnderV2Prefix() throws Exception {
 		HttpResponse<String> response = client.send(
-				HttpRequest.newBuilder(uri("/api/react-week2-api/products")).GET().build(),
+				HttpRequest.newBuilder(uri("/api/products")).GET().build(),
 				HttpResponse.BodyHandlers.ofString());
 
 		assertThat(response.statusCode()).isEqualTo(200);
@@ -93,13 +93,14 @@ class HttpContractTest {
 
 	@Test
 	void unknownRoutesReturnJsonErrors() throws Exception {
+		// 舊的 Hexschool 路徑（含 api_path）已移除，不保留相容
 		HttpResponse<String> unknownPath = client.send(
-				HttpRequest.newBuilder(uri("/api/other-path/products")).GET().build(),
+				HttpRequest.newBuilder(uri("/api/react-week2-api/products")).GET().build(),
 				HttpResponse.BodyHandlers.ofString());
 		assertThat(unknownPath.statusCode()).isEqualTo(404);
 		assertThat(objectMapper.readTree(unknownPath.body()).get("success").asBoolean()).isFalse();
 
-		HttpResponse<String> wrongMethod = client.send(HttpRequest.newBuilder(uri("/api/react-week2-api/products"))
+		HttpResponse<String> wrongMethod = client.send(HttpRequest.newBuilder(uri("/api/products"))
 				.DELETE().build(), HttpResponse.BodyHandlers.ofString());
 		assertThat(wrongMethod.statusCode()).isEqualTo(405);
 		assertThat(objectMapper.readTree(wrongMethod.body()).get("success").asBoolean()).isFalse();
@@ -114,7 +115,7 @@ class HttpContractTest {
 		byte[] tail = ("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8);
 		List<byte[]> body = new ArrayList<>(List.of(head, new byte[5 * 1024 * 1024], tail));
 
-		HttpResponse<String> response = client.send(HttpRequest.newBuilder(uri("/api/react-week2-api/admin/upload"))
+		HttpResponse<String> response = client.send(HttpRequest.newBuilder(uri("/api/admin/upload"))
 				.header("Authorization", signin())
 				.header("Content-Type", "multipart/form-data; boundary=" + boundary)
 				.POST(HttpRequest.BodyPublishers.ofByteArrays(body))

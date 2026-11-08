@@ -8,7 +8,7 @@ import Pagination from "../../components/Pagination";
 import Loading from "../../components/Loading";
 import useMessage from "../../hooks/useMessage";
 
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 const AdminOrders = () => {
   const { showSuccess, showError } = useMessage();
 
@@ -45,7 +45,7 @@ const AdminOrders = () => {
     (async () => {
       try {
         const res = await axios.get(
-          `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/orders?page=1`,
+          `${VITE_APP_API_BASE}/api/admin/orders?page=1`,
         );
         setOrders(res.data.orders);
         setPagination(res.data.pagination);
@@ -73,7 +73,7 @@ const AdminOrders = () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/orders?page=${page}`,
+        `${VITE_APP_API_BASE}/api/admin/orders?page=${page}`,
       );
       setOrders(res.data.orders);
       setPagination(res.data.pagination);
@@ -89,7 +89,7 @@ const AdminOrders = () => {
     try {
       setIsLoading(true);
       const res = await axios.put(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/order/${
+        `${VITE_APP_API_BASE}/api/admin/order/${
           tempOrder.id
         }`,
         {

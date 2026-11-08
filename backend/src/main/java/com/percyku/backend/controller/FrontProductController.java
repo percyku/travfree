@@ -12,7 +12,7 @@ import com.percyku.backend.dto.ApiResponses;
 import com.percyku.backend.service.ProductService;
 
 @RestController
-@RequestMapping("/api/${app.api-path}")
+@RequestMapping("/api")
 public class FrontProductController {
 
 	private final ProductService productService;

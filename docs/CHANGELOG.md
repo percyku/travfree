@@ -25,6 +25,11 @@
 
 ### Changed
 
+- **API 路徑移除 `api_path`**：`/v2/api/react-week2-api/...` 改為 `/v2/api/...`，例如 `/v2/api/products`、`/v2/api/admin/products`。舊路徑回 404，不保留相容。`/v2/admin/signin`、`/v2/logout`、`/v2/api/user/check`、`/v2/uploads/*` 不變。
+- 移除後端設定 `app.api-path`。
+- 開始前端開發，移除「不修改 `frontend/`」的規則。
+- 前端移除 `VITE_APP_API_PATH`，API 網址改為 `${VITE_APP_API_BASE}/api/...`；存 token 的 cookie 改名為 `freetrav-token`，已登入的人需重新登入一次。
+- 登入頁的帳號欄位預設改為空白（原本是 Hexschool 的個人帳號）。
 - CORS 預設允許的來源加入 `http://localhost:8081`，讓 Swagger UI 的 Try it out 可以呼叫本機後端。
 - `backend/pom.xml` 新增 test scope 的 `swagger-request-validator-mockmvc`。
 - `backend/pom.xml` 新增 test scope 的 H2 相依性。
@@ -37,5 +42,6 @@
 
 - `GET ~/orders` 改為需要 admin token，避免公開全部訂單個資。
 - Admin 文章清單包含 `content`，避免前端編輯時覆寫內文。
-- `POST ~/admin/signin` 失敗次數過多時回 429，Hexschool 沒有次數限制。
+- `POST /admin/signin` 失敗次數過多時回 429，Hexschool 沒有次數限制。
+- 路徑不含 Hexschool 的 `api_path`。
 - 其他差異見 [ARCHITECTURE.md](ARCHITECTURE.md)。

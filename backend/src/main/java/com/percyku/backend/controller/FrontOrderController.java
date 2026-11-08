@@ -19,7 +19,7 @@ import com.percyku.backend.service.OrderService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/${app.api-path}")
+@RequestMapping("/api")
 public class FrontOrderController {
 
 	private final OrderService orderService;

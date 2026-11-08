@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 export const articleSlice = createSlice({
   name: "article",
   initialState: {
@@ -30,7 +30,7 @@ export const createAsyncGetArticles = createAsyncThunk(
   async (_, { dispatch }) => {
     try {
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/articles`,
+        `${VITE_APP_API_BASE}/api/articles`,
       );
 
       dispatch(updateArticles(res.data.articles));
@@ -47,7 +47,7 @@ export const createAsyncGetArticle = createAsyncThunk(
     try {
       dispatch(updateArticle());
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/article/${id}`,
+        `${VITE_APP_API_BASE}/api/article/${id}`,
       );
 
       dispatch(updateArticle(res.data.article));

@@ -8,7 +8,7 @@ import Loading from "../../components/Loading";
 import Pagination from "../../components/Pagination";
 import useMessage from "../../hooks/useMessage";
 
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 
 const AdminArticle = () => {
   const { showSuccess, showError } = useMessage();
@@ -47,7 +47,7 @@ const AdminArticle = () => {
     (async () => {
       try {
         const res = await axios.get(
-          `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/articles`,
+          `${VITE_APP_API_BASE}/api/admin/articles`,
         );
         setArticles(res.data.articles);
         setPagiantion(res.data.pagination);
@@ -102,7 +102,7 @@ const AdminArticle = () => {
   };
 
   // const handleFileUploadAndChange = async (e) => {
-  //   const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/upload`;
+  //   const url = `${VITE_APP_API_BASE}/api/admin/upload`;
 
   //   const file = e.target.files?.[0];
   //   if (!file) return;
@@ -158,7 +158,7 @@ const AdminArticle = () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/articles?page=${page}`,
+        `${VITE_APP_API_BASE}/api/admin/articles?page=${page}`,
       );
 
       setArticles(res.data.articles);
@@ -186,7 +186,7 @@ const AdminArticle = () => {
       article = `article`;
     }
 
-    const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/${article}`;
+    const url = `${VITE_APP_API_BASE}/api/admin/${article}`;
 
     try {
       setIsLoading(true);
@@ -214,7 +214,7 @@ const AdminArticle = () => {
     try {
       setIsLoading(true);
       const res = await axios.delete(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/article/${id}`,
+        `${VITE_APP_API_BASE}/api/admin/article/${id}`,
       );
       showSuccess(res.data.message);
       articleModalRef.current.hide();

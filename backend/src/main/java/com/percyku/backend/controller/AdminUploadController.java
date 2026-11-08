@@ -12,7 +12,7 @@ import com.percyku.backend.dto.ApiResponses;
 import com.percyku.backend.service.ImageStorageService;
 
 @RestController
-@RequestMapping("/api/${app.api-path}/admin")
+@RequestMapping("/api/admin")
 public class AdminUploadController {
 
 	private final ImageStorageService imageStorageService;

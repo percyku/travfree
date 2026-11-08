@@ -44,9 +44,9 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers("/api/user/check").authenticated()
-						.requestMatchers("/api/*/admin/**").hasRole(ADMIN)
+						.requestMatchers("/api/admin/**").hasRole(ADMIN)
 						// Hexschool 這支是公開的，但回應含全部訂單個資，且現有前端沒有使用，因此要求 admin
-						.requestMatchers(HttpMethod.GET, "/api/*/orders").hasRole(ADMIN)
+						.requestMatchers(HttpMethod.GET, "/api/orders").hasRole(ADMIN)
 						.requestMatchers("/api/**", "/admin/signin", "/logout", "/error").permitAll()
 						.requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
 						.anyRequest().denyAll())

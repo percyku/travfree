@@ -27,19 +27,26 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
 
 # 3. 另開終端機啟動前端（http://localhost:5173）
 cd frontend
-VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
+npm run dev
 ```
 
 前端的 `.env.local` 不在 git 裡，新環境需要自行建立：
 
 ```bash
-VITE_APP_API_BASE=https://ec-course-api.hexschool.io/V2
-VITE_APP_API_PATH=react-week2-api
+VITE_APP_API_BASE=http://localhost:8080/v2
 VITE_APP_API_COOKIE_PATH=/
-VITE_APP_TOKEN_NAME=react-week2-token
+VITE_APP_TOKEN_NAME=freetrav-token
 ```
 
-第 3 步的環境變數優先於 `frontend/.env.local`，所以不用改任何前端檔案。少了它，前端會繼續連線到 Hexschool。若 5173 已有開發伺服器在跑，要先關掉重開，環境變數才會生效。
+| 變數 | 說明 |
+|---|---|
+| `VITE_APP_API_BASE` | 後端網址，含 `/v2`。連 mock server 時改為 `http://localhost:4010` |
+| `VITE_APP_API_COOKIE_PATH` | 存 token 的 cookie 路徑 |
+| `VITE_APP_TOKEN_NAME` | 存 token 的 cookie 名稱，後端不讀 cookie，只有前端使用 |
+
+啟動時指定的環境變數會優先於 `.env.local`，例如 `VITE_APP_API_BASE=http://localhost:4010 npm run dev`。修改 `.env.local` 後要重啟開發伺服器。
+
+前端已不再使用 `VITE_APP_API_PATH`，API 路徑中也沒有 `react-week2-api` 這一段，所以不能再連到 Hexschool 的 API。
 
 開啟 `http://localhost:5173/#/login`，以預設管理者登入：
 
@@ -47,7 +54,7 @@ VITE_APP_TOKEN_NAME=react-week2-token
 |---|---|
 | `admin@gmail.com` | `Test123456` |
 
-登入頁預設帶入的是另一組帳號（`Login.jsx:19`），需要手動改掉。新資料庫沒有任何產品或文章，請先到後台建立，前台才會有內容。
+新資料庫沒有任何產品或文章，請先到後台建立，前台才會有內容。
 
 ## API 契約
 

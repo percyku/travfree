@@ -48,7 +48,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 |---|---|---|---|
 | `GET /orders` | 公開 | 需要 admin token | 回應含全部訂單的姓名、Email、電話、地址；現有前端沒有使用 |
 | Admin 文章清單 | 不含 `content` | 含 `content` | 前端編輯時直接用清單資料帶入內容，少了會被覆寫成 `"default"` |
-| 未設定的 `api_path` | 200，空資料 | 404 | 本專案只服務 `app.api-path` 一個路徑 |
+| 路徑中的 `api_path` | `/v2/api/{api_path}/...`，需向 Hexschool 申請 | 移除，`/v2/api/...` | 本專案有自己的後端，不需要區分申請者；舊路徑回 404 |
 | `POST /logout` | — | 遞增 `token_version`，該帳號既有 token 全部失效 | JWT 無狀態，需要版本號才能真正登出 |
 | `paid_date` | 由傳入資料決定 | 由伺服器在付款狀態變更時決定 | 否則後台勾選已付款後，列表會同時顯示「付款完成」與「未付款」 |
 | `POST /admin/signin` | 無次數限制 | 失敗過多回 429 | 防止暴力破解，規則見 [FEATURES.md](FEATURES.md) |
@@ -76,7 +76,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 
 ### REST API
 
-路徑皆含 context-path `/v2`。下表的 `~` 代表 `/v2/api/{api_path}`，預設為 `/v2/api/react-week2-api`。
+路徑皆含 context-path `/v2`。下表的 `~` 代表 `/v2/api`。Hexschool 的路徑中間還有一段 `api_path`（例如 `react-week2-api`），本專案已移除。
 
 權限欄的 **Admin** 表示要帶 `ROLE_ADMIN` 的 token。詳細行為見 [FEATURES.md](FEATURES.md)。
 
@@ -221,7 +221,7 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 
 ### 登入與驗證
 
-1. `Login.jsx` 呼叫 `POST /v2/admin/signin`，把 `token` 與 `expired`（毫秒）寫入 cookie `react-week2-token`。
+1. `Login.jsx` 呼叫 `POST /v2/admin/signin`，把 `token` 與 `expired`（毫秒）寫入 cookie `freetrav-token`（名稱由 `VITE_APP_TOKEN_NAME` 設定）。
 2. 前端把 cookie 的值設為 `axios.defaults.headers.common.Authorization`，所以 header 是**裸 token，沒有 `Bearer`**。Filter 兩種格式都接受。
 3. `ProductedRoute` 進入 `/admin/*` 時呼叫 `POST /v2/api/user/check`。
 4. `JwtAuthenticationFilter` 驗證簽章，讀取 user，比對 `token_version`，通過後才設定身分。
@@ -259,7 +259,7 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 - **登入次數限制存在記憶體。** 重啟後歸零，多台伺服器之間也不共用計數，只適用單一實例部署。要水平擴充時改用 Redis 等共用儲存。
 - 開發用預設密鑰與密碼寫在 `application.properties`。以 prod profile 部署時，沒有覆寫就拒絕啟動；**不用 prod profile 部署就不會檢查。**
 
-### 前端（依規格不修改）
+### 前端
 
 - `Login.jsx:45`、`ProductedRoute.jsx:33` 使用未解構的 `VITE_APP_API_COOKIE_PATH`，token 失效時會拋 ReferenceError，舊 cookie 清不掉。實際影響：畫面仍會回到登入頁，重新登入後恢復正常。
 - `AdminOrders.jsx:40` 使用未定義的 `navigate`，token 失效時訂單頁會出錯，而不是導回登入頁。

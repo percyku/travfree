@@ -24,7 +24,6 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 
 ## 必守規則
 
-- 目前不修改 `frontend/` 的程式碼，也不修正其中的 bug；發現問題記錄到 `docs/ARCHITECTURE.md` 的已知限制。使用者決定開始前端開發時，移除這條規則，改依 `frontend/CLAUDE.md`。
 - `GET /orders` 需要 admin token，這是刻意與 Hexschool 不同的設計。
 
 ## 在子資料夾啟動 Claude Code

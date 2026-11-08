@@ -8,7 +8,7 @@ import Loading from "../../components/Loading";
 import Pagination from "../../components/Pagination";
 import useMessage from "../../hooks/useMessage";
 
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 
 function AdminProducts() {
   const { showSuccess, showError } = useMessage();
@@ -50,7 +50,7 @@ function AdminProducts() {
     (async () => {
       try {
         const res = await axios.get(
-          `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/products?page=1`,
+          `${VITE_APP_API_BASE}/api/admin/products?page=1`,
         );
 
         // console.log(res.data);
@@ -151,7 +151,7 @@ function AdminProducts() {
     try {
       setIsLoading(true);
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/products?page=${page}`,
+        `${VITE_APP_API_BASE}/api/admin/products?page=${page}`,
       );
       setProducts(res.data.products);
       setPagiantion(res.data.pagination);
@@ -181,7 +181,7 @@ function AdminProducts() {
       product = `product`;
     }
 
-    const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/${product}`;
+    const url = `${VITE_APP_API_BASE}/api/admin/${product}`;
     try {
       setIsLoading(true);
       let res;
@@ -208,7 +208,7 @@ function AdminProducts() {
     try {
       setIsLoading(true);
       const res = await axios.delete(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/product/${id}`,
+        `${VITE_APP_API_BASE}/api/admin/product/${id}`,
       );
       showSuccess(res.data.message);
       productModalRef.current.hide();
@@ -221,7 +221,7 @@ function AdminProducts() {
   };
 
   const handleFileUploadAndChange = async (e) => {
-    const url = `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/admin/upload`;
+    const url = `${VITE_APP_API_BASE}/api/admin/upload`;
 
     const file = e.target.files?.[0];
     if (!file) return;

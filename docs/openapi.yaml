@@ -154,7 +154,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 產品 ─────────────────────────
-  /api/react-week2-api/admin/products/all:
+  /api/admin/products/all:
     get:
       tags: ['管理控制台 - 產品 (Products)']
       summary: 全部產品（不分頁）
@@ -189,7 +189,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/products:
+  /api/admin/products:
     get:
       tags: ['管理控制台 - 產品 (Products)']
       summary: 產品分頁
@@ -218,7 +218,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/product:
+  /api/admin/product:
     post:
       tags: ['管理控制台 - 產品 (Products)']
       summary: 新增產品
@@ -241,7 +241,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/product/{id}:
+  /api/admin/product/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
     put:
@@ -295,7 +295,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 上傳 ─────────────────────────
-  /api/react-week2-api/admin/upload:
+  /api/admin/upload:
     post:
       tags: ['管理控制台 - 上傳圖片 (Upload)']
       summary: 上傳圖片
@@ -370,7 +370,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 文章 ─────────────────────────
-  /api/react-week2-api/admin/articles:
+  /api/admin/articles:
     get:
       tags: ['管理控制台 - 文章 (Article)']
       summary: 文章分頁
@@ -398,7 +398,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/article:
+  /api/admin/article:
     post:
       tags: ['管理控制台 - 文章 (Article)']
       summary: 新增文章
@@ -421,7 +421,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/article/{id}:
+  /api/admin/article/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
     get:
@@ -500,7 +500,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 訂單 ─────────────────────────
-  /api/react-week2-api/admin/orders:
+  /api/admin/orders:
     get:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 訂單分頁
@@ -513,7 +513,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/order/{id}:
+  /api/admin/order/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
     put:
@@ -582,7 +582,7 @@ paths:
               example: { success: false, message: '找不到訂單' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/orders/all:
+  /api/admin/orders/all:
     delete:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 刪除全部訂單
@@ -599,7 +599,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 優惠券 ─────────────────────────
-  /api/react-week2-api/admin/coupons:
+  /api/admin/coupons:
     get:
       tags: ['管理控制台 - 優惠券 (Coupon)']
       summary: 優惠券分頁
@@ -626,7 +626,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/coupon:
+  /api/admin/coupon:
     post:
       tags: ['管理控制台 - 優惠券 (Coupon)']
       summary: 新增優惠券
@@ -650,7 +650,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/admin/coupon/{id}:
+  /api/admin/coupon/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
     put:
@@ -704,7 +704,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── 產品（前台） ─────────────────────────
-  /api/react-week2-api/products/all:
+  /api/products/all:
     get:
       tags: ['客戶購物 - 產品 (Products)']
       summary: 全部上架產品（不分頁）
@@ -727,7 +727,7 @@ paths:
                     items: { $ref: '#/components/schemas/Product' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/products:
+  /api/products:
     get:
       tags: ['客戶購物 - 產品 (Products)']
       summary: 上架產品分頁
@@ -754,7 +754,7 @@ paths:
                   pagination: { $ref: '#/components/schemas/Pagination' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/product/{id}:
+  /api/product/{id}:
     get:
       tags: ['客戶購物 - 產品 (Products)']
       summary: 單一產品
@@ -784,7 +784,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── 文章（前台） ─────────────────────────
-  /api/react-week2-api/articles:
+  /api/articles:
     get:
       tags: ['客戶購物 - 文章 (Article)']
       summary: 公開文章分頁
@@ -811,7 +811,7 @@ paths:
                   messages: { $ref: '#/components/schemas/Messages' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/article/{id}:
+  /api/article/{id}:
     get:
       tags: ['客戶購物 - 文章 (Article)']
       summary: 單篇公開文章
@@ -841,7 +841,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── 購物車 ─────────────────────────
-  /api/react-week2-api/cart:
+  /api/cart:
     get:
       tags: ['客戶購物 - 購物車 (Cart)']
       summary: 取得購物車
@@ -906,7 +906,7 @@ paths:
               example: { success: false, message: '找不到產品' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/cart/{id}:
+  /api/cart/{id}:
     parameters:
       - name: id
         in: path
@@ -978,7 +978,7 @@ paths:
               example: { success: false, message: '找不到購物車品項' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/carts:
+  /api/carts:
     delete:
       tags: ['客戶購物 - 購物車 (Cart)']
       summary: 清空購物車
@@ -993,7 +993,7 @@ paths:
               example: { success: true, message: '已刪除' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/coupon:
+  /api/coupon:
     post:
       tags: ['客戶購物 - 優惠券 (Coupon)']
       summary: 套用優惠券
@@ -1054,7 +1054,7 @@ paths:
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── 訂單（前台） ─────────────────────────
-  /api/react-week2-api/order:
+  /api/order:
     post:
       tags: ['客戶購物 - 結帳 (Order)']
       summary: 結帳
@@ -1101,7 +1101,7 @@ paths:
               example: { success: false, message: '購物車無資料' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/orders:
+  /api/orders:
     get:
       tags: ['客戶購物 - 結帳 (Order)']
       summary: 訂單分頁（需要 admin）
@@ -1115,7 +1115,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/order/{id}:
+  /api/order/{id}:
     get:
       tags: ['客戶購物 - 結帳 (Order)']
       summary: 單筆訂單
@@ -1145,7 +1145,7 @@ paths:
                         enum: [null]
         default: { $ref: '#/components/responses/Failure' }
 
-  /api/react-week2-api/pay/{id}:
+  /api/pay/{id}:
     post:
       tags: ['客戶購物 - 付款 (Pay)']
       summary: 付款

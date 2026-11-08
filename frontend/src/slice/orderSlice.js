@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-const { VITE_APP_API_BASE, VITE_APP_API_PATH } = import.meta.env;
+const { VITE_APP_API_BASE } = import.meta.env;
 import { createAsyncMessage } from "./messageSlice";
 import { createAsyncGetCart } from "./cartSlice";
 
@@ -30,7 +30,7 @@ export const createAsyncGetOrder = createAsyncThunk(
   async (orderId, { dispatch }) => {
     try {
       const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/order/${orderId}`,
+        `${VITE_APP_API_BASE}/api/order/${orderId}`,
       );
 
       dispatch(updateOrder(res.data));
@@ -52,7 +52,7 @@ export const createAsyncSubmitForm = createAsyncThunk(
     dispatch(updateLoading(true));
     try {
       const res = await axios.post(
-        `${VITE_APP_API_BASE}/api/${VITE_APP_API_PATH}/order`,
+        `${VITE_APP_API_BASE}/api/order`,
         form,
       );
       dispatch(
