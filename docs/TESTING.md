@@ -12,6 +12,20 @@ npm test              # 執行一次；npm run test:watch 會持續監看
 
 後端不需要 Docker。測試使用 `test` profile 與 H2 記憶體資料庫的 PostgreSQL 模式，設定在 `src/test/resources/application-test.properties`。
 
+## CI
+
+`.github/workflows/ci.yml`：push 到 `main` 或開 PR 時，GitHub Actions 在 Linux 上同時跑三個 job，結果在 repo 的 **Actions** 分頁：
+
+| Job | 內容 |
+|---|---|
+| OpenAPI spec | `npm run openapi:lint` |
+| 後端測試 | `./mvnw -B test`（Java 21、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
+| 前端 lint、測試與建置 | `npm run lint`、`npm test`、`npm run build` |
+
+- CI 跑在區分大小寫的 Linux 上，可以抓到 macOS 上發現不了的匯入路徑大小寫錯誤。
+- 同一個分支有新的 push 時，會取消還在跑的舊檢查。
+- 依賴以 `npm ci` 依照 lock 檔安裝，新增套件時要一併 commit `package-lock.json`。
+
 ## 契約驗證
 
 `OpenApiContractConfig` 讓**所有** MockMvc 回應都自動對 `docs/openapi.yaml` 驗證（`swagger-request-validator-mockmvc`）。繼承 `ApiTestSupport` 的測試都會套用，不需要另外撰寫。

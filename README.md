@@ -1,5 +1,7 @@
 # FreeTrav 旅遊電商
 
+[![CI](https://github.com/percyku/freetrav/actions/workflows/ci.yml/badge.svg)](https://github.com/percyku/freetrav/actions/workflows/ci.yml)
+
 以旅遊行程為商品的電商網站，包含 React 前端與 Spring Boot 後端。
 
 管理者在後台建立行程、文章與優惠券，訪客在前台瀏覽、加入購物車、套用優惠碼並結帳，管理者再到後台處理訂單。後端最初仿照[六角學院電商 API](https://hexschool.github.io/ec-courses-api-swaggerDoc/#/) 實作，之後依實際需求補強了安全性與結帳流程。
@@ -97,7 +99,7 @@ npm test
 npm run lint
 ```
 
-後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。前端用 Vitest 與 React Testing Library 測主要流程，以 MSW 模擬 API，請求與回應同樣對照 `openapi.yaml` 檢查。
+後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。前端用 Vitest 與 React Testing Library 測主要流程，以 MSW 模擬 API，請求與回應同樣對照 `openapi.yaml` 檢查。push 到 `main` 或開 PR 時，GitHub Actions 會自動執行 spec 檢查與前後端的測試。
 
 ## 文件
 

@@ -1,0 +1,70 @@
+# push 到 main 或開 PR 時自動檢查 spec、後端與前端。說明見 docs/TESTING.md 的「CI」。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 同一個分支有新的 push 時，取消還在跑的舊檢查
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  spec:
+    name: OpenAPI spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run openapi:lint
+
+  backend:
+    name: 後端測試
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      # 使用 H2，不需要資料庫服務；契約測試會讀 ../docs/openapi.yaml
+      - run: ./mvnw -B test
+      - name: 上傳測試報告
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-surefire-reports
+          path: backend/target/surefire-reports/
+
+  frontend:
+    name: 前端 lint、測試與建置
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      # MSW 模擬 API，並對 ../docs/openapi.yaml 檢查請求與回應
+      - run: npm test
+      - run: npm run build

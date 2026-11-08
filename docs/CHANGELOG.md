@@ -4,6 +4,7 @@
 
 ### Added
 
+- CI（`.github/workflows/ci.yml`）：push 到 `main` 或開 PR 時，以 GitHub Actions 執行 OpenAPI lint、後端測試，以及前端 lint、測試與建置。
 - 前端自動化測試（`cd frontend && npm test`）：Vitest + React Testing Library + MSW，涵蓋登入、後台路由保護、購物車、優惠券、結帳與付款，以及後台產品、文章、訂單、優惠券管理與登出，共 90 個。MSW 的每個請求與回應都會對 `docs/openapi.yaml` 檢查，前端送錯格式或測試假資料與 spec 不符時測試失敗。說明見 `docs/TESTING.md`。
 - `DELETE /api/coupon`：移除購物車已套用的優惠券；前端在已套用的優惠碼旁加上「移除」。
 - 前端優惠券與付款 UI：後台「優惠券列表」（`/admin/coupons`）可新增、編輯、刪除，折扣以實付比例輸入並顯示折數，到期日有效到當天 23:59:59；購物車頁可輸入優惠碼，費用明細分開列出商品特價折抵與優惠券折抵；訂單成功頁顯示付款狀態並可付款。
