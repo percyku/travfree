@@ -4,6 +4,8 @@
 
 ### Added
 
+- 種子資料：`npm run seed` 透過 API 匯入 `scripts/seed/data.json` 的 30 筆產品、5 篇文章與 1 張優惠券，已存在的資料會略過；`npm run seed:export` 從後台重新匯出。
+- 資料庫備份與還原：`npm run db:backup` 存到 `backups/`（不進 git，含上傳的圖片），`npm run db:restore -- <檔案>` 確認後還原。CI 的 Docker compose job 會實際執行匯入、備份、清空與還原。
 - Docker：`backend/Dockerfile`、`frontend/Dockerfile`（nginx 提供前端並轉發 `/v2`）與根目錄的 `docker-compose.yml`，`docker compose up -d --build` 一次啟動前端、後端與資料庫（`http://localhost:8000`）。沒有 `.env` 時使用開發設定，部署時依 `.env.example` 設定 prod profile 與密鑰。資料庫沿用原本的 volume `backend_postgres-data`。
 - CI 新增 Docker compose job：以 prod profile 與隨機密鑰啟動全新環境，執行 `scripts/smoke-test.sh`。
 - CI（`.github/workflows/ci.yml`）：push 到 `main` 或開 PR 時，以 GitHub Actions 執行 OpenAPI lint、後端測試，以及前端 lint、測試與建置。
@@ -33,6 +35,7 @@
 
 ### Changed
 
+- GitHub repo 由 `percyku/freetrav` 改名為 `percyku/travfree`，舊網址會自動導向。根目錄 `README.md` 的「啟動與停止」整理 Docker 與開發模式的啟動、停止指令。
 - 移除 `backend/docker-compose.yml`，資料庫改由根目錄的 `docker-compose.yml` 提供，開發時執行 `docker compose up -d db`。
 - 前端 `vite.config.js` 的 `base` 改為 `/`（原本 production 是舊專案 gh-pages 的 `/react-training-2025-final/`），並移除 `gh-pages` 與 `deploy` script。
 - **API 路徑移除 `api_path`**：`/v2/api/react-week2-api/...` 改為 `/v2/api/...`，例如 `/v2/api/products`、`/v2/api/admin/products`。舊路徑回 404，不保留相容。`/v2/admin/signin`、`/v2/logout`、`/v2/api/user/check`、`/v2/uploads/*` 不變。

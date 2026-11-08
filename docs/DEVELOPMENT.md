@@ -4,7 +4,7 @@
 
 - JDK 21。`pom.xml` 的 `java.version` 是 21，系統預設若是更新的 JDK，請指定 `JAVA_HOME=$(/usr/libexec/java_home -v 21)`。
 - Maven 用專案內的 `./mvnw`，不需另外安裝。
-- PostgreSQL 由根目錄的 `docker-compose.yml` 提供，開發時在根目錄執行 `docker compose up -d db` 只啟動資料庫。`docker compose down -v` 會連資料一起刪除，適合重置環境；重新啟動後端會再建立預設 admin。前後端與資料庫一起啟動見 [README.md](README.md#docker)。
+- PostgreSQL 由根目錄的 `docker-compose.yml` 提供，開發時在根目錄執行 `docker compose up -d db` 只啟動資料庫。`docker compose down -v` 會連資料一起刪除，適合重置環境；重新啟動後端會再建立預設 admin，再用 `npm run seed` 匯入範例資料。完整保存與還原用 `npm run db:backup`、`npm run db:restore`。前後端與資料庫一起啟動見 [README.md](README.md#docker)。
 
 ## 前端開發
 

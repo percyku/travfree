@@ -1,0 +1,553 @@
+{
+  "products": [
+    {
+      "title": "台北3日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 50000,
+      "price": 40000,
+      "description": "台北交通極其便利，建議全程使用 悠遊卡 (EasyCard) 或手機綁定，搭乘捷運 (MRT) 即可抵達 90% 的景點。住宿首推 台北車站 或 西門町 區域，方便往返機場與轉乘各線。\n行程安排上，建議將「室內藝術」與「戶外自然」交錯。例如早起前往 陽明山 或 象山 呼吸新鮮空氣，午後避暑於 故宮博物院 或 誠品書店。台北的精華在於「深夜食堂」，每晚務必排入一個不同的 饒河、寧夏 或 臨江街 夜市。此外，熱門餐廳如 鼎泰豐 建議透過 App 提早取號，或避開尖峰時段以節省排隊時間。",
+      "content": "台北是一座融合了殖民歷史、現代科技與溫暖人情味的城市。這趟三日行程，將帶領您從世界級的摩天大樓，穿梭至充滿煙火氣的傳統巷弄。\n第一天：經典地標與繁華都會\n旅程由 台北 101 拉開序幕。這座曾為世界第一的高樓，不僅是購物天堂，登上 89 樓觀景台更能俯瞰整座盆地的壯麗。隨後步行至鄰近的 四四南村，在老眷村建築中與 101 合影，感受新舊對比。傍晚前往 象山步道，僅需 20 分鐘路程即可捕捉最經典的台北夕陽與夜景。入夜後，直奔 信義商圈 或 臨江街夜市，享受米其林推薦的街頭小吃。\n第二天：文化洗禮與老街情懷\n上午造訪 國立故宮博物院，欣賞巧奪天工的翠玉白菜與肉形石，領略五千年的華夏藝術。下午轉往 大稻埕與迪化街，這裡是台北最早的商業區，現已轉型為充滿文創小店、精品咖啡與中藥行交織的迷人街道。您可以在這裡租借旗袍拍照，或在碼頭貨櫃市集吹著海風迎接落日。晚間前往 西門町，感受台北青少年的潮流文化與著名的阿宗麵線。\n第三天：文藝慢活與自然芬多精\n最後一天建議走輕鬆文藝路線。早晨前往 華山 1914 文化創意產業園區，在廢棄酒廠改建的空間裡看展、逛選物店。隨後搭乘捷運前往 中正紀念堂，觀看整點的儀隊交接儀式，感受宏偉的建築氣勢。若體力充沛，可安排至 北投 體驗露天溫泉，洗去旅途疲勞。最後帶著伴手禮如鳳梨酥、牛軋糖，搭乘機場快線輕鬆返程。\n這三天的行程，涵蓋了台北最精華的視覺與味覺體驗，讓您在短暫的時間內，深刻愛上這座不夜城的獨特魅力。\n請問您是偏好拍照打卡的網美行程，還是更想深入了解歷史建築的文化之旅？我可以根據您的喜好提供更精準的咖啡廳或景點清單。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1609147110688-83b5fd1288e8?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1519126400611-d57095205936?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1583889659384-64d9df2347ba?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "東京5日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 60000,
+      "price": 30000,
+      "description": "建議入住新宿或上野，交通轉乘最便利。行程首推澀谷 Sky 俯瞰展望、淺草寺人文體驗與哈利波特影城（或迪士尼）。交通必備 iPhone 綁定 Suica/Pasmo，並搭配 Tokyo Subway Ticket 節省市區地鐵費。熱門餐廳與展望台務必提前一個月預約，避免現場排隊耗時。",
+      "content": "東京是一座將極致現代感與深厚傳統底蘊完美揉合的城市。這趟五日行程，將帶領您從江戶時代的古樸情懷，一路橫跨至 21 世紀的潮流尖端。\n第一天：下町情懷與晴空匯聚\n抵達後，首站前往淺草寺。穿過鮮紅的雷門與仲見世通，感受傳統江戶氣息，並體驗抽籤祈福。隨後漫步過吾妻橋前往晴空塔 (Skytree)，在全日最高點俯瞰關東平原，傍晚則推薦到鄰近的錦糸町或上野享用道地居酒屋料理。\n第二天：潮流聖地與城市之巔\n上午造訪東京的心臟地帶——明治神宮，在城市綠洲中獲得平靜。接著轉往隔壁的原宿表參道，觀察最前衛的街頭時尚。午後進入澀谷，體驗全世界最繁忙的十字路口，並登上 SHIBUYA SKY 展望台，捕捉東京鐵塔與富士山並存的絕美夕陽。\n第三天：二次元幻想與夢幻樂園\n這一天可依喜好選擇：影迷可前往華納兄弟哈利波特影城，沉浸在精緻的電影片場中；若偏好經典娛樂，東京迪士尼度假區則是不可取代的選擇。無論選擇哪方，都能體驗到日本對主題樂園細節的極致追求。\n第四天：河口湖與富士之美\n暫離城市喧囂，前往富士河口湖一日遊。搭乘特急電車或巴士，近距離觀賞壯麗的富士山倒映在湖面。無論是新倉山淺間公園的五重塔與山景對望，或是大石公園的季節花海，都是洗滌身心的心靈饗宴。\n第五天：築地鮮味與最後採買\n清晨造訪築地場外市場，以最新鮮的海鮮丼作為旅程收尾。隨後前往銀座體驗高級百貨的質感服務，或到新宿的 Bic Camera、唐吉訶德完成藥妝與電器的最後採買。帶著滿載的行李與回憶，搭乘 Skyliner 或 N'EX 輕鬆前往機場。\n這趟五日遊透過精確的動線規劃，讓您在短時間內體驗東京的多樣面貌。\n請問您偏好親子同樂、閨蜜購物還是攝影外拍？我可以為您調整具體的景點細節。\n\n\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1513407030348-c983a97b98d8?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1604928141064-207cea6f571f?q=80&w=3028&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1554797589-7241bb691973?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "首爾4日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 45000,
+      "price": 37500,
+      "description": "支付工具：建議準備 WOWPASS 儲值卡，可同時作為 T-money 交通卡與一般消費刷卡使用，並在機器直接兌換韓幣。\n地圖導航：在韓國使用 Google Maps 常有誤差，請下載 Naver Map 或 KakaoMap 導航會精確許\n預約熱點：若想體驗最新的數位光影藝術，如 Mohegan INSPIRE 迎仕柏度假村，建議事先確認交通與場次。\n避開人潮：避開 1、2 月及 12 月的旅遊旺季；5 月、6 月和 11 月 氣候宜人且票價相對親民。 \n\n",
+      "content": "南韓首爾是一個將千年古都與現代尖端科技完美融合的城市。對於只有 4 天時間的快閃旅人，首爾市區與近郊的聯動是最佳選擇。行程首日穿上色彩鮮艷的韓服穿梭於景福宮與北村韓屋村，彷彿置身於韓劇歷史場景中；隨後轉往潮流重鎮如聖水洞與益善洞，感受由舊建築改造而成的時尚咖啡廳魅力。 \n\n除了市區，搭乘 ITX 青春號前往近郊的南怡島，可以在水杉林大道下享受森林浴，或是在廢棄鐵軌改建的江村鐵路自行車上欣賞北漢江美景。夜晚的重頭戲莫過於南山首爾塔的璀璨夜景，以及廣藏市場道地的街頭美食——從香酥的綠豆餅到具備挑戰性的生章魚。 \nThailande et Asie\nThailande et Asie\n\n這 4 天雖然緊湊，但透過便捷的地鐵網路與智慧支付系統，您能輕鬆橫跨傳統宮廷、自然美景與購物聖地，在美食、美妝與美景中，完成一趟充實且具指標性的韓式假期。 \n國泰產險\n國泰產險\n請問您這趟旅程是否有慶生或情侶約會等特殊目的？我可以為您推薦更有氛圍的景觀餐廳或體驗活動。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1570191913384-7b4ff11716e7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1506816561089-5cc37b3aa9b0?q=80&w=1575&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1583833008338-31a6657917ab?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1661886333708-877148b43ae1?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "巴黎9日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 190000,
+      "price": 170000,
+      "description": "這份 巴黎 9 日遊 完美平衡了經典地標與法式生活。行程涵蓋羅浮宮、奧賽與橘園三大美術館，並安排凡爾賽宮與迪士尼兩大郊區亮點。\n您將從西堤島歷史源頭出發，漫步蒙馬特藝術高地，並在塞納河畔享受午茶。建議購買 Paris Museum Pass 節省門票，並利用 Navigo 週卡 搞定全區交通。\n這趟旅程讓您在深度觀光的同時，也能像巴黎人一樣，在香榭大道或瑪黑區體驗優雅的慢活步調。\n請問您偏好精品購物還是地道美食？我可以為您加入更具體的推薦。\n\n\n\n\n",
+      "content": "法國這份 巴黎 9 日深度遊 結合了經典地標、藝術洗禮與法式慢活，適合想一次玩透市區與精華郊區的旅人。\n行程核心從西堤島出發，探訪巴黎聖母院與聖禮拜堂的歷史原點；接著進入藝術殿堂，包含羅浮宮的古典珍藏、奧賽美術館的印象派鉅作，以及橘園莫內的睡蓮。經典地標如艾菲爾鐵塔、凱旋門與香榭麗舍大道是必經之路，而蒙馬特的聖心堂與愛之牆則展現了波西米亞的浪漫風情。\n除了市區，行程特別排入兩天郊區：沉浸於凡爾賽宮的皇室奢華，並在巴黎迪士尼體驗歐式童話。剩餘時光可悠遊於瑪黑區的獨立小店、左岸的花神咖啡館，最後在老佛爺百貨滿足購物慾。\n行前核心建議： 務必預先訂購巴黎博物館通行證 (PMP) 並提前預約熱門場次（羅浮宮、凡爾賽宮等）；交通則推薦購買 Navigo 周票 節省往返郊區的費用。巴黎 9 天的跨度，能讓您在趕景點之餘，還有餘裕在塞納河畔靜靜享受一場法式野餐。\n請問您這趟旅程是打算在哪一個月份出發？我可以根據當季天氣幫您微調穿著與活動建議。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=1420&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1509439581779-6298f75bf6e5?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "京都 5日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 50000,
+      "price": 40000,
+      "description": "京都，這座曾作為日本首都逾千年的城市，是體驗大和文化最純粹的殿堂。5 天的跨度，足以讓旅人從熱鬧的河原町商圈，深入至靜謐的嵐山竹林與宇治茶鄉。\n行程核心圍繞著「世界文化遺產」展開。從震撼視覺的清水寺舞台，到擁有萬座鳥居的伏見稻荷大社，每一處建築都訴說著平安時代以來的興衰。這不只是一場視覺饗宴，更是一次感官之旅：您將穿上優雅的韓服（和服）走過產寧坂的石板路，在祇園尋覓藝伎的身影，並在錦市場品嚐道地的京懷石料理與抹茶甜點。\n除了市區，行程特別排入近郊的奈良，與親人的小鹿互動並瞻仰東大寺大佛。這趟旅程節奏舒緩，讓您在古寺、清流與老屋之間，找回內心的平靜，深度領略日本職人精神與季節遞嬗之美。",
+      "content": "第一天：古都原點與祇園風情\n抵達京都後，首先前往地標清水寺。站在宏偉的木造舞台上，俯瞰京都市景與隨季節變換的楓紅或櫻花。隨後沿著產寧坂、二年坂緩步下山，這兩側保存完好的町家建築現已化身為精緻的工藝品店與茶屋。傍晚穿過八坂神社來到祇園花見小路，在暮色中若運氣好，能遇見前往茶屋赴約的藝伎。晚餐推薦在先斗町的鴨川畔尋找一間京料理，感受濃厚的江戶時代氛圍。\n第二天：千本鳥居與抹茶清香\n上午前往伏見稻荷大社，走入由數千座朱紅鳥居構成的隧道，感受神祕的信仰力量。隨後搭乘京阪電車南下至宇治，這裡不僅是《源氏物語》的舞台，更是抹茶控的天堂。參觀優雅的平等院鳳凰堂後，在對鳳庵體驗道地的茶道，或在宇治川旁享用一杯濃郁的抹茶霜淇淋。\n第三天：嵐山嵯峨野的自然洗禮\n這一天留給京都西郊的嵐山。搭乘嵯峨野觀光小火車穿梭於保津峽谷，隨後步行進入著名的竹林小徑，聽翠竹搖曳的沙沙聲。下午參觀以曹源池庭園聞名的天龍寺，並走過跨越桂川的渡月橋。若時間充裕，推薦前往隱密的常寂光寺，享受避開人潮的清幽時光。\n第四天：金閣輝映與枯山水禪意\n上午造訪閃耀著金色光芒的金閣寺，看舍利殿倒映在鏡湖池中的絕美畫面。接著前往鄰近的龍安寺，坐在緣廊前凝視著名的「石庭」，在極簡的枯山水景觀中領悟禪宗智慧。下午回到市區的二條城，行走在會發出鶯鳴聲的木地板上，親眼見證德川幕府的權力象徵。\n第五天：小鹿足跡與最後採買\n最後一天安排奈良快閃。在奈良公園與成群的小鹿嬉戲，並進入東大寺感嘆世界最大的木造建築。結束後回到京都車站，這裡不僅是交通樞紐，更是購物天堂。在 Porta 地下街 或 伊勢丹百貨 買齊京都限定的伴手禮（如生八橋、北山抹茶餅乾），帶著滿滿的文化養分前往機場。\n請問您預計在哪個季節前往？京都的春櫻與秋楓季節需要完全不同的交通與排隊預約策略。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1624253321171-1be53e12f5f4?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1558862107-d49ef2a04d72?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1582603455714-a46aaf41e5d9?q=80&w=1526&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "加州10日遊 ",
+      "category": "美洲",
+      "unit": "台幣",
+      "origin_price": 150000,
+      "price": 120000,
+      "description": "加州旅遊的靈魂在於自駕。強烈建議租車，並選擇「舊金山取車、洛杉磯或聖地牙哥還車」的不走回頭路策略。\n行車方向：走 1 號公路（一號省道）務必由北往南開，這樣車道才會緊鄰海岸線，方便隨時停靠觀景台欣賞太平洋壯闊美景。\n住宿與季節：加州陽光雖好，但舊金山即便夏天也常有濃霧寒意，需準備穿脫方便的層次穿著。熱門景點如赫氏古堡或惡魔島務必提前 1 個月網上預約。\n國家公園：若想加入優勝美地 (Yosemite)，請注意熱門季節（5-9月）需提前數月預約入園許可，且園內住宿極難搶訂。\n避坑指南：洛杉磯市區交通極其擁堵，景點間移動請避開上下班尖峰。停車費昂貴，建議找有提供平價停車位的飯店。",
+      "content": "加州，這座被太平洋擁抱的「黃金之州」，以其多元的自然地貌、傳奇的電影工業與自由的氛圍吸引著全世界。這趟 10 日行程，將帶領您橫跨北加的文藝與南加的熱情。\nDay 1-3：北加風情——霧鎖舊金山與科技矽谷\n旅程從舊金山展開。首日搭乘經典的叮叮車 (Cable Car) 穿梭在傾斜的街道，造訪繽紛的九曲花街與充滿海鮮香氣的漁人碼頭。第二天租台單車跨越金門大橋前往對岸的薩薩利托小鎮。第三天南下前往矽谷，在 Google、Apple 等科技巨擘的園區朝聖，感受改變世界的創新動力。\nDay 4-6：最美海岸線——1 號公路傳奇\n這是加州最精華的公路旅行。從蒙特雷 (Monterey) 出發，進入私人的 17 哩路 (17-Mile Drive) 觀賞孤柏與豪宅。接著來到卡梅爾小鎮享受藝術氣息。重頭戲是大蘇爾 (Big Sur) 段，行經壯麗的比克斯比大橋，看著峭壁與巨浪交織。中途在聖路易奧比斯波停留一晚，隔日參觀奢華的赫氏古堡，並在丹麥村 (Solvang) 感受北歐風情，最後抵達優雅的聖塔芭芭拉。\nDay 7-8：南加幻夢——洛杉磯的好萊塢與星光\n進入洛杉磯，首先前往好萊塢星光大道尋找巨星足跡，並在格里斐斯天文台捕捉著名的「HOLLYWOOD」地標與整座城的夜景。隔日留給環球影城或迪士尼樂園，體驗世界級的娛樂設施。傍晚到聖塔莫尼卡碼頭，在摩天輪下吹著太平洋海風，感受純粹的加州夕陽。\nDay 9-10：蔚藍海岸——聖地牙哥與歸途\n最後兩天南下至聖地牙哥，這座充滿西葡風格與軍港文化的城市。造訪歷史悠久的巴爾波亞公園，在充滿異國色彩的建築間漫步。最後在拉荷亞海灣 (La Jolla) 與岸邊懶散曬太陽的海豹們告別。帶著滿滿的陽光回憶，從聖地牙哥或回到洛杉磯機場搭機返家。\n這趟 10 日遊將讓您深刻體會：加州不僅僅是一個地理名詞，更是一種追求自由、熱愛自然的生活態度。\n請問您在飲食方面是否有特定偏好（例如：想嘗試道地的 In-N-Out 漢堡，或是米其林等級的加州風味餐）？我可以為您加入餐廳清單。\n\n\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1446630073557-fca43d580fbe?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1594365458706-6fab3472f681?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1471306224500-6d0d218be372?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "阿里山3日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 10000,
+      "price": 8000,
+      "description": "阿里山最珍貴的是「五奇」：鐵路、森林、雲海、日出與晚霞。建議第一晚入住 園區內飯店（如阿里山賓館或閣樓），雖然價位較高，但清晨搭乘日出火車最方便；第二晚則推薦入住 石棹或奮起湖 一帶的民宿，體驗茶園風光。\n交通規劃：建議從嘉義高鐵站搭乘「台灣好行」或租車自駕，若想搭乘熱門的 「森鐵本線」（嘉義至奮起湖），務必於發車前 15 天於官網搶票。此外，山上氣溫比平地約低 10-12 度，即使夏季前往也請務必準備厚外套。早晚溫差大且山路蜿蜒，容易暈車者記得備好藥物。",
+      "content": "阿里山不僅是一個景點，更是台灣山林文化的縮影。這趟三日行程，將帶領您從鐵道懷舊、巨木森林，一路走到翠綠的茶園雲端。\n第一天：鐵道懷舊與奮起湖幽徑\n旅程從嘉義市區出發。建議中午前抵達中繼站 奮起湖。這座海拔 1,400 公尺的山城，曾是森林鐵路的重要補給站。您可以享用著名的「奮起湖鐵路便當」，隨後漫步於充滿懷舊氣息的老街與百年檜木甜甜圈店。午後走入鄰近的 肖楠母樹林，呼吸充滿芬多精的冷涼空氣。傍晚前往 石棹，這裡的「雲之道」或「茶之道」是觀賞晚霞與琉璃光雲海的絕佳點，看著茶園在夕陽下閃耀。\n第二天：森之呼吸與千年神木\n清晨進入 阿里山國家森林遊樂區。今日重點是深度健行，沿著 巨木群棧道 漫步，看著動輒兩千年的巨大紅檜，感受生命的震撼。沿途經過受鎮宮、姊妹潭，以及靜謐的 水山巨木步道。下午推薦搭乘園區內的 沼平線或神木線 火車，體驗窄軌鐵路的特殊魅力。傍晚若天氣晴朗，前往 阿里山車站 頂樓或對高岳觀景台，看著金色的晚霞染紅層疊的雲海。\n第三天：雲端曙光與茶鄉巡禮\n最後一天是重頭戲「日出」。清晨搭乘著名的 祝山線日出小火車（建議前一天先購票）前往對高岳或祝山觀日平台。當第一道曙光跨過玉山山脈灑下，那是無法言喻的感動。日出後可漫步走下山，回到飯店早餐。下山途中，建議繞道前往 優遊吧斯 (YUYUPAS) 阿里山鄒族文化部落，欣賞熱情的歌舞並品嚐道地的阿里山咖啡與高山茶。帶著茶香與檜木香，帶著滿載的心靈養分回到平地。\n這三天的行程，讓您能從不同海拔高度，領略這座聖山的百變風貌。\n請問您是偏好攝影外拍的重裝族，還是帶著長輩小孩的輕鬆度假？我可以進一步為您細化步道的難度等級。\n\n\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1677618008036-838690964909?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1619573138735-2b39a835d824?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1697729690458-2d64ca777c04?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1586753080433-3b98668a4085?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "倫敦 7日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 140000,
+      "price": 120000,
+      "description": "倫敦是一座適合「混搭交通」與「預約制」的城市。\n交通工具：完全不需要買實體 Oyster Card，直接用手機 Apple Pay 或 Google Pay 感應進站即可，且享有每日扣款上限（Cap），非常划算。\n景點預約（重點）：倫敦許多免費博物館（如大英博物館、國家美術館）雖不收門票，但強烈建議提前線上預約入場時段，以免現場排隊過久。熱門的免費展望台 Sky Garden 務必在三週前的週一官網開放時準時搶票。\n票券組合：若打算造訪倫敦塔、西敏寺、溫莎堡等高單價景點，購買 London Pass (倫敦通行證) 會節省大量預算。\n飲食與生活：倫敦外食昂貴，利用超市（如 Marks & Spencer 或 Waitrose）的 \"Meal Deal\" 是省錢好幫手。此外，倫敦天氣多變，出門務必採取「洋蔥式穿法」並隨身攜帶輕便雨具。\n劇院迷必知：想看音樂劇可當天早上去萊斯特廣場的 TKTS 櫃檯 買折扣票，或透過 TodayTix App 搶購樂透票。",
+      "content": "倫敦是一座充滿層次的城市，每一區都有其獨特的靈魂。這 7 天的行程安排，將帶您從皇室權力中心走向平民潮流，最後延伸至迷人的大學城景致。\nDay 1-2：皇室榮耀與河畔經典\n旅程由西敏區 (Westminster) 展開。首日親臨大笨鐘與國會大廈，並進入見證無數加冕禮的西敏寺。隨後穿過聖詹姆士公園看天鵝，前往白金漢宮觀看衛兵交接。第二天轉往泰晤士河下游，參觀充滿陰謀與珠寶故事的倫敦塔，並跨越最迷人的倫敦塔橋。傍晚在南岸 (South Bank) 漫步，欣賞倫敦眼與聖保羅大教堂交織的河景。\nDay 3-4：藝術殿堂與市集探險\n第三天獻給大英博物館，在帕德嫩神廟浮雕與埃及木乃伊間穿梭歷史。下午前往柯芬園 (Covent Garden) 欣賞街頭藝人表演，並造訪風格獨特的 Neal's Yard 彩色巷弄。第四天是市集日，上午造訪美食天堂 Borough Market 享用生蠔與起司燉飯，下午前往北邊的 Camden Market 感受龐克文化與龐大的復古選物店，晚上則回到西區 (West End) 看一場經典的《歌劇魅影》或《悲慘世界》。\nDay 5：文藝復興與高空視野\n造訪特拉法加廣場旁的國家美術館，近距離觀察梵谷的《向日葵》。午後漫步於優雅的攝政街與蘇活區 (Soho)。黃昏時分登上 Sky Garden 或 The Shard (碎片塔)，看著倫敦這座老城市在夕陽中點亮燈火。\nDay 6：近郊漫遊——牛津、劍橋或溫莎\n這一天建議安排郊區行程。您可以選擇前往牛津 (Oxford) 追尋哈利波特飯堂的腳步，或到劍橋 (Cambridge) 體驗康橋撐篙的浪漫。若想看現存最大的城堡，則推薦前往溫莎堡 (Windsor Castle) 探訪女王最愛的居所。\nDay 7：文青街頭與最後採買\n最後一天來到東倫敦的 Shoreditch，欣賞滿街的塗鴉藝術與紅磚巷 (Brick Lane) 的貝果店。下午回到皮卡迪利圓環 (Piccadilly Circus)，在 Fortnum & Mason 選購英式早餐茶與果醬，為這趟英倫之旅畫下優雅的句點。\n這份行程融合了倫敦的宏大歷史與現代創意，讓您能深度體驗這座永不眠的歐陸之都。\n請問您在藝術偏好上，是比較喜歡「古典畫作與歷史文物」，還是對「當代塗鴉與設計市集」更有興趣？",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1486299267070-83823f5448dd?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1526129318478-62ed807ebdf9?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1448906654166-444d494666b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "胡志明市4日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 30000,
+      "price": 20000,
+      "description": "胡志明市是一座感官強烈的城市，掌握以下重點能讓旅程更順遂：\n交通必備 Grab：強烈建議下載 Grab App。無論是叫機車（便宜快速）或汽車（有冷氣），價格透明且能避免計程車繞路爭議，是市區移動的首選。\n防曬與補水：胡志明市全年氣候炎熱，午後常有雷陣雨。請準備高效防曬、輕便雨具，並盡量安排「戶外景點」在早晨，「室內咖啡廳」在午後。\n過馬路藝術：市區車水馬龍，過馬路時請保持穩定速度緩步前進，騎士會自行避開。切記不要猶豫停下或突然奔跑，以免造成騎士判斷錯誤。\n咖啡廳文化：越南是世界第二大咖啡出口國。除了路邊的滴漏咖啡，務必安排時間造訪咖啡公寓 (The Cafe Apartment)，感受這座城市獨有的文青轉型。\n換錢與支付：建議攜帶美金或台幣到當地的濱城市場周邊金店（如 Ha Tam）換匯，匯率最佳。市區多數店鋪仍以現金為主，信用卡為輔。\n",
+      "content": "胡志明市，當地人仍習慣稱之為「西貢」。這座城市混雜著法國殖民留下的歐風古蹟、戰爭留下的歷史痕跡，以及如雨後春筍般冒出的高空酒吧，展現出極致的對比美感。\n第一天：法式遺風與城市經典\n旅程從第一區的核心地帶展開。首站造訪西貢聖母大教堂（紅教堂）與鄰近的西貢中央郵局，這座郵局是由艾菲爾鐵塔設計師所參與設計，至今仍維持著華麗的穹頂與復古地圖。隨後漫步至統一宮，了解北越坦克破門入城的歷史瞬間。傍晚前往書街 (Book Street) 感受綠意與書香，晚餐後直奔金融塔 (Bitexco) 或 Landmark 81，從高處俯瞰這座不夜城的璀璨燈火。\n第二天：戰爭洗禮與市井煙火\n上午前往戰爭遺跡博物館，透過珍貴的照片與軍事設施，深刻感受越南戰爭的沉重與韌性。午後造訪濱城市場，這座百年市場是採買手工藝品與伴手禮的好去處。接著轉往著名的咖啡公寓，這座由舊政府宿舍改建的建築，每一層樓都隱藏著風格各異的咖啡店，是拍照打卡的最佳熱點。晚間推薦觀看一場 A O Show（越南版的太陽馬戲團），體驗現代藝術與傳統竹編的完美結合。\n第三天：近郊探索——湄公河下游之旅\n這一天建議參加一日團前往美托 (My Tho)。搭乘小舟穿梭在泥沙俱下但充滿生機的湄公河支流，兩岸盡是熱帶果林與棕櫚樹。行程中可以體驗傳統手工椰子糖製作，並在椰林河道中體驗搖櫓船的悠閒。回到市區後，前往范五老街 (Bui Vien) 體驗瘋狂的背包客酒吧文化，感受熱鬧非凡的西貢夜生活。\n第四天：粉紅少女心與最後巡禮\n最後一天清晨造訪夢幻的耶穌聖心堂（粉紅教堂），其鮮豔的外觀絕對是記憶卡殺手。接著前往第五區（堤岸）探訪華人信仰中心天后廟，觀察香火繚繞下的精緻石雕。結束後回到市區享用最後一碗正宗的越南河粉 (Phở) 或 法式麵包 (Bánh Mì)。帶著咖啡豆與果乾，輕鬆前往新山一機場返程。\n這 4 天行程讓您從歷史深度到現代熱情一網打盡，深刻領略「西貢」那令人著迷的混亂與優雅。\n請問您在飲食偏好上，是偏向「路邊攤國民美食」還是「法式景觀餐廳」？我可以為您推薦具體的私藏名單。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1603852452440-b383ac720729?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1664365805083-80ff9ccfde9d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1604629142514-b3f81fa7b75a?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "夏威夷8日遊",
+      "category": "美洲",
+      "unit": "台幣",
+      "origin_price": 100000,
+      "price": 90000,
+      "description": "夏威夷的旅遊核心在於「步調放慢」與「尊重自然」。\n島際交通：跳島飛行（如從歐胡島飛大島）建議選擇 Hawaiian Airlines，航程約 40 分鐘，建議訂購早班機以極大化玩樂時間。\n租車與導航：在大島自駕是必須的。強烈建議租用 4 輪驅動 (4WD) 車型，這樣才能合法且安全地開上 Mauna Kea 天文台看雲海日落。\n預約制度：熱門景點如 恐龍灣 (Hanauma Bay) 浮潛需提前兩天官網準時搶票（極難搶）；珍珠港 的亞利桑那號紀念館也需提前預約。\n防曬規定：夏威夷法律禁止使用含氧苯酮等傷害珊瑚礁的防曬乳，請務必購買標示 \"Reef Safe\" 的產品，或穿著長袖水母衣。\n小費文化：餐廳通常需給 18%-22% 的小費，路邊停車與國家公園門票多已全面數位化，建議隨身攜帶信用卡。",
+      "content": "夏威夷不僅是蜜月勝地，更是地球上地質景觀最活躍的教室。這 8 天將帶您從歐胡島的繁華都會，跨越到大島的火山荒野。\nDay 1-3：歐胡島——城市活力與藍色太平洋\n抵達檀香山 (Honolulu) 後，首站前往經典的 威基基海灘 (Waikiki)，在細白沙灘上享受熱帶陽光，並在 Kalakaua Avenue 逛遍精品與衝浪品牌。第二天安排歷史洗禮，造訪 珍珠港 (Pearl Harbor)，在亞利桑那號紀念館感受二戰沉思。下午挑戰 鑽石頭山 (Diamond Head) 健行，俯瞰整片歐胡島海岸線。第三天租車前往 北岸 (North Shore)，觀看冬季壯觀的大浪，並在 哈雷瓦小鎮 (Haleiwa) 品嚐招牌的 Giovanni's 蝦飯 與彩虹冰。\nDay 4-6：大島——熔岩大地與星空之巔\n第四天飛往大島的科納 (Kona)。大島擁有全世界 13 種氣候區中的 11 種，景觀極其震撼。首站前往 夏威夷火山國家公園 (Volcanoes National Park)，沿著「火山口鏈大道」自駕，親眼見證冷卻後的熔岩地貌與冒煙的火山口。第五天是這趟旅程的高潮：傍晚驅車登上海拔 4,207 公尺的 茂納凱亞 (Mauna Kea)。在這裡，您將穿過雲層，在全世界最頂尖的天文台群旁，觀賞美得令人窒息的日落與銀河。第六天安排 魔鬼魚夜潛 (Manta Ray Night Snorkel)，在強光照射下看著巨大的魔鬼魚在身下翻滾，是終生難忘的體驗。\nDay 7-8：放慢步調與南國採買\n第七天回到歐胡島，前往全美最大的露天購物中心 Ala Moana Center 進行最後採買，或到 波利尼西亞文化中心 觀看震撼的「生命之歌」火舞表演。最後一天清晨，在海邊享用一份豐富的 Acai Bowl，或到 Leonard's Bakery 買盒熱騰騰的葡式甜甜圈 (Malasadas)，帶著滿滿的阿羅哈 (Aloha) 精神踏上歸途。\n這趟 8 日行程平衡了冒險與放鬆，讓您從海平面下的熱帶魚群，一路玩到太平洋最高的巔峰。\n請問您在預算分配上，是傾向於「入住豪華海景飯店度假」，還是更偏好「參加多樣化的戶外探險活動」？我可以為您調整細節。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1559493909-ee5feb0b298d?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1505852679233-d9fd70aff56d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1598135753163-6167c1a1ad65?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1542259009477-d625272157b7?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "冰島10日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 200000,
+      "price": 190000,
+      "description": "冰島旅遊的成敗在於「天氣管理」與「自駕準備」：\n自駕車型：強烈建議租用 4WD 四輪傳動越野車。雖然環島 1 號公路多為柏油路，但前往某些瀑布或秘境需經過碎石路（F-road），且冰島強風極大，底盤穩健的車輛更安全。務必購買「全險」（包含砂礫險與風暴險）。\n季節選擇：9月至10月是平衡點，路況尚可自駕，且夜晚已有機會看到極光；若想看藍冰洞，則需在 11月至3月前往，但須具備豐富的雪地駕駛經驗。\n穿著策略：冰島沒有壞天氣，只有穿錯衣服的人。請遵循「三層穿法」，最外層必須完全防水防風。即使是夏天，冰川健行時氣溫也會驟降。\n物價與補給：外食極貴，建議抵達後先去 Bónus (小粉紅豬超市) 採買食材。全島幾乎 100% 可刷卡，不需準備現金。\n預約提醒：藍湖溫泉 (Blue Lagoon) 與冰川健行務必在出發前 1-2 個月預訂，否則現場一位難求。",
+      "content": "冰島是一座位於大西洋中脊上的火山島，擁有地球上最原始且暴烈的自然景觀。這 10 天的環島行程，將以雷克雅維克為起點，順時針或逆時針繞行全島。\nDay 1-2：黃金圈與南岸前奏\n抵達凱夫拉維克機場後，先前往藍湖溫泉洗去航程疲憊。隔日進入經典的黃金圈 (Golden Circle)：看著辛格韋德利國家公園的地殼裂縫、每十分鐘噴發一次的蓋錫爾間歇泉，以及氣勢磅礴的黃金瀑布。這兩天是冰島地熱能量的震撼教育。\nDay 3-4：南岸瀑布與黑沙灘\n沿著 1 號公路向南，造訪可走到瀑布後方的塞里雅蘭瀑布與高聳的彩虹瀑布。接著來到維克小鎮 (Vík)，走在世界知名的雷尼斯黑沙灘，看著玄武岩壁與洶湧的海浪。這段路程也是好萊塢大片的熱門取景地。\nDay 5-6：冰川奇蹟與傑古沙龍冰河湖\n這是行程的高潮。前往瓦特納冰原參加冰川健行，穿上冰爪踏在千年藍冰之上。隨後抵達傑古沙龍冰河湖 (Jökulsárlón)，看著巨大的冰山漂浮至海口，並在對岸的鑽石沙灘觀賞擱淺在黑沙上、如鑽石般晶瑩剔透的冰塊。\nDay 7-8：東部峽灣與北境秘境\n穿過蜿蜒的東部峽灣，來到北部的米湖 (Mývatn) 區。這裡有如月球表面般的偽火山口、地熱泥漿與強大的黛提瀑布（歐洲水量最大）。傍晚可前往胡薩維克 (Húsavík) 參加賞鯨行程，這裡是世界公認的賞鯨聖地。\nDay 9-10：斯奈山半島與首都歸途\n最後兩天留給被稱為「冰島縮影」的斯奈山半島。最具指標性的教堂山 (Kirkjufell) 是《冰與火之歌》的拍攝地。最後回到雷克雅維克，參觀哈爾格林姆教堂，並在市區最具盛名的熱狗攤 (Bæjarins Beztu Pylsur) 享受這趟壯遊的收尾。\n這 10 天您將經歷從荒涼地熱、湛藍冰川到深邃峽灣的視覺衝擊，深刻體會自然界那種令人屏息的孤獨與壯美。\n請問您是計畫在哪個季節（夏季極晝或冬季極光）前往？我可以針對路況與極光觀測為您微調裝備清單。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1531168556467-80aace0d0144?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1529963183134-61a90db47eaf?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=1559&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1503104538136-7491acef4d5d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "挪威15日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 300000,
+      "price": 287000,
+      "description": "挪威旅遊的關鍵在於「交通工具的組合」與「天氣的心理建設」。\n交通策略：建議採取「分段自駕」。南半部以卑爾根 (Bergen) 為基地租車遊歷峽灣；北半部則飛往 波多 (Bodø) 或 斯沃爾韋爾 (Svolvær) 租車遊玩羅浮敦群島。挪威峽灣區隧道多、渡輪頻繁，務必下載 Autopass 或與租車公司確認電子繳費。\n挪威縮影 (Norway in a Nutshell)：若不想全程自駕，這條經典路線串聯了火車、高山鐵路與渡輪，是體驗松恩峽灣最便利的方式。\n登山與體能：挪威三奇石（布道台、奇蹟石、惡魔之舌）難度不一。「布道台」適合一般體力，但「惡魔之舌」往返需 10-12 小時，務必衡量體力並準備專業登山鞋與防風雨衣。\n物價應對：挪威是全球物價最高的國家之一。餐廳外食極貴，建議多利用 Rema 1000 或 Kiwi 超市購買食材，並入住帶廚房的 Rorbu (漁屋) 或 Airbnb。\n最佳月份：6 月至 8 月是最佳季節，路面無雪且有極晝（午夜太陽），健行步道全面開放。",
+      "content": "挪威，這座被冰川雕琢出的國家，擁有全世界最曲折的海岸線。這趟 15 日行程將從奧斯陸出發，橫跨壯麗峽灣，最後進入北極圈。\nDay 1-3：首都奧斯陸與高山鐵路\n從奧斯陸 (Oslo) 開始，參觀維格蘭雕塑公園與維京船博物館。隨後搭乘被譽為世界最美鐵道路線之一的卑爾根鐵路前往米達爾，轉乘 弗萊姆 (Flåm) 高山鐵路 下切至峽灣深處，感受高低落差 800 公尺的震撼山景。\nDay 4-7：峽灣之魂——松恩與蓋朗厄爾\n以卑爾根為起點展開自駕。卑爾根著名的 布里根 (Bryggen) 木屋群是中世紀貿易的見證。接著向北深入松恩峽灣支流，並前往世界遺產蓋朗厄爾峽灣 (Geirangerfjord)。這幾天您將穿梭在無數的瀑布與如鏡面般的湖泊間。別忘了挑戰老鷹之路 (Ørnevegen) 的髮絲彎道，並在觀景台俯瞰郵輪在深邃峽灣中緩緩前行的經典畫面。\nDay 8-9：大西洋之路與精靈之路\n這兩天是駕駛者的天堂。翻越險峻的精靈之路 (Trollstigen)，看著 11 個髮夾彎在峭壁上盤旋。隨後接上大西洋海濱公路 (Atlanterhavsvegen)，這段路橫跨 8 座橋樑，跳島式地連接海上小島，彷彿開車在海中央滑行。\nDay 10-14：北極圈祕境——羅浮敦群島 (Lofoten)\n搭機飛往北極圈內的羅浮敦群島。這裡有如從海中拔地而起的鋸齒狀山脈與碧綠的海水。入住經典的紅色漁屋，前往 雷訥 (Reine) 攀登 600 公尺高的 Reinebringen，捕捉這座群島最著名的全景。在 Ramberg 的白沙灘漫步，夏季時您可以看著夕陽降至海面卻不落下的「午夜太陽」奇景。\nDay 15：極圈之門與歸途\n最後造訪特羅姆瑟 (Tromsø)，這座北極圈內的最大城市擁有前衛的北極大教堂。在海港邊享用最後一份新鮮的挪威鮭魚或鱈魚，帶著滿腦袋壯闊的峽灣殘影，輕鬆飛回奧斯陸轉機返家。\n這 15 天將讓您在極致的自然孤獨中，找回對生命的純粹感動。\n請問您是否有計劃挑戰「惡魔之舌 (Trolltunga)」這類的長途健行？我可以為您詳細拆解步道細節與準備建議。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1518124880777-cf8c82231ffb?q=80&w=1532&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1544085311-11a028465b03?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1507272931001-fc06c17e4f43?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1475066392170-59d55d96fe51?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "釜山5日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 35000,
+      "price": 28000,
+      "description": "釜山地形狹長，建議採「分區住宿」或以 西面站 (Seomyeon) 為基地，那裡是地鐵轉乘中心且美食極多。\n交通工具：必備 Visit Busan Pass (VBP)，這張通行證可免費進入藍線公園小火車、膠囊列車、斜坡滑車等熱門景點，非常划算。\n必吃美食：釜山三寶是「豬肉湯飯、小麥冷麵、糖餅」。海鮮建議去 民樂水邊公園 或 扎嘎其市場，價格透明且新鮮。\n景點策略：熱門的 海雲台藍線公園 (Blue Line Park) 膠囊列車務必提早兩週在官網預約，否則現場絕對沒位子。\n換匯與支付：西面或南浦洞的金店匯率最佳，多數店家接受 WOWPASS 或信用卡，但傳統市場仍建議預備少量現金。\n",
+      "content": "釜山作為韓國第一大港，擁有與首爾截然不同的豪邁與悠閒。這趟 5 日行程，將帶您在湛藍海岸線與繽紛巷弄間切換。\nDay 1：西面潮流與味覺啟程\n抵達後前往市中心 西面。這裡是釜山的年輕中心，街頭充滿創意咖啡廳與流行服飾。第一晚必衝 豬肉湯飯一條街，感受熱氣騰騰的釜山熱情。\nDay 2：影島文藝與南浦洞懷舊\n上午造訪 白淺灘文化村，這座蓋在懸崖邊的小村莊被譽為「韓國的聖托里尼」，有無數海景咖啡廳。午後跨過影島大橋來到 南浦洞，逛逛 BIFF 廣場 吃糖餅，並登上 釜山塔 看港口全景。傍晚到 扎嘎其市場 體驗最新鮮的活章魚與烤魚。\nDay 3：絕美海岸線——海雲台與青沙浦\n今日使用 VBP 展開海景之旅。搭乘超萌的 彩色膠囊列車 從尾浦出發，沿著海岸線抵達青沙浦。接著造訪座落在海邊岩石上的 海東龍宮寺，感受奇特的宗教地貌。晚上回到 海雲台 散步，欣賞高樓大廈與沙灘交織的夢幻夜景。\nDay 4：甘川洞童話與松島纜車\n早起前往 甘川洞文化村，在繽紛的小房子間尋找「小王子」合影。午後轉往 松島，搭乘 跨海水晶纜車 飛越海面，並挑戰 龍宮雲橋。晚餐推薦到 廣安里海灘 邊吃炸雞邊看 廣安大橋 的燈光秀與無人機表演（週六限定）。\nDay 5：最後採買與歸途\n最後一天到 樂天百貨 或 新世界百貨 (Centum City) 進行免稅採買。這座新世界百貨曾是世界最大百貨，裡面的 釜山汗蒸幕 (Spa Land) 非常奢華，是登機前消除疲勞的最佳去處。\n這 5 天您將體驗到釜山特有的「海味」與「山感」，帶著滿滿的韓式活力返家。\n請問您是計畫在夏天（賞海景吃冰）還是秋天（賞楓看煙火節）前往？我可以為您加入當季限定活動。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1638591752582-45886f5bb0f7?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1591520284162-8e64eceebacf?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1672671187899-a10f547341f1?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1611372876693-4dc4153dee61?q=80&w=1630&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "北海道8日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 50000,
+      "price": 48000,
+      "description": "北海道面積廣大，旅遊成功的關鍵在於交通規劃與季節裝備：\n交通選擇：若想跑遍美瑛、富良野與函館，自駕是最推薦的方式，路大好開且景點分散。若不開車，請務必購買 JR Hokkaido Rail Pass (北海道鐵路周遊券)，並提前劃位特急列車。\n不走回頭路：建議採「札幌進、函館出」（或反之）的雙點進出方式，能省下 4 小時以上的搭車回頭路。\n季節穿著：夏季（7-8月）早晚偏涼需薄長袖；冬季（12-2月）務必準備防滑雪靴與防水外套，路面結冰極易滑倒。\n美食預約：名店如「成吉思汗烤羊肉」或「螃蟹料理」強烈建議事先預約，或選在下午 3-4 點非尖峰時段用餐。\n補給站：北海道限定的 Seicomart 超市，其「Hot Chef」現做飯糰與哈密瓜冰淇淋是必吃的平價美味。",
+      "content": "北海道，這座日本最北端的島嶼，以其原始的自然魅力與極致的食材饗宴著稱。這趟 8 日行程將帶您從繁華的札幌出發，經過浪漫的小樽，深入如畫的美瑛，最後抵達百萬夜景的函館。\nDay 1-2：札幌都會與浪漫小樽\n抵達新千歲機場後，首站直奔札幌。在大通公園散步，登上電視塔俯瞰市景，晚餐就在薄野 (Susukino) 享受成吉思汗烤肉與拉麵。第二天安排小樽一日遊，漫步在運河旁的紅磚倉庫群，參觀音樂盒堂，並在北一硝子館喝杯咖啡，感受大正時期的浪漫氛圍。\nDay 3-4：美瑛與富良野的色彩盛宴\n一路向北前往富良野。夏季這裡有著名的富田農場薰衣草花海；秋季則是斑斕的紅葉。隨後進入美瑛，自駕在「拼布之路」與「全景之路」，看著如電腦桌布般的起伏丘陵。別忘了造訪神祕的青池，枯木與湛藍水面構成的絕景令人屏息。\nDay 5：旭山動物園與溫泉療癒\n上午前往旭山動物園，近距離觀察北極熊與企鵝散步（冬季限定）。午後驅車前往層雲峽或定山溪，入住溫泉旅館，在壯麗的山谷間享受露天溫泉與精緻的懷石料理。\nDay 6：登別地獄谷與洞爺湖\n南下前往登別地獄谷，感受硫磺煙霧繚繞的火山地貌，隨後抵達洞爺湖。這裡可以搭乘遊覽船欣賞湖中島，若在 4-10 月間造訪，每晚都能在湖畔欣賞壯麗的煙火秀。\nDay 7-8：函館百萬夜景與海鮮朝市\n最後來到南端的函館。登上函館山捕捉世界級的「百萬鑽石夜景」。隔日清晨直奔函館朝市，體驗釣烏賊並享用鋪滿海膽與干貝的海鮮丼。隨後造訪星形的五稜郭公園與元町教會區。最後帶著哈密瓜巧克力與六花亭點心，從函館機場輕鬆返程。\n這 8 天的行程，您將親身體驗北海道大地那種從舌尖到眼底、從熱力溫泉到清涼空氣的全然放鬆。\n請問您計畫在什麼季節（如 2 月雪祭或 7 月薰衣草）出發？我可以針對特定活動為您微調保暖或防曬建議。\n\n\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1726384559297-e5363b0ac22d?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1629725593792-727bbe2255b2?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1739106678488-749395295e36?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1622607941338-38e1d2035b5a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "四國 5日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 40000,
+      "price": 35000,
+      "description": "四國旅遊的核心在於「慢節奏」與「交通票券」的運用：\n最強票券：強烈建議購買 ALL SHIKOKU Rail Pass (四國鐵路周遊券)。四國鐵路交通費昂貴，這張票券涵蓋六家鐵道公司，連路面電車都能搭，是省錢首選。\n住宿選擇：建議以 高松 (Takamatsu) 與 松山 (Matsuyama) 作為兩大門戶。高松往返機場方便且連結離島；松山則擁有古老的道後溫泉。\n烏龍麵巡禮：在香川縣（烏龍麵縣），許多名店位於偏郊且只營業到中午。建議租車半日或搭乘專屬的「烏龍麵計程車」前往。\n跳島計畫：若想去 小豆島 或 直島，務必確認渡輪時刻表。直島上的地中美術館採取完全預約制，請提早一個月上網訂票。\n自駕考量：若要深入 祖谷秘境 看蔓橋，自駕會比等班次稀少的巴士方便許多。\n",
+      "content": "四國由香川、德島、高知、愛媛四縣組成，擁有全日本最純粹的自然景觀與深厚的文學底蘊。這趟 5 日行程將帶您從藝術之海走入古老溫泉。\nDay 1：高松——烏龍麵故鄉與大名庭園\n抵達高松後，首站前往日本最大規模的文化財庭園 栗林公園。在借景紫雲山的翠綠園林中，一邊喝抹茶一邊欣賞疊石與松木。晚餐必須品嚐正宗的 讚岐烏龍麵 與當地的特色美食「骨付鳥」（帶骨烤雞腿）。\nDay 2：直島或小豆島——瀨戶內海藝術跳島\n從高松港搭船。若您愛現代藝術，直島 的草間彌生黃南瓜與安藤忠雄建築是首選；若偏好自然與影視場景，小豆島 的橄欖公園與隨潮汐出現的「天使之路」則令人迷醉。傍晚回到市區，感受瀨戶內海平靜的夕陽。\nDay 3：琴平與祖谷——金刀比羅宮與秘境探索\n上午前往 金刀比羅宮。挑戰 785 階台階抵達本宮，這座被日本人視為「一生必去一次」的海上守護神殿，沿途充滿懷舊商店。下午深入德島縣的 大步危、小步危，搭乘遊船欣賞奇岩怪石，並走過用藤蔓編織而成的 祖谷蔓橋，感受深山秘境的驚險與靜謐。\nDay 4：松山——道後溫泉與文學之城\n搭乘特急列車前往愛媛縣。造訪擁有 3000 年歷史、據傳是《神隱少女》油屋原型之一的 道後溫泉本館。隨後搭乘復古的「少爺列車」前往 松山城，這座保存完好的現存十二天守之一，座落於山頂，可俯瞰瀨戶內海與整座城市。\nDay 5：松山散策與歸途\n清晨在道後溫泉街散步，購買愛媛特產「柑橘」相關伴手禮與今治毛巾。最後造訪 坂上之雲博物館 領略司馬遼太郎筆下的文學魅力。帶著滿滿的平靜感，由松山機場或搭乘特急返回高松返程。\n這 5 天您將體驗到四國特有的「緩慢」，在山光水色與古老傳統中徹底放鬆。\n請問您是偏好文青藝術（直島、豐島）還是自然秘境（四萬十川、祖谷）？我可以為您調整第 3 與第 4 天的路線權重。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1561452464-6c79a7e1f2b7?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1561452530-ed119888f166?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1702455637025-8ed6be6f7b72?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1744080656017-efc1b0dd201d?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "北京6日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 40000,
+      "price": 28000,
+      "description": "北京旅遊高度依賴預約制與電子支付，出發前請做好以下準備：\n景點預約（最重要）：故宮、天安門廣場、國家博物館等熱門景點皆需提前 7 天在微信小程式搶票，現場不售票。故宮週一閉館，規劃時請避開。\n電子支付與地圖：請下載 支付寶 (Alipay) 或 微信支付 並綁定信用卡。地圖導航請使用 高德地圖 或 百度地圖，Google Maps 在當地資訊不準。\n交通工具：辦理支付寶內的「乘車碼」即可搭乘地鐵與公車。地鐵網絡極發達，但轉乘步行距離長，建議穿著極舒適的步行鞋。\n住宿區域：首選 王府井、前門 或 東直門 附近，交通便利且美食集中。\n氣候與空氣：北京氣候乾燥，務必加強保濕。春天防楊柳絮，秋天是最佳旅遊季，冬天則需穿著發熱衣物防寒風。",
+      "content": "北京，這座擁有三千年歷史的古都，不僅是中國的政治中心，更是中華文化的集大成者。這 6 天行程將從皇權核心延伸至萬里長城，體會「京味兒」文化。\nDay 1：天安門與皇權巔峰\n抵達後，首站前往天安門廣場，隨後進入故宮博物院（紫禁城）。沿著中軸線感受明清兩代皇帝的威儀，傍晚登上景山公園萬春亭，俯瞰整座紫禁城的金色屋頂與壯闊格局。\nDay 2：萬里長城與奧運光芒\n前往八達嶺或更為險峻原始的慕田峪長城（建議後者，人較少且可搭纜車）。下午返回市區造訪奧林匹克公園，近距離欣賞鳥巢與水立方的現代建築美學，夜晚燈光亮起時最美。\nDay 3：祭天神殿與老北京生活\n上午造訪天壇，看祈年殿的圓形建築美學與迴音壁。下午前往前門大街與大柵欄，品嚐老字號點心。傍晚漫步於什剎海（後海），在湖畔酒吧與老胡同之間，感受傳統與現代的融合。\nDay 4：皇家園林與名校氣息\n前往頤和園，在昆明湖畔漫步長廊，欣賞慈禧太后的夏日宮殿。隨後可到鄰近的圓明園遺址感懷歷史。若有餘裕，可造訪清華大學或北京大學正門拍照留念，下午到三里屯體驗北京時尚的前線。\nDay 5：文藝胡同與雍和宮\n前往全北京香火最旺的藏傳佛教寺院雍和宮，隨後穿過馬路造訪國子監與孔廟。下午深入五道營胡同或南鑼鼓巷，在青磚瓦房中尋找隱藏的文青咖啡廳，晚上安排一頓正宗的北京填鴨（烤鴨）。\nDay 6：文化園區與歸途\n最後造訪 798 藝術區，看舊工廠廠房如何轉化為充滿當代感的藝術畫廊。帶著老北京布鞋或茶葉伴手禮，前往大興或首都機場，結束這趟歷史與現實交疊的旅程。\n這 6 天將讓您在磅礴的宮殿與幽深的胡同中，讀懂這座城市的底蘊。\n請問您是計畫在秋天（賞楓、銀杏）還是冬天（滑冰、看雪景）前往？我可以為您調整相應的保暖與景點建議。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1603258740665-711401f368bb?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1584872589930-e99fe5bf4408?q=80&w=1477&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1603120527222-33f28c2ce89e?q=80&w=1508&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1713173642147-30cbbdb176d5?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "重慶8日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 35000,
+      "price": 25000,
+      "description": "重慶旅遊最考驗的是體力與導航能力，出發前請做好以下準備：\n導航盲區：重慶是 8D 魔幻城市，導航常分不清您是在 1 樓還是 11 樓。建議多問路人，並預留比預期多 20% 的步行時間。\n電子支付與交通：下載 支付寶 (Alipay) 或 微信支付，並在內置小程式領取「重慶公共交通乘車碼」。地鐵（輕軌）是避開塞車的最佳選擇。\n美食挑戰：重慶火鍋極辣，腸胃較弱者點餐時務必選「微辣」或「鴛鴦鍋」，並隨身攜帶益生菌。\n住宿區域：首選 解放碑 或 觀音橋 附近，交通便利且消夜選擇極多。\n武隆行程：若要去武隆看天生三橋，路程較遠（單程 3 小時），建議參加一日遊或在當地住一晚。",
+      "content": "重慶，這座座落於長江與嘉陵江交匯處的城市，以其層疊的建築、穿樓而過的輕軌和濃郁的火鍋香氣著稱。這 8 天行程將從魔幻市區延伸至壯麗的世界自然遺產。\nDay 1-2：市區魔幻初體驗\n抵達後前往 解放碑 感受核心商圈的繁華。隨後步行至 洪崖洞，觀賞如同《神隱少女》場景般的吊腳樓夜景。第二天體驗 長江索道 橫跨江面，並前往 李子壩站 親眼目睹「輕軌穿樓」的神奇景觀，下午漫步在 鵝嶺二廠 文創園區俯瞰兩江交匯。\nDay 3-4：古鎮時光與藝術巡禮\n造訪 磁器口古鎮，品嚐陳麻花與毛血旺，感受老重慶的碼頭文化。下午轉往 四川美術學院（黃桷坪校區），觀賞整條街的塗鴉牆與視覺藝術。隔日前往 羅中立美術館，感受其獨特的碎瓷磚外牆建築美學。\nDay 5-6：武隆地質奇觀\n這兩天安排 武隆 行程。深入 天生三橋，這座大自然的鬼斧神工曾是《變形金剛 4》的取景地。隨後造訪 龍水峽地縫 感受地球深處的震撼。晚上推薦觀賞 《印象武隆》 實景演出，領略縴夫文化的壯烈。\nDay 7：南山巔峰與夜色江湖\n回到市區前往 南山一棵樹觀景台，這裡能捕捉到重慶最完整的城市天際線。隨後深入 彈子石老街，在古今交融的建築中漫步。入夜後，走進巷弄尋找一家排隊最長的 老火鍋，體驗最正宗的重慶江湖味。\nDay 8：歷史記憶與歸途\n最後造訪 渣滓洞 或 白公館 了解近代歷史，或到 三峽博物館 深入了解長江文明。帶著底料包與特產江津米花糖，前往江北機場，結束這趟立體感十足的山城壯遊。\n這 8 天您將穿越在現實與科幻之間，深刻體會重慶那種不屈不撓、火辣熱情的城市靈魂。\n請問您是計畫在夏天（感受火爐之稱）還是春秋（涼爽宜人）前往？我可以為您調整避暑或行程節奏的建議。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1567014688543-cc4abffb061a?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1627727240288-71c6b9ae5ee6?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1622123865942-f858cd6557a5?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1652773615144-bd5e69f7bc50?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "瑞典13日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 260000,
+      "price": 240000,
+      "description": "瑞典旅遊的關鍵在於「無現金化」與「設計生活化」。\n全面無現金：瑞典幾乎是全球最徹底的無現金國家，小至路邊攤大至付費廁所皆刷卡（感應式信用卡或 Apple Pay）。完全不需準備克朗現金，但務必確保信用卡有設定 4 位數 PIN 碼（預借現金密碼）。\n交通工具：斯德哥爾摩地鐵被譽為「世界最長的藝廊」，每一站都是藝術裝置，建議購買 SL 交通卡 隨意上下車拍照。城際移動則利用 SJ 國鐵，越早訂票價格越優惠。\nFika 文化：瑞典人的靈魂在於 \"Fika\"（咖啡與甜點時光），每天下午請務必找間設計咖啡館，點一份肉桂捲與黑咖啡，體驗慢活節奏。\n永續與環保：瑞典水龍頭的水可直接飲用，建議攜帶保溫瓶節省開支。若在冬季（11-3月）前往，需具備專業防寒裝備。\n自然權 (Allemansrätten)：瑞典法律賦予大眾親近自然的權利，只要不破壞環境，您可以自由在野外採集漿果或漫步，這是體驗瑞典自然的最佳方式。",
+      "content": "瑞典，這座夾在森林與海洋之間的國度，完美詮釋了功能主義與自然美學的結合。這 10 天的行程將帶領您從這座擁有「北方威尼斯」美譽的首都出發，探索斯堪地那維亞的核心。\nDay 1-4：斯德哥爾摩——漂浮在水上的皇室藝術\n抵達後，首站前往老城區 (Gamla Stan)。在錯綜複雜的鵝卵石街道中，造訪斯德哥爾摩王宮與見證諾貝爾獎晚宴的市政廳。第二天前往動物園島 (Djurgården)，親眼見證沈睡海底 300 年後被打撈起的瓦薩沈船博物館，以及充滿復古氣息的 Skansen 戶外建築博物館。第三天安排地鐵藝術之旅，造訪如 T-Centralen 與 Solna Centrum 等岩洞風車站。第四天搭乘渡輪前往斯德哥爾摩群島，在數千座小島中挑選一座，享受瑞典式靜謐的森林與海景。\nDay 5-6：哥特堡——海港風味與設計重鎮\n搭乘 SJ 高鐵橫跨瑞典腹地前往西海岸的哥特堡 (Gothenburg)。這座城市氛圍較為輕鬆，您可以漫步在 Haga 老區 的木屋建築間，品嚐比臉大的巨型肉桂捲。隨後造訪沃爾沃 (Volvo) 博物館與南部的群島區，體驗最新鮮的挪威龍蝦與生蠔。\nDay 7-8：馬爾默與跨海大橋——創意南境\n南下抵達馬爾默 (Malmö)。這座城市展現了瑞典最前衛的永續建築，必拍地標是螺旋狀的旋轉軀幹 (Turning Torso) 大樓。如果您持有申根簽證，可以搭乘火車跨越壯闊的 厄勒海峽大橋 (Øresund Bridge)，僅需 35 分鐘即可抵達丹麥哥本哈根進行快閃一日遊，體驗雙國風情。\nDay 9-10：烏普薩拉或極光探索（視季節調整）\n若在夏季，建議前往北部的烏普薩拉 (Uppsala)，這座大學城擁有宏偉的教堂與維京遺址。若在冬季，建議從斯德哥爾摩搭乘極地列車或內陸航班直奔北部的 阿比斯庫 (Abisko)，入住冰旅館，在毫無光害的天空下守候那抹神祕的綠色北極光。最後帶著瑞典平價設計品（如 IKEA 始祖店紀念品或小木馬），從斯德哥爾摩機場啟程返家。\n這 10 天將讓您在極簡主義與廣袤自然之間，深刻理解瑞典「剛剛好就是最好」(Lagom) 的生活哲學。\n請問您計畫在夏季（看午夜太陽與群島）還是冬季（滑雪與追極光）前往？我可以針對氣溫與活動為您提供更精確的穿搭清單。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1633430300352-bcb3420c0ed5?q=80&w=1635&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1509356843151-3e7d96241e11?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1534143340226-6cbc7628dbe5?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1526644253653-a411eaafdfe6?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "土耳其10日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 50000,
+      "price": 40000,
+      "description": "土耳其國土遼闊，旅遊成功的關鍵在於「交通接駁」與「文化禮儀」：\n交通策略：城市間移動強烈建議搭乘國內線班機（如伊斯坦堡飛卡帕多奇亞），單程僅 1 小時，可省下 8-10 小時的大巴車程。市區移動則以路面電車 (Tram) 最便利。\n熱氣球預約：卡帕多奇亞熱氣球極受天氣影響，建議在該地待 2-3 個晚上增加成功率，並務必在出發前一個月完成線上預訂。\n清真寺規範：進入清真寺（如藍色清真寺）需脫鞋，女性需準備絲巾遮蓋頭髮，穿著不可露肩或露膝。\n殺價藝術：在有名氣的市集（如大市集）購物，務必從 5-6 折開始喊價，這是當地的社交文化。\n網路與支付：建議辦理當地 SIM 卡（如 Turkcell），Google Maps 導航準確。雖然刷卡普及，但準備少量里拉 (Lira) 現金付小費或路邊攤較方便。\n",
+      "content": "土耳其是一座活生生的歷史博物館，融合了希臘、羅馬、拜占庭與鄂圖曼的文明碎片的。這 10 天行程將以伊斯坦堡為圓心，逆時針或順時針環繞精華景點。\nDay 1-3：伊斯坦堡——歐亞交界的千年榮光\n旅程由伊斯坦堡展開。首日造訪聖索菲亞大教堂與對面的藍色清真寺，感受宗教與建築的極致融合。隨後深入地下水宮殿捕捉神祕倒影。第二天前往托普卡匹皇宮看鄂圖曼蘇丹的珠寶收藏，下午在大市集 (Grand Bazaar) 迷失在香料與地毯的色彩中。第三天搭乘博斯普魯斯海峽遊船，左手看歐洲，右手看亞洲。\nDay 4-5：卡帕多奇亞——外星地貌與熱氣球夢境\n搭機前往卡帕多奇亞。清晨在漫天飛舞的熱氣球中迎接日出，隨後探索葛勒梅露天博物館的洞穴教堂。下午深入數十公尺深的凱馬克利地下城，領略古人的避難智慧。傍晚入住特色洞穴飯店，在露台享用土耳其紅茶。\nDay 6：孔亞與蘇菲旋轉舞\n驅車前往塞爾柱土耳其的古都孔亞 (Konya)。參觀梅夫拉那博物館，了解神祕主義詩人魯米的生平。若時間允許，晚間可觀賞莊嚴的蘇菲旋轉舞表演，感受靈魂與上蒼的對話。\nDay 7-8：棉堡與艾菲索斯——純白奇蹟與古羅馬遺風\n抵達棉堡 (Pamukkale)，走在石灰華階梯地形的溫泉水中，背景是如雪般的潔白。接著前往艾菲索斯 (Ephesus)，這座保存最完整的古羅馬城市擁有宏偉的塞爾柱圖書館與大劇院，走在兩千年前的石板路上，彷彿時空倒流。\nDay 9-10：庫薩達西海濱與歸途\n來到愛琴海畔的渡假勝地庫薩達西，在蔚藍海邊享用鮮魚料理與土耳其咖啡。最後回到伊斯坦堡，到香料市場 (Mısır Çarşısı) 買齊土耳其軟糖與無花果乾。帶著沉甸甸的文化回憶，前往新伊斯坦堡機場返程。\n這 10 天您將在東方神秘與西方文明的衝撞中，看見土耳其那種令人著迷、充滿生命力的混血美感。\n請問您是偏好拍照打卡的視覺行程，還是想深入了解世界遺產的歷史之旅？我可以為您推薦更具體的導覽清單。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1527838832700-5059252407fa?q=80&w=1396&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1510253687831-0f982d7862fc?q=80&w=1467&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1535916707207-35f97e715e1c?q=80&w=1548&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1661955588369-b0d28de38b45?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "羅馬7日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 90000,
+      "price": 80000,
+      "description": "羅馬是一座「露天博物館」，旅遊成功的關鍵在於步行策略與預約管理：\n預約是生命線：梵蒂岡博物館、羅馬競技場與博爾蓋塞美術館務必提前 1-2 個月在官網搶票。現場排隊動輒 2-3 小時起跳，極其耗時。\n穿著與水袋：羅馬多石板路，請準備支撐力強的走路鞋。市區有上千個古羅馬留下的「小噴泉 (Nasoni)」，水質清涼可直接飲用，隨身帶個水瓶能省下不少買水錢。\n防範扒手：在熱門景點（如許願池、特米尼車站）與 64 號公車上需格外警覺，後背包建議前背，手機不要放在餐廳桌上。\n飲食習慣：義大利人站著喝咖啡比較便宜（Banco），坐下來（Tavolo）則會有服務費。點餐時注意「Coperto」（人頭費）是正常規矩。\n免費日提醒：每個月的「最後一個週日」梵蒂岡博物館免費，「第一個週日」羅馬多數國營景點（如競技場）免費，但人潮會爆炸，建議避開或早起。\n",
+      "content": "羅馬是一座層層堆疊的城市，每一條巷弄都可能踩在千年的地基上。這 7 天行程將以歷史分區，讓您深度領略從帝國、文藝復興到現代義大利的轉變。\nDay 1-2：古羅馬榮光與帝國核心\n首兩日沉浸在古文明中。從羅馬競技場 (Colosseum) 出發，想像角鬥士的激昂；隨後進入古羅馬廣場與帕拉提諾之丘，看著凱旋門與神廟遺址。第二天前往萬神殿 (Pantheon)，讚嘆兩千年前完美的圓頂建築，隨後漫步至納沃納廣場欣賞貝尼尼的四河噴泉。\nDay 3：教皇之國——梵蒂岡藝術饗宴\n這一天留給世界最小的國家。進入梵蒂岡博物館，看拉斐爾畫室與米開朗基羅的《創世紀》天頂畫。隨後參觀聖彼得大教堂，登上圓頂俯瞰整個梵蒂岡與羅馬城的經典鑰匙形廣場。傍晚漫步至聖天使堡，在台伯河畔迎接夕陽。\nDay 4：噴泉、階梯與優雅散策\n展開著名的《羅馬假期》路線。在特萊維噴泉 (許願池) 投下硬幣，接著前往西班牙階梯感受時尚氣息。下午造訪博爾蓋塞美術館，欣賞巴洛克雕刻大師貝尼尼最具生命力的作品。晚間在波波洛廣場散步，享受義式生活感。\nDay 5：近郊漫遊——提沃利或龐貝\n這一天建議離開市區。您可以選擇前往近郊的提沃利 (Tivoli) 造訪擁有千泉之宮美譽的 埃斯特別墅；或者搭乘高鐵快閃南義的龐貝古城，親眼見證被火山灰封存兩千年的歷史瞬間。\nDay 6：越台伯河的浪漫與傳統\n造訪真理之口後，跨過台伯河來到越台伯河區 (Trastevere)。這裡保留了更多中世紀巷弄，充滿常春藤覆蓋的建築。這裡也是羅馬人的美食天堂，適合找間地道小館品嚐「培根起司義大利麵 (Carbonara)」。\nDay 7：最後採買與慢活收尾\n最後一天來到鮮花廣場 (Campo de' Fiori) 逛逛市集，買些松露油或義大利麵香料。午後在康多提大道進行精品採買。最後帶著一根義式冰淇淋 (Gelato)，在夕陽下的羅馬街道做最後告別，前往機場返程。\n這 7 天您將發現，羅馬不僅是一座城市，更是一場關於人類文明與美學的不朽對話。\n請問您在藝術偏好上，更傾向於觀賞「大型歷史遺跡」，還是「精緻的室內繪畫與雕刻」？我可以為您微調景點停留時間。\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://plus.unsplash.com/premium_photo-1661962723801-1015e61ec340?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://plus.unsplash.com/premium_photo-1661964123160-8d049fa07f0c?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1555992828-ca4dbe41d294?q=80&w=2767&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1598258500419-5d7895465a20?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "柏林8日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 120000,
+      "price": 110000,
+      "description": "交通與票券：柏林大眾運輸（S-Bahn, U-Bahn, Tram）極度發達。建議購買 Berlin WelcomeCard，除了無限次搭乘，參觀博物館島等景點還有折扣。若計畫造訪波茨坦，記得買包含 ABC 區 的票。\n預約制度：國會大廈 (Reichstag) 的玻璃圓頂是免費的，但必須提前數週在官網預約場次，否則現場排不到。博物館島 建議優先預約「佩加蒙博物館」（目前部分整修，請確認開放區域）。\n週日跳蚤市場：柏林的精華在週日。務必保留週日給 Mauerpark (圍牆公園)，那裡的跳蚤市場、露天卡拉 OK 與草地野餐是柏林生活的縮影。\n現金與支付：雖然刷卡比以前普及，但柏林許多獨立咖啡館、小吃攤（如 Currywurst）或酒吧仍標榜 \"Cash Only\"，隨身務必準備歐元現金。\n安全與氛圍：柏林非常自由多元，但地鐵站周邊人潮雜亂時仍需注意財物。此外，柏林人說話直率（Berlin Schnauze），並非無禮，這也是城市性格的一部分。\n",
+      "content": "柏林是一座沒有中心卻處處是中心的城市，它的傷痕與重生都在街頭肉眼可見。這 8 天行程將從經典地標出發，深入地下文化，最後延展至德意志帝國的優雅。\nDay 1-2：帝國榮光與冷戰陰影\n從標誌性的 勃蘭登堡門 開始，步行至旁邊震撼人心的 歐洲被害猶太人紀念碑。下午造訪 國會大廈 俯瞰政府區。第二天沿著 威廉皇帝紀念教堂 感受二戰殘骸，隨後參觀 恐怖地形圖（前納粹總部）與 查理檢查哨，見證東西德分裂的肅殺與歷史感。\nDay 3：博物館島的文化洗禮\n整天留給 博物館島 (Museumsinsel)。這座被河流環繞的島嶼擁有五座世界級博物館。必看 佩加蒙博物館 的古巴比倫城門與 新博物館 的尼芙蒂蒂王后胸像。傍晚在施普雷河畔散步，感受柏林大教堂的宏偉餘輝。\nDay 4-5：塗鴉藝術與柏林式生活\n前往 東邊畫廊 (East Side Gallery)，在最長的一段柏林圍牆殘骸上看各國藝術家的創作。下午走入 哈克雪庭院 (Hackesche Höfe)，探索迷宮般的文創小店。隔日造訪 克羅伊茨貝格 (Kreuzberg) 區，這裡充斥著塗鴉、多元移民美食與前衛酒吧，晚上在運河邊喝瓶啤酒，融入柏林人的悠閒。\nDay 6：近郊漫遊——波茨坦 (Potsdam)\n搭乘 S-Bahn 前往 波茨坦。造訪腓特烈大帝的夏季宮殿 無憂宮 (Sanssouci)，在壯闊的法式園林與黃色宮殿間穿梭。隨後參觀 塞琪琳霍夫宮，這裡曾是二戰結束後召開波茨坦會議的地點，充滿歷史張力。\nDay 7：猶太博物館與地下探險\n參觀建築極具張力的 柏林猶太博物館，體驗建築師丹尼爾·里伯斯金如何透過空間傳遞壓抑與希望。下午參加 Berliner Unterwelten (地下堡壘導覽)，走入地鐵站隱藏的防空洞與冷戰地道，換個角度看柏林。\nDay 8：庫當大道與最後巡禮\n最後來到 西邊百貨 (KaDeWe) 體驗歐洲老牌百貨的精緻，或在 選帝侯大道 (Ku'damm) 進行最後採買。帶著柏林特有的「自由空氣」與幾張黑膠唱片或設計小物，前往機場結束這趟旅程。\n這 8 天您將發現，柏林不僅是歷史的教課書，更是一座不斷變革、最具包容力的自由之都。\n請問您在歷史主題上，更想深入了解「納粹與二戰史」還是「冷戰與兩德分裂情節」？我可以為您調整景點與導覽的權重。\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1599946347371-68eb71b16afc?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1566404791232-af9fe0ae8f8b?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1587330979470-3595ac045ab0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1694475085892-3bb718a2bc05?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "瑞士10日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 240000,
+      "price": 200000,
+      "description": "最強票券 Swiss Travel Pass (STP)：瑞士交通極貴，強烈建議購買 瑞士旅行通行證。除了火車、巴士、遊船無限搭乘，還能免費參觀 500 間博物館，並在登上多數高山纜車時享有 5 折優惠（少女峰與皮拉圖斯山除外，約 75 折）。\n行李寄送服務 (SBB Luggage)：利用火車站間的行李寄送服務，可以讓您「空手」在景點間移動，行李會直接送往下一站飯店，非常省力。\n物價應對：瑞士外食極貴，一個漢堡套餐約台幣 700-900 元。建議多利用 Coop 或 Migros 超市的烤雞、沙拉與熟食，或是找附廚房的 Airbnb 自炊。\n天氣與預約：上山行程完全看天吃飯，建議下載 MeteoSwiss App 監看山頂即時攝影機。冰河列車 (Glacier Express) 等景觀火車務必提早 2-3 個月預約座位。\n飲水與穿著：瑞士到處都有可飲用的山泉噴泉，帶個空瓶即可。穿著建議「洋蔥式」，山上即便夏季也可能只有 5 度。",
+      "content": "瑞士是一座與自然共生的國度，這 10 天行程將以鐵道串連，從充滿中世紀風情的城市出發，深入冰河與雪峰。\nDay 1-2：蘇黎世與琉森——湖畔的中世紀風情\n抵達蘇黎世後直接前往琉森 (Lucerne)。首日漫步在卡佩爾木橋，感受老城的優雅。第二天搭乘世界最陡的齒軌鐵路登上皮拉圖斯山 (Pilatus) 俯瞰湖景，隨後體驗琉森湖遊船。\nDay 3-5：因特拉肯與少女峰大區——歐洲之巔\n移動至因特拉肯 (Interlaken) 或其山城小鎮（如格林德瓦）。這裡是行程的高潮，搭乘最新艾格快線 (Eiger Express) 登上海拔 3,454 公尺的少女峰 (Jungfraujoch)。隔日前往菲斯特 (First) 挑戰天空步道，或到穆倫 (Mürren) 遠眺艾格、僧侶、少女三峰的壯闊。\nDay 6-7：策馬特——馬特洪峰的震撼\n搭乘火車前往無煙小鎮策馬特 (Zermatt)。這裡唯一的主角就是三角巧克力地標馬特洪峰。搭乘 Gornergrat 登山鐵道 到觀景台，看著倒映在利菲爾湖 (Riffelsee) 上的山影。隔日可前往冰川天堂 (Matterhorn Glacier Paradise)，近距離接觸萬年冰川。\nDay 8：景觀列車之旅——冰河列車\n這一天留給冰河列車 (Glacier Express)，從策馬特一路開往聖莫里茲或庫爾。透過全景天窗，您將穿過 291 座橋樑與 91 條隧道，在高山峽谷與田園間感受「全世界最慢的特快車」魅力。\nDay 9：蒙特勒與沃州——雷夢湖畔的浪漫\n來到法語區的蒙特勒 (Montreux)。造訪漂浮在湖上的西庸城堡，並漫步在世界文化遺產拉沃 (Lavaux) 葡萄園梯田。這裡的陽光與湖光，展現了瑞士溫柔感性的一面。\nDay 10：伯恩與歸途\n最後造訪瑞士首都伯恩 (Bern)。這座舊城區名列世界遺產，看著可愛的噴泉藝術、鐘樓與熊公園。帶著瑞士巧克力、精品手錶或維氏瑞士刀，從蘇黎世機場啟程返家。\n這 10 天您將穿梭在碧綠草地與銀色雪峰之間，深刻理解為什麼瑞士被稱為「人間仙境」。\n請問您是偏好輕鬆觀光（多搭火車/纜車），還是想加入更多輕健行（走入森林/湖泊旁）的行程？我可以為您調整步道難易度建議。\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1620563092215-0fbc6b55cfc5?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1594069758873-e79e9075eb7d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1514970746-d4a465d514d0?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "丹麥14日遊",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 210000,
+      "price": 180000,
+      "description": "無現金社會：丹麥幾乎不使用現金。從街邊小吃、付費廁所到自動販賣機，感應式信用卡或 Apple Pay 即可搞定。完全不需換克朗，但務必確保信用卡有設定 4 位數 PIN 碼。\n腳踏車優先：哥本哈根是世界單車首都。市區景點緊湊，租借單車（如 Donkey Republic）是最高效率且能融入當地人生活的移動方式，但請務必遵守單車手勢與號誌。\n交通與票券：市區可買 Copenhagen Card（含 80+ 景點門票與交通）；城際移動建議提前在 DSB 官網 購買「Orange tickets」折扣票，價格可省下一半以上。\nHygge 生活哲學：丹麥人追求溫馨舒適的「Hygge」。建議行程不要排太滿，每天下午留兩小時在運河邊喝咖啡或在公園野餐。\n物價應對：丹麥外食與酒類極貴。建議多利用 Netto 或 Føtex 超市補給，或在午餐時段享用較平價的 Smørrebrød (丹麥開面三明治)。",
+      "content": "丹麥，這個被譽為「全球最幸福」的國家，擁有平坦的綠野、湛藍的海岸線以及將古老皇室與尖端設計完美融合的城市。這 14 天將帶您深入北歐的心臟。\nDay 1-5：哥本哈根——運河、皇室與設計感\n抵達首都後，首站前往新港 (Nyhavn) 觀賞彩色木屋與帆船。隨後造訪小美人魚雕像與阿馬林堡宮看衛兵交接。安排一天前往蒂沃利花園 (Tivoli)，這座世界最古老的遊樂園是華特迪士尼的靈感來源。別忘了留一天去克里斯蒂安堡宮俯瞰市景，並在黑鑽石圖書館感受北歐建築美學。\nDay 6-7：西蘭島北端——城堡與現代藝術\n搭火車前往赫爾辛格，參觀莎士比亞筆下哈姆雷特的原型克倫堡 (Kronborg)。回程停靠 路易斯安那現代藝術博物館，這座座落於海邊的博物館被譽為世界最美藝術館，自然景觀與雕塑完美結合。\nDay 8-9：歐登塞——安徒生的童話原點\n跨過大貝爾特橋來到菲英島的歐登塞 (Odense)。漫步在安徒生出生地的鵝卵石街道，參觀全新的 安徒生博物館 (H.C. Andersen House)，這座圓形木質建築本身就是一件藝術品。隨後造訪外圍的伊斯科城堡，那是歐洲保存最好的水上文藝復興城堡。\nDay 10-12：日德蘭半島——樂高與維京遺址\n南下前往比隆 (Billund)，朝聖樂高樂園 (LEGOLAND) 與充滿建築美感的 LEGO House。接著前往耶靈 (Jelling) 觀看被列入世界遺產的維京石碑。之後抵達丹麥第二大城奧胡斯 (Aarhus)，必看 ARoS 美術館 頂樓的彩虹環形走廊，以及穿越時空的 Den Gamle By 老城博物館。\nDay 13-14：北境荒漠與歸途\n一路向北抵達丹麥最北端 斯卡恩 (Skagen)。在這裡您可以親眼目睹兩大海域（波羅的海與北海）交匯卻不相融的奇景，並造訪被風沙掩埋的沙中教堂。最後回到哥本哈根進行最後的設計家具或樂高採買，帶著幸福感前往機場返程。\n這 14 天您將發現，丹麥的美在於那種低調、精緻且對人類極度友善的生活尺度。\n請問您這趟旅程是否有小孩同行？我可以為您增加更多關於親子友善設施與樂高樂園的行程細節。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1552560880-2482cef14240?q=80&w=1486&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://plus.unsplash.com/premium_photo-1733306409565-e6b1189e7f4a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1598468807138-175e2210c59c?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1627215477561-f0b7755115e9?q=80&w=1548&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "威尼斯7日遊 ",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 100000,
+      "price": 80000,
+      "description": "水上交通 Venezia Unica：威尼斯全島禁止車輛，唯一交通工具是船或雙腳。建議購買 ACTV 水上巴士 (Vaporetto) 多日券，除了能無限次搭乘穿梭大運河，前往外島（如彩色島）的單程票極貴，用多日券最划算。\n住宿與行李策略：強烈建議住在靠近羅馬廣場 (Piazzale Roma) 或聖露西亞車站 (Stazione di Venezia Santa Lucia) 附近。威尼斯橋樑極多（多為階梯），拖著大行李過橋會是噩夢。\n預約與排隊：聖馬可大教堂與總督宮務必提前官網預約，否則現場排隊 2 小時是常態。若想體驗貢多拉 (Gondola)，公定價約為 80-100 歐元（30分鐘），建議傍晚時分搭乘最浪漫。\n防洪與迷路：下載 hi!tide Venice App 監控水位（尤其 10-3 月）。威尼斯街道如迷宮，Google Maps 有時會失靈，請隨身攜帶行動電源，並享受「迷路」帶來的驚喜發現。\n飲食陷阱：避開聖馬可廣場周邊標榜「觀光客套餐」的餐廳。往 Cannaregio 區（猶太區）走，那裡的 Cicchetti (威尼斯式小吃) 便宜又道地，配上一杯 Spritz 只要幾歐元。",
+      "content": "威尼斯是一座漂浮在亞德里亞海上的奇蹟，118 座小島由 400 多座橋樑連接。這 7 天行程將讓您從權力中心走入工藝文化，最後在北義的浪漫古城收尾。\nDay 1-2：大運河與聖馬可榮光\n抵達後搭乘 1 號水上巴士緩緩駛入大運河，欣賞兩岸如絲綢般華麗的宮殿。首二日聚焦於聖馬可廣場。參觀閃耀金光的聖馬可大教堂，走入總督宮 (Dogi's Palace) 感受威尼斯共和國的強盛，並穿過哀愁的嘆息橋。傍晚登上聖馬可鐘樓，俯瞰整座水都的紅色屋頂與海天一色。\nDay 3：藝術與學術的左岸——多爾索杜羅區\n跨過學院橋來到多爾索杜羅區。參觀學院美術館看提香與喬爾喬內的鉅作，或到佩姬·古根漢美術館欣賞現代藝術與大運河交織的美景。隨後造訪安康聖母大殿，這座宏偉的圓頂建築是威尼斯人感謝黑死病終結的見證。\nDay 4：外島巡禮——玻璃與彩虹\n整天留給離島。首站穆拉諾島 (Murano) 看傳承千年的噴火吹玻璃技藝。隨後前往最受歡迎的布拉諾島 (Burano，彩色島)，這裡的房屋五彩繽紛，是為了讓漁民在濃霧中認出家門。最後造訪靜謐的托爾切洛島 (Torcello)，這座威尼斯的發源地擁有絕美的拜占庭鑲嵌畫。\nDay 5：近郊漫遊——羅密歐與茱麗葉的維洛那\n搭乘火車約 1 小時前往維洛那 (Verona)。這座古城擁有保存完好的羅馬競技場，以及著名的茱麗葉故居。漫步在百草廣場與斯卡利傑羅橋，感受與威尼斯截然不同的中世紀內陸風情。\nDay 6：猶太區散策與里阿爾托市場\n回到威尼斯，探索最北邊的 Cannaregio 區。走進世界第一個「猶太區 (Ghetto)」，感受沉靜的歷史。中午到 里阿爾托橋 (Rialto Bridge) 旁的魚市場看當地人的生活縮影。下午找間面河的露台，點份海鮮墨魚麵，悠閒度過水都的午後。\nDay 7：最後採買與歸途\n最後一天穿梭在巷弄間購買面具 (Maschere)、蕾絲製品或玻璃飾品。帶著一身海水的鹹味與陽光色彩，搭乘 Alilaguna 水上接駁船前往馬可波羅機場，結束這場如夢似幻的水上假期。\n這 7 天您將發現，威尼斯不僅是觀光地標，更是一件與海共生、永不磨滅的藝術品。\n請問您是計畫在2 月（參加威尼斯嘉年華面具節）還是夏季（享受陽光與海風）前往？我可以為您調整節慶活動或防暑建議。\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1552751118-d3cde54807de?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1453747063559-36695c8771bd?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1603489243637-66c1cfdd9b93?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1511135570219-bbad9a02f103?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "台南3日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 8000,
+      "price": 6000,
+      "description": "交通工具：市區景點集中，建議租借 機車 或利用 GoShare/iRent，最能靈活穿梭窄巷且好停車。若搭公車，請下載「台南公車」App 掌握班次。\n美食攻略：台南小吃分佈在國華街、保安路與永樂市場。名店（如阿明豬心、六千牛肉湯）建議避開週末尖峰或清晨前往。記得「台南甜」是特色，點飲料時建議降低甜度。\n住宿區域：首選 中西區（近國華街、神農街），多數古蹟與美食步行即可抵達，且有許多極具特色的老宅民宿。\n週一/週二禁忌：許多老宅咖啡廳與餐廳週一、二公休，牛肉湯店則因屠宰場休市而沒肉，規劃時需特別注意。\n",
+      "content": "台南是台灣的發祥地，也是一座活生生的建築博物館。這 3 天行程將帶您從 17 世紀的大航海時代，一路走入現代文創的慢活步調。\nDay 1：古蹟核心與老街晚酌\n旅程從中西區展開。首站造訪 赤崁樓 與 台南孔廟（全台首學），感受古都的文教氣息。午後轉往 林百貨，這座日治時期的古董百貨擁有全台唯一的頂樓神社。傍晚散步至 神農街，看著紅燈籠亮起，木造老屋化身為藝廊與酒吧，這裡最適合挑一間老屋咖啡廳，點份在地點心享受緩慢時光。\nDay 4：安平探險與夕陽鹽田\n第二天向西前往安平。先到 安平古堡 與 億載金城 追尋荷蘭與清領時期的足跡。必去熱點是 安平樹屋，看著榕樹根與倉庫牆面纏繞共生的奇景。下午造訪 漁光島 的月牙灣沙灘，或開車稍遠前往 七股鹽山 與 井仔腳瓦盤鹽田。當夕陽餘暉倒映在格狀鹽田中，那是台南最動人的自然畫作。晚上回到市區，若適逢週四、六、日，絕對不能錯過全台最大的 花園夜市。\nDay 3：文藝復興與純白奇蹟\n最後一天走入藝術殿堂。上午前往位於仁德區的 奇美博物館，這座如歐式宮廷般的純白建築，館藏豐富的小提琴與兵器令人震撼。午後回到市區的 台南市美術館 2 館，由建築大師坂茂設計的碎形屋頂，讓陽光灑落成最美影跡。離開前，去 國華街 補齊遺漏的碗粿、捲尾家霜淇淋或小卷米粉。帶著飽足的胃與被歷史洗滌的心，從台南高鐵站或火車站返程。\n這 3 天您將發現，台南的美不在於壯麗的山水，而在於那種轉角就能遇見歷史、低頭就能嚐到堅持的日常溫度。\n請問您是計畫在週末還是平日前往？我可以針對排隊美食或夜市營業時間為您微調行程。\n\n\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1650039635890-e9f79cb10e38?q=80&w=2942&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1633529133119-488c1ea1a535?q=80&w=1475&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1582557881844-12b774f6abb6?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1741011035823-206d4b09e417?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "高雄3日遊 ",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 6000,
+      "price": 4000,
+      "description": "高雄的精華在於「水岸」與「便捷」。\n交通工具：高雄捷運與 輕軌 (LRT) 極度便利。輕軌環繞亞洲新灣區與駁二，是賞景首選；市區移動建議租借 YouBike 2.0，港區自行車道規劃非常完善。\n必備卡片：使用 悠遊卡、一卡通 或信用卡感應即可搭乘大眾運輸。若計畫跑多個收費景點，可考慮 高雄好玩卡 (Kaohsiung Fun Pass)。\n避暑對策：高雄陽光熱情，下午 1 點至 3 點建議安排 室內行程（如內惟藝術中心、大立百貨或 SKM Park）。\n住宿區域：首選 鹽埕埔（文青感、美食多）或 三多商圈/中央公園（購物便利、飯店選擇多）。",
+      "content": "高雄已從工業重鎮轉型為充滿藝術感的海洋城市。這 3 天行程將帶您從舊鐵道、老倉庫，看見這座城市如何與海共生。\nDay 1：文創駁二與夕陽旗津\n旅程由 駁二藝術特區 展開。這片由老舊倉庫改建的藝文空間，充滿大型裝置藝術與文創小店。隨後搭乘全台唯一的 輕軌 前往 光榮碼頭，遠眺地標 高雄流行音樂中心 那蜂巢狀的壯麗建築。傍晚從鼓山輪渡站搭船前往 旗津，租台電動車造訪 旗後燈塔 與 砲台。當夕陽落在台灣海峽，映照著旗津沙灘的椰子樹，那是最浪漫的南國時刻。晚上回到 鹽埕區，享用鴨肉珍、奶茶街等在地老味。\nDay 2：山海秘境與亞洲新灣區\n上午前往 壽山（柴山），步道平緩且能巧遇台灣獼猴，並從高處俯瞰高雄港。隨後前往 西子灣 的 打狗英國領事館，在紅磚洋樓中享用英式下午茶。下午轉往 亞洲新灣區，造訪全台最美的 高雄市立圖書館總館（頂樓空中花園必去）以及 高雄展覽館。入夜後，前往 六合夜市 或在地人更愛的 瑞豐夜市，挑戰酥炸大魷魚與天使雞排，感受港都的熱鬧宵夜文化。\nDay 3：湖畔禪意與時尚採買\n最後一天走入自然與現代的交界。上午前往 左營蓮池潭，造訪指標性的 龍虎塔（龍口入、虎口出可消災增福），感受傳統宗教建築的震撼。午後若想逛街，推薦搭乘捷運前往 SKM Park Outlets，除了購物還能體驗賽道樂園。若偏好藝術，美術館區 的 內惟藝術中心 擁有絕美的白色建築與森林景觀。帶著滿滿的海風回憶與伴手禮（如旗津魚酥、木瓜牛奶），從左營高鐵站或小港機場啟程返家。\n這 3 天您將發現，高雄的美在於那種大開大闔的海港氣度，以及充滿活力的創意轉身。\n請問您是偏好親子同樂（戶外活動、樂園），還是想走網美攝影（咖啡廳、現代建築）路線？我可以為您調整具體的景點細節。\n\n\n\n\n",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1647685101882-6bd1835e3263?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1707305421249-3d733018b82a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1661962935933-b81197df6ec9?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1571555788467-71d9e3add426?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "荷蘭10日遊 ",
+      "category": "歐洲",
+      "unit": "台幣",
+      "origin_price": 170000,
+      "price": 160000,
+      "description": "交通策略：荷蘭鐵路（NS）極度發達，建議購買 OV-chipkaart（交通卡）或直接使用感應式信用卡 (OVpay) 支付火車、公車及路面電車費用。若計畫參觀多個博物館，Holland Pass 或 阿姆斯特丹城市卡 (I amsterdam City Card) 是省錢首選。\n最佳旅遊時機：3 月下旬至 5 月上旬是鬱金香花季，可造訪全球著名的 庫肯霍夫花園 (Keukenhof)。4 月 27 日是熱鬧的「國王節」，全境會陷入橘色狂歡。\n必玩體驗：除了市區運河遊船，建議租借腳踏車穿梭於鄉間或城市，這是體驗荷蘭最道地的方式。\n預約指南：熱門景點如 安妮之家 (Anne Frank House) 與 梵谷博物館 必須提前數週於官網預約場次。",
+      "content": "荷蘭不僅有鬱金香與風車，其前衛的建築美學與悠遠的大航海歷史更令人著迷。這 10 天行程將帶領您領略從中古世紀到現代工業的多重面貌。 \n鳳凰旅遊\n鳳凰旅遊\n +1\nDay 1-3：阿姆斯特丹——運河與藝術之都\n抵達首都後，首站造訪擁有「戴珍珠耳環的少女」館藏的 莫瑞泰斯皇家美術館（位於海牙）或阿姆斯特丹的 荷蘭國家博物館 (Rijksmuseum)。午後漫步於 水壩廣場 與 辛格花市，隨後搭乘 運河遊船 穿梭在被聯合國教科文組織列入遺產的運河網中。 \nezTravel易遊網\nezTravel易遊網\n +2\nDay 4-5：風車傳統與起司市集\n前往郊區的 贊斯安斯風車村 (Zaanse Schans) 觀看運作中的風車與木鞋工廠。若正逢夏季，週五可前往 阿克馬 (Alkmaar) 參與具百年歷史的傳統起司拍賣市集。 \nezTravel易遊網\nezTravel易遊網\n +1\nDay 6-7：鹿特丹與海牙——現代與政治核心\n前往 鹿特丹 (Rotterdam) 欣賞驚人的現代建築，如 方塊屋 與 拱形市場 (Markthal)。隨後探訪附近的 小孩堤防 (Kinderdijk)，這裡是 19 座 18 世紀風車的聚集地。接著轉往 海牙 (The Hague)，造訪和平宮並在席凡寧根海灘漫步。 \nBringYou\nBringYou\n +3\nDay 8：羊角村——綠色威尼斯\n前往位於北部的 羊角村 (Giethoorn)。這座無車村莊僅能靠划船移動，您可以租一艘平底船穿梭在茅草屋與小木橋之間，享受極致的靜謐與浪漫。 \nTrip.com\nTrip.com\n +1\nDay 9-10：烏特勒支與最後採買\n造訪擁有獨特「雙層運河」的 烏特勒支 (Utrecht)，登上圓頂大教堂塔樓俯瞰市景。最後回到阿姆斯特丹，在 尿尿小童薯條 與荷蘭煎餅的香味中結束旅程，前往機場返程。 \n這 10 天您將看見荷蘭如何在高於海平面的威脅下，創造出充滿活力與自由色彩的獨特文化。\n您計畫在 4 月的鬱金香花季 期間前往嗎？我可以針對賞花動線與門票預訂提供更具體的建議。",
+      "is_enabled": 1,
+      "imageUrl": "https://plus.unsplash.com/premium_photo-1661931625680-cd916bc75340?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://plus.unsplash.com/premium_photo-1661896320314-ce36434f9fec?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1620657110850-91fbec86cfa4?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1557929036-44a5d490d527?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "拉斯維加斯5日遊",
+      "category": "美洲",
+      "unit": "台幣",
+      "origin_price": 70000,
+      "price": 65000,
+      "description": "交通與住宿：飯店首選 拉斯維加斯大道 (The Strip) 中段（如百利或凱薩皇宮附近），步行即可抵達多數地標。大眾運輸推薦搭乘 Las Vegas Monorail (單軌列車) 或 Deuce 雙層巴士，可避開塞車。\n免費匯演：必看 Bellagio 水舞、Mirage 火山噴發 與 Fremont Street 的電子天幕。\n表演預約：太陽馬戲團的經典秀（如 \"O\" Show 或 KA）務必提早 1-2 個月預約，熱門時段一位難求。\n物價與小費：賭城消費極高，餐廳需支付 18%-25% 小費。想省錢可利用飯店內的 Buffet（推薦 Caesar's Bacchanal）或連鎖快餐。\n",
+      "content": "拉斯維加斯不僅是博弈之都，更是一座集結頂級娛樂、建築奇觀與壯闊地質的沙漠綠洲。這 5 天行程將帶您體驗從極致奢華到荒野震撼的強烈對比。\nDay 1：閃耀大道與世界地標\n抵達後，首站造訪著名的 \"Welcome to Fabulous Las Vegas\" 標誌。隨後漫步於 拉斯維加斯大道，一次收集世界縮影：從 紐約紐約 的過山車、巴黎飯店 的艾菲爾鐵塔到 威尼斯人 的室內運河。傍晚在 百利宮 (Bellagio) 前欣賞壯觀的噴泉匯演，感受賭城的浪漫氛圍。\nDay 2：頂級表演與米其林盛宴\n今日留給藝術與感官。白天可造訪 High Roller 摩天輪 俯瞰城市，下午在 凱薩皇宮 精品街購物。入夜後，觀看一場震撼人心的 太陽馬戲團水上秀 \"O\"，隨後前往高級牛排館或法式餐廳享受美饌，體驗這座城市不眠的奢華夜生活。\nDay 3：大峽谷西緣一日遊\n暫離城市，搭乘直升機或巴士前往 大峽谷 (Grand Canyon) 西緣。踏上驚險的 天空步道 (Skywalk)，近距離感受科羅拉多河刻畫出的萬年地景。回程可順道參觀建築工程奇蹟 胡佛水壩 (Hoover Dam)。\nDay 4：懷舊老城與自然祕境\n上午前往鄰近的 紅岩峽谷 (Red Rock Canyon) 進行輕健行，感受沙漠岩石的紅豔。傍晚轉往舊城區 佛里蒙特街 (Fremont Street)，體驗超大 LED 天幕秀與充滿 70 年代氛圍的復古賭場。這裡的氛圍比大道更狂野、更有草根活力。\nDay 5：最後採買與歸途\n最後一天前往 Las Vegas North Premium Outlets 進行精品採買，這裡的品牌齊全且價格極具競爭力。帶著贏來的運氣（或滿滿的購物戰利品），前往哈里·瑞德機場，結束這趟夢幻的五光十色之旅。\n這 5 天您將在人造奇蹟與自然壯麗之間跳躍，深刻體會這座「沙漠奇蹟」那種永無止盡的活力。\n請問您是偏好看秀與購物的休閒行程，還是想加入更多直升機觀光的冒險活動？我可以為您細化訂票建議。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1581351721010-8cf859cb14a4?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1634400139456-292e44ca5327?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1583207884889-d79abf0d0aa3?q=80&w=1484&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1600616366660-ba86bf0b3dfc?q=80&w=1467&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "曼哈頓10日遊",
+      "category": "美洲",
+      "unit": "台幣",
+      "origin_price": 120000,
+      "price": 100000,
+      "description": "步行與地鐵 (MTA)：曼哈頓是全美最適合步行的城市。強烈建議使用 感應式信用卡或手機支付 (OMNY) 直接進站，一週搭滿 12 次後自動免運費（上限制）。千萬別租車，停車費與塞車會摧毀旅程。\n觀景台策略：曼哈頓有五大觀景台。推薦 Summit One Vanderbilt（超現實鏡面感）或 Top of the Rock（看帝國大廈位置最佳）。建議選在日落前 1 小時登頂。\n百老匯搶票：想省錢可當天去 TKTS 櫃檯 買折價票，或透過 TodayTix App 抽樂透票（Lottery）。熱門劇如《獅子王》或《漢密爾頓》請務必提早三個月訂購。\n免費日與渡輪：史泰登島渡輪 (Staten Island Ferry) 是免費的，能近距離看自由女神。許多博物館（如 Whitney）有週五晚間免費或自由捐獻時段，請先上網預約。\n安全與小費：紐約生活節奏快且雜亂，隨身財物需警覺。餐廳小費公定價已升至 18%-22%，速食店或外帶則非強制。",
+      "content": "曼哈頓，這座被摩天大樓填滿的狹長島嶼，是全球文化、金融與藝術的跳動心臟。這 10 天行程將由南向北，帶您拆解這座「永不眠之城」的多重面貌。\nDay 1-3：下曼哈頓——歷史與金錢的起點\n旅程從 華爾街 開始，觸摸銅牛、造訪紐約證交所。隨後在 9/11 國家紀念館 感受城市的重生。第二天搭船前往 自由女神像 與 愛麗絲島。第三天漫步於 蘇活區 (SoHo) 的鑄鐵建築間，隨後穿過 小義大利 與 唐人街，體驗紐約最道地的移民交融與街頭美食。\nDay 4-6：中城——霓虹、歌劇與摩天夢\n這是電影中的紐約。從 時代廣場 的霓虹巨幕出發，參觀 公共圖書館 的壯麗閱覽室。第五天留給 現代藝術博物館 (MoMA)，看梵谷與畢卡索的真跡。傍晚登上 帝國大廈 或 洛克斐勒中心。第六天走上 高線公園 (The High Line)，這座由廢棄鐵道改建的空中綠洲直通 哈德遜廣場 (Hudson Yards)，欣賞如蜂巢般的 Vessel。\nDay 7-8：上西與上東——中央公園與文化巔峰\n橫跨 中央公園 (Central Park)，在草地上野餐、造訪草莓田。第七天深入 大都會藝術博物館 (The Met)，這座世界三大博物館之一足以耗上一整天。第八天造訪 美國自然史博物館（博物館驚魂夜場景），或到 古根漢美術館 欣賞螺旋建築美學。\nDay 9：切爾西市集與格林威治村\n前往 切爾西市集 (Chelsea Market) 享用龍蝦與咖啡。隨後漫步於 格林威治村 的紅磚巷弄，尋找《慾望城市》或《六人行》的取景地。這裡充滿了獨立書店與爵士樂吧（如 Village Vanguard），最能感受紐約的波西米亞靈魂。\nDay 10：布魯克林大橋與最後巡禮\n最後一天清晨走上 布魯克林大橋，從橋上回望曼哈頓天際線。抵達 DUMBO 區拍下經典照片後，回到曼哈頓進行最後的精品或潮牌採買。帶著一身紐約客的自信與疲憊，前往 JFK 或 EWR 機場結束旅程。\n這 10 天您將發現，曼哈頓的美不在於乾淨，而在於那種無可取代的、充滿碰撞與可能性的城市張力。\n請問您在美食方面，更想嘗試「米其林精緻餐飲」還是「在地排隊平價小吃（如哈拉雞飯、貝果）」？我可以為您加入具體清單。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1448317971280-6c74e016e49c?q=80&w=1532&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/flagged/photo-1575597255483-55f2afb6f42c?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1661954654458-c673671d4a08?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1543716091-a840c05249ec?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    },
+    {
+      "title": "九州9日遊",
+      "category": "亞洲",
+      "unit": "台幣",
+      "origin_price": 40000,
+      "price": 38000,
+      "description": "最強票券 JR Pass：九州是鐵道迷的天堂。強烈建議購買 JR 全九州 5 日或 7 日周遊券。九州擁有全日本最密集的特色觀光列車（如由布院之森、阿蘇男孩、指宿之玉手箱），不僅省錢，搭車本身就是一種景點。\n觀光列車預約：特色列車熱門時段一位難求，建議在購買 JR Pass 後，立即於官網提前線上預約劃位（需支付小額手續費），否則現場極難有空位。\n自駕 vs 鐵道：如果您計畫深入 高千穗峽 或 九重夢大吊橋，自駕會比等班次稀少的巴士方便許多。若只跑大城市，鐵道則是首選。\n屋台文化：福岡中洲或天神的「屋台」（路邊攤）是必體驗的在地文化，但建議先詢問價格或找有明碼標價的攤位，避免觀光客溢價。\n地理與氣候：南九州（鹿兒島）與北九州（福岡）溫差約 3-5 度。此外，阿蘇火山目前仍是活火山，出發前請務必上官網確認「噴火警戒等級」，以免因限制入山而撲空。",
+      "content": "九州，這座充滿生命力的島嶼，擁有日本最豐富的溫泉資源與火山地貌。這 9 天行程將採「由北向南」的不走回頭路路線。\nDay 1-2：福岡潮流與太宰府古韻\n抵達福岡後，先在博多車站採買伴手禮。第二天前往太宰府天滿宮，漫步在建築大師隈研吾設計的星巴克前，隨後回到天神區盡情購物，晚餐必吃濃郁的博多拉麵與牛腸鍋。\nDay 3-4：別府地獄與由布院晨霧\n搭乘「音速號」前往別府，參觀色彩奇異的「地獄八景」溫泉噴發口。第四天轉往全日女性票選第一名的由布院。漫步在金鱗湖畔看晨霧繚繞，並在湯之坪街道尋找特色甜點。建議在此入住一晚溫泉旅館，享受極致的療癒。\nDay 5：阿蘇山與高千穗秘境\n這是行程的自然高潮。搭乘「阿蘇男孩」列車或自駕前往阿蘇火山，登上大觀峰俯瞰世界上最大的破火山口。下午深入高千穗峽，體驗在巨石峭壁間划船，看著真名井瀑布從天而降，感受神話故鄉的靈氣。\nDay 6-7：熊本城與鹿兒島櫻島火山\n回到熊本，造訪重新修復完成的「銀杏城」熊本城。隨後搭乘新幹線直奔鹿兒島。第七天搭乘渡輪前往櫻島，近距離觀察這座時常噴發、煙霧繚繞的活火山。傍晚回到市區，享用著名的鹿兒島黑豬肉料理。\nDay 8：指宿砂浴與南端美景\n搭乘特色列車「指宿之玉手箱」前往指宿，體驗全世界罕見的「天然砂蒸溫泉」，全身埋入溫暖的海沙中排毒。隨後造訪日本最南端的 JR 車站「西大山站」，遙望被譽為薩摩富士的開聞岳。\nDay 9：最後採買與歸途\n最後回到福岡或直接從鹿兒島機場返程。在機場補齊明太子與長崎蛋糕伴手禮。這 9 天您將體驗從地底湧出的熱力到指尖滑過的暖湯，深刻體會九州那種熱情且純樸的大地靈魂。\n請問您是計畫在春季（賞櫻）還是秋季（賞楓與阿蘇芒草）前往？我可以為您調整觀光列車的路線權重。",
+      "is_enabled": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1704686508379-8ee92cad45f6?q=80&w=1462&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imagesUrl": [
+        "https://images.unsplash.com/photo-1622522070156-2de99ac90cdf?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1650861063389-8197786fb2df?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1609474294819-b18d936efbfa?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "title": "日本深度賞楓計畫",
+      "description": "秋季限定，京都、大阪賞櫻之旅，體驗日本文化的精髓。Lorem\n                ipsum dolor sit amet consectetur adipisicing elit. Magni dolorum\n                provident nam mollitia nulla amet, dolores enim quod adipisci,\n                est placeat possimus eveniet, aut consequatur expedita ex\n                corrupti reprehenderit magnam doloribus recusandae itaque rem\n                facere aliquid. Rem assumenda dolores delectus maxime quibusdam\n                officia porro modi deserunt ab ullam? Voluptas eius vitae esse\n                unde, cupiditate iste ipsam ex modi perferendis, fugit\n                asperiores voluptatum dolore animi? Ad ea dolorum praesentium.\n                Unde iusto molestiae quo, labore necessitatibus, alias, nemo\n                similique dicta cumque ex quisquam repellendus. Maiores eos quo\n                earum odio facilis eligendi pariatur, repellendus soluta iure\n                inventore, assumenda necessitatibus fugiat! Corrupti, debitis\n                voluptates!",
+      "image": "https://images.unsplash.com/photo-1707474893587-a37a9cf1b555?q=80&w=1548&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "tag": [
+        "亞洲"
+      ],
+      "create_at": 1774069990617,
+      "author": "Percy ",
+      "isPublic": true,
+      "content": "秋季限定，京都、大阪賞櫻之旅，體驗日本文化的精髓。Lorem\n                ipsum dolor sit amet consectetur adipisicing elit. Magni dolorum\n                provident nam mollitia nulla amet, dolores enim quod adipisci,\n                est placeat possimus eveniet, aut consequatur expedita ex\n                corrupti reprehenderit magnam doloribus recusandae itaque rem\n                facere aliquid. Rem assumenda dolores delectus maxime quibusdam\n                officia porro modi deserunt ab ullam? Voluptas eius vitae esse\n                unde, cupiditate iste ipsam ex modi perferendis, fugit\n                asperiores voluptatum dolore animi? Ad ea dolorum praesentium.\n                Unde iusto molestiae quo, labore necessitatibus, alias, nemo\n                similique dicta cumque ex quisquam repellendus. Maiores eos quo\n                earum odio facilis eligendi pariatur, repellendus soluta iure\n                inventore, assumenda necessitatibus fugiat! Corrupti, debitis\n                voluptates!"
+    },
+    {
+      "title": "阿里山必訪景點",
+      "description": "阿里山旅遊核心在於體驗「五奇」：日出、雲海、鐵路、森林與晚霞。建議安排兩天一夜，住宿森林遊樂區內，次日搭乘祝山線小火車看日出。必訪姐妹潭、巨木群棧道、奮起湖老街，春天（3-4月）可賞櫻，四季皆宜，但須注意山區溫差大、午後易降雨。",
+      "image": "https://images.unsplash.com/photo-1749477679906-e64de4a736b3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "tag": [
+        "亞洲"
+      ],
+      "create_at": 1774070653751,
+      "author": "Alice",
+      "isPublic": true,
+      "content": "阿里山旅遊核心在於體驗「五奇」：日出、雲海、鐵路、森林與晚霞。建議安排兩天一夜，住宿森林遊樂區內，次日搭乘祝山線小火車看日出。必訪姐妹潭、巨木群棧道、奮起湖老街，春天（3-4月）可賞櫻，四季皆宜，但須注意山區溫差大、午後易降雨。"
+    },
+    {
+      "title": "夏威夷熱門旅遊島嶼",
+      "description": "夏威夷旅遊全年皆宜，最佳旅遊時間為 4、5、9、10 月，天氣適中且人潮較少。建議至少安排 6-9 天，重點遊覽歐胡島（威基基海灘、古蘭尼牧場）、大島（火山國家公園）或茂宜島。這裡適合自駕、水上活動、免稅購物（Waikele Outlets）與火山觀星，建議購買旅遊保險，自由行租車最方便",
+      "image": "https://images.unsplash.com/photo-1598135753163-6167c1a1ad65?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "tag": [
+        "美洲"
+      ],
+      "create_at": 1774070779733,
+      "author": "Peter",
+      "isPublic": true,
+      "content": "夏威夷旅遊全年皆宜，最佳旅遊時間為 4、5、9、10 月，天氣適中且人潮較少。建議至少安排 6-9 天，重點遊覽歐胡島（威基基海灘、古蘭尼牧場）、大島（火山國家公園）或茂宜島。這裡適合自駕、水上活動、免稅購物（Waikele Outlets）與火山觀星，建議購買旅遊保險，自由行租車最方便"
+    },
+    {
+      "title": "土耳其熱氣球季節",
+      "description": "土耳其卡帕多奇亞熱氣球的最佳飛行季節是春季（4月至5月）與秋季（9月至11月），此時天氣溫和且穩定，飛行機率最高。夏季（6月至8月）雖熱但也適合飛行，但遊客較多、需提早預訂。冬季（11月至3月）因天氣寒冷、易受大風雪影響，停飛機率較高，但價格較便宜且有機會看到雪景。",
+      "image": "https://images.unsplash.com/photo-1669111957528-6d4e78328692?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "tag": [
+        "歐洲"
+      ],
+      "create_at": 1774070937834,
+      "author": "Amy",
+      "isPublic": true,
+      "content": "土耳其卡帕多奇亞熱氣球的最佳飛行季節是春季（4月至5月）與秋季（9月至11月），此時天氣溫和且穩定，飛行機率最高。夏季（6月至8月）雖熱但也適合飛行，但遊客較多、需提早預訂。冬季（11月至3月）因天氣寒冷、易受大風雪影響，停飛機率較高，但價格較便宜且有機會看到雪景。"
+    },
+    {
+      "title": "大英帝國巡禮",
+      "description": "倫敦旅遊必去大英博物館、倫敦塔、白金漢宮及搭乘倫敦眼，夏季（6-8月）天氣最舒適，建議安排5-10天自由行，使用地下鐵（Tube）搭配雙層巴士與步行探索，並在行前規劃\n\n",
+      "image": "https://images.unsplash.com/photo-1533929736458-ca588d08c8be?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "tag": [
+        "歐洲"
+      ],
+      "create_at": 1774092156547,
+      "author": "Oscar",
+      "isPublic": true,
+      "content": "倫敦旅遊必去大英博物館、倫敦塔、白金漢宮及搭乘倫敦眼，夏季（6-8月）天氣最舒適，建議安排5-10天自由行，使用地下鐵（Tube）搭配雙層巴士與步行探索，並在行前規劃"
+    }
+  ],
+  "coupons": [
+    {
+      "title": "PercyTest",
+      "code": "Test50",
+      "percent": 50,
+      "due_date": 1794239999,
+      "is_enabled": 1
+    }
+  ]
+}

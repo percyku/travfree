@@ -93,6 +93,24 @@ jobs:
         run: docker compose up -d --build --wait
       - name: Smoke test
         run: ADMIN_PASSWORD=$(sed -n 's/^ADMIN_PASSWORD=//p' .env) ./scripts/smoke-test.sh
+      # 種子資料要能透過 API 匯入；第二次執行應全部略過，不會重複新增
+      - name: 匯入種子資料
+        run: |
+          export ADMIN_PASSWORD=$(sed -n 's/^ADMIN_PASSWORD=//p' .env)
+          npm run -s seed
+          npm run -s seed | tee seed.txt
+          grep -Eq '產品 0（略過 [1-9].*文章 0（略過 [1-9].*優惠券 0（略過 [1-9]' seed.txt
+      # 備份後清空資料庫再還原，種子資料應該都還在（再匯入一次全部略過）
+      - name: 備份與還原
+        run: |
+          export ADMIN_PASSWORD=$(sed -n 's/^ADMIN_PASSWORD=//p' .env)
+          npm run -s db:backup | tee backup.txt
+          file=$(sed -n 's/^資料庫：//p' backup.txt)
+          docker compose down -v
+          docker compose up -d --wait
+          npm run -s db:restore -- --yes "$file"
+          npm run -s seed | tee seed.txt
+          grep -Eq '產品 0（略過 [1-9].*文章 0（略過 [1-9].*優惠券 0（略過 [1-9]' seed.txt
       - name: 失敗時輸出 logs
         if: failure()
         run: docker compose logs --no-color

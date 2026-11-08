@@ -21,7 +21,7 @@ npm test              # 執行一次；npm run test:watch 會持續監看
 | OpenAPI spec | `npm run openapi:lint` |
 | 後端測試 | `./mvnw -B test`（Java 21、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
 | 前端 lint、測試與建置 | `npm run lint`、`npm test`、`npm run build` |
-| Docker compose | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`。失敗時輸出各服務的 log |
+| Docker compose | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`；接著匯入種子資料兩次（第二次應全部略過），再備份 → `down -v` → 還原，確認種子資料都還在。失敗時輸出各服務的 log |
 
 - CI 跑在區分大小寫的 Linux 上，可以抓到 macOS 上發現不了的匯入路徑大小寫錯誤。
 - 同一個分支有新的 push 時，會取消還在跑的舊檢查。

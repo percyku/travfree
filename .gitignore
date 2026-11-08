@@ -13,3 +13,6 @@ backend/.github/modernize/
 
 # docker compose 的密鑰，範本見 .env.example
 .env
+
+# 資料庫備份（npm run db:backup），含個資與密碼雜湊
+backups/

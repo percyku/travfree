@@ -1,6 +1,6 @@
 # FreeTrav 旅遊電商
 
-[![CI](https://github.com/percyku/freetrav/actions/workflows/ci.yml/badge.svg)](https://github.com/percyku/freetrav/actions/workflows/ci.yml)
+[![CI](https://github.com/percyku/travfree/actions/workflows/ci.yml/badge.svg)](https://github.com/percyku/travfree/actions/workflows/ci.yml)
 
 以旅遊行程為商品的電商網站，包含 React 前端與 Spring Boot 後端。
 
@@ -37,48 +37,73 @@
 ## 專案結構
 
 ```text
-freetrav/
+travfree/
 ├── frontend/   # React 前端
 ├── backend/    # Spring Boot 後端
 ├── docs/       # 文件與 API 規格（openapi.yaml）
 └── scripts/    # 根目錄工具（Swagger UI 預覽）
 ```
 
-## 快速開始
+## 啟動與停止
 
-### 用 Docker 一次啟動
+有兩種方式：**Docker** 一次啟動全部，最接近部署的狀態；**開發模式**讓前後端在本機執行，改程式存檔後立即生效。
 
-只需要 Docker。前端、後端與資料庫都在容器裡執行：
-
-```bash
-git clone https://github.com/percyku/freetrav.git
-cd freetrav
-docker compose up -d --build   # http://localhost:8000
-```
-
-開啟 `http://localhost:8000/#/login` 登入。沒有 `.env` 時使用開發設定；部署時的設定見 [docs/README.md](docs/README.md#docker)。
-
-### 開發模式
-
-修改程式時，資料庫用 Docker，前後端在本機執行，存檔後立即生效。需要 JDK 21、Node.js 與 Docker。
+第一次使用時先下載專案：
 
 ```bash
-# 1. 只啟動 PostgreSQL（在根目錄）
-docker compose up -d db
-
-# 2. 啟動後端：http://localhost:8080/v2
-#    系統預設不是 JDK 21 時，用 JAVA_HOME 指定
-cd backend
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
-
-# 3. 另開終端機，啟動前端：http://localhost:5173
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev
+git clone https://github.com/percyku/travfree.git
+cd travfree
 ```
 
-開啟 `http://localhost:5173/#/login`，以本機開發用的預設管理者登入：
+### 方式一：Docker 一次啟動全部
+
+只需要 Docker。在根目錄執行：
+
+| 要做什麼 | 指令 |
+|---|---|
+| 第一次啟動，或程式有修改過 | `docker compose up -d --build` |
+| 再次啟動（程式沒改） | `docker compose up -d` |
+| 查看各服務的狀態 | `docker compose ps` |
+| 查看後端 log | `docker compose logs -f backend`（按 Ctrl+C 離開，服務不會停止） |
+| **停止** | `docker compose down`（資料會保留） |
+| 停止並**刪除所有資料** | `docker compose down -v`（資料庫與上傳的圖片都會刪除，無法復原） |
+
+啟動後開啟 `http://localhost:8000`。沒有 `.env` 時使用開發設定；部署時的設定見 [docs/README.md](docs/README.md#docker)。
+
+### 方式二：開發模式（前後端分別啟動）
+
+需要 JDK 21、Node.js 與 Docker。資料庫用 Docker，前端與後端各開一個終端機執行：
+
+| 服務 | 啟動 | 停止 | 網址 |
+|---|---|---|---|
+| 資料庫 | 在根目錄 `docker compose up -d db` | 在根目錄 `docker compose down` | `localhost:5432` |
+| 後端 | `cd backend`<br>`JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run` | 在該終端機按 Ctrl+C | `http://localhost:8080/v2` |
+| 前端 | `cd frontend`<br>`npm run dev` | 在該終端機按 Ctrl+C | `http://localhost:5173` |
+
+- 依序啟動：資料庫 → 後端 → 前端。停止時順序不拘。
+- 前端第一次執行前，先在 `frontend/` 執行 `cp .env.example .env.local` 與 `npm install`。
+- 系統預設的 JDK 就是 21 時，後端可以省略 `JAVA_HOME=...`，直接執行 `./mvnw spring-boot:run`。
+- 兩種方式用的是同一份資料庫。從 Docker 切換到開發模式時，先執行 `docker compose down`，再執行 `docker compose up -d db`。
+
+### 資料：種子與備份
+
+`docker compose down -v` 或換新電腦之後，不用再手動建立資料。以下指令都在根目錄執行，需要 Node.js：
+
+| 要做什麼 | 指令 |
+|---|---|
+| 匯入範例資料（30 筆產品、5 篇文章、1 張優惠券） | `npm run seed` |
+| 開發模式匯入 | `API_BASE=http://localhost:8080/v2 npm run seed` |
+| 把目前後台的內容存成新的範例資料 | `npm run seed:export` |
+| 備份整個資料庫（含訂單、帳號與上傳的圖片） | `npm run db:backup` |
+| 從備份還原（會覆蓋現有資料） | `npm run db:restore -- backups/travfree-<時間>.dump` |
+
+- **範例資料**（`scripts/seed/data.json`）在 git 裡，透過 API 匯入。已存在的資料會略過，重複執行不會重複新增。不含帳號與訂單。
+- **備份**存在 `backups/`，**不進 git**：裡面有訂單個資與密碼雜湊，只留在自己的電腦。
+- 典型用法：`docker compose down -v` 清空 → `docker compose up -d --build` → `npm run seed`。
+
+### 登入
+
+開啟 `http://localhost:8000/#/login`（Docker）或 `http://localhost:5173/#/login`（開發模式），以本機開發用的預設管理者登入：
 
 | 帳號 | 密碼 |
 |---|---|

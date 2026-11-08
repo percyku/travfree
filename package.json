@@ -5,7 +5,11 @@
   "scripts": {
     "openapi:lint": "redocly lint docs/openapi.yaml",
     "openapi:preview": "node scripts/swagger-ui.mjs",
-    "openapi:mock": "prism mock docs/openapi.yaml --port 4010"
+    "openapi:mock": "prism mock docs/openapi.yaml --port 4010",
+    "seed": "node scripts/seed.mjs",
+    "seed:export": "node scripts/seed-export.mjs",
+    "db:backup": "bash scripts/db-backup.sh",
+    "db:restore": "bash scripts/db-restore.sh"
   },
   "devDependencies": {
     "@redocly/cli": "2.66.0",

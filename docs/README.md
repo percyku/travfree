@@ -124,7 +124,13 @@ docker compose up -d db        # 只啟動資料庫（開發模式）
 docker compose logs -f backend # 查看後端 log
 docker compose down            # 停止；加上 -v 會連資料一起刪除
 ./scripts/smoke-test.sh        # 基本檢查，部署設定要帶 ADMIN_PASSWORD=...
+npm run seed                   # 匯入範例資料，部署設定要帶 ADMIN_PASSWORD=...
+npm run db:backup              # 備份到 backups/（不進 git）
 ```
+
+**種子資料。** `scripts/seed.mjs` 以 admin 登入，透過 API 匯入 `scripts/seed/data.json` 的產品、文章與優惠券，所以資料一定符合 API 規格，資料表結構改變也不受影響。產品與文章依標題、優惠券依優惠碼判斷是否已存在。新增的 id 由後端產生；文章保留 `create_at`，排序與原本相同。不含 admin 帳號（後端啟動時自動建立，放進種子會讓 `ADMIN_PASSWORD` 失效）與訂單（個資）。`API_BASE`、`ADMIN_EMAIL`、`ADMIN_PASSWORD` 可用環境變數指定。
+
+**備份與還原。** `scripts/db-backup.sh` 以 `pg_dump` 備份整個資料庫；後端容器在執行時，一併備份 uploads volume。`scripts/db-restore.sh` 先要求輸入 `yes`（`--yes` 略過），還原期間停止後端容器，`pg_restore --clean` 之後再啟動。開發模式下要自己重新啟動 `./mvnw spring-boot:run`。
 
 **設定。** 沒有 `.env` 時使用開發設定，帳密與 `./mvnw spring-boot:run` 相同。部署時複製範本並填入密鑰：
 
@@ -140,6 +146,7 @@ cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRI
 
 **資料。** 資料庫存在 volume `backend_postgres-data`，沿用原本 `backend/docker-compose.yml` 建立的 volume，所以開發模式與 Docker 用的是同一份資料。上傳的圖片存在 volume `travfree_uploads`。
 
+- 資料清空之後，用 `npm run seed` 匯入範例資料，或用 `npm run db:backup`、`npm run db:restore` 備份與還原整個資料庫，指令見根目錄 [README.md](../README.md#資料種子與備份)。
 - `DB_PASSWORD` 只在 volume 第一次建立時生效。既有資料庫要換密碼時，先在資料庫內執行 `ALTER USER travfree PASSWORD '...'`。
 - 圖片的 `imageUrl` 以上傳當時的 `PUBLIC_BASE_URL` 開頭。開發模式（`:8080`）上傳的圖片存在 `backend/uploads/`，在 Docker 環境不會顯示。
 
