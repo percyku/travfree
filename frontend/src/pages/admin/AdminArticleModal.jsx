@@ -83,15 +83,16 @@ const AdminArticleModal = ({
                     />
                   </div> */}
 
-                  <label htmlFor="imageUrl" className="form-label">
+                  <label htmlFor="image" className="form-label">
                     輸入圖片網址
                   </label>
+                  {/* 用 value 而非 defaultValue，切換編輯的文章時才會更新 */}
                   <input
                     type="text"
                     className="form-control"
                     id="image"
                     placeholder="請輸入圖片連結"
-                    defaultValue={templateData.image}
+                    value={templateData.image}
                     onChange={handleModalInputChange}
                   />
 
@@ -122,7 +123,7 @@ const AdminArticleModal = ({
 
                   <div className="col-sm-6">
                     <div className="mb-2">
-                      <label htmlFor="title" className="form-label">
+                      <label htmlFor="author" className="form-label">
                         作者
                       </label>
                       <input

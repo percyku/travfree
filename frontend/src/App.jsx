@@ -1,6 +1,6 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import routes from "./routes/index";
-import MessageToast from "./components/messageToast";
+import MessageToast from "./components/MessageToast";
 
 const router = createHashRouter(routes);
 

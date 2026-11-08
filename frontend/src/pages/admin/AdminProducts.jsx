@@ -235,13 +235,14 @@ function AdminProducts() {
 
       let res = await axios.post(url, formData);
       const uploadedImageUrl = res.data.imageUrl;
-      showSuccess("Upload success:");
+      showSuccess("上傳成功");
       setTemplateData((prevTemplateData) => ({
         ...prevTemplateData,
         imageUrl: uploadedImageUrl,
       }));
     } catch (error) {
-      showError(`Upload error: ${error}`);
+      // 帶出後端的原因，例如「檔案大小不得超過 3MB」
+      showError(`上傳失敗! ${error.response?.data?.message ?? ""}`);
     } finally {
       setIsLoading(false);
     }

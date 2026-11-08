@@ -46,6 +46,11 @@
 
 ### Fixed
 
+- 前端後台文章 modal 的「輸入圖片網址」使用 `defaultValue`，編輯文章時顯示的是預設圖片網址，而不是該文章的圖片；改為 `value`。
+- 前端後台文章 modal 的「輸入圖片網址」、「作者」label 沒有對應到正確的欄位（點 label 不會聚焦，螢幕閱讀器也讀不到）。
+- 前端後台產品圖片上傳失敗時顯示 `Upload error: AxiosError: ...`，改為顯示後端原因，例如 `上傳失敗! 檔案大小不得超過 3MB`；成功提示改為「上傳成功」。
+- 前端登入失敗時顯示 `登入失敗 AxiosError: ...`，改為顯示後端回傳的原因，例如登入次數過多時的 `登入失敗次數過多，請 15 分鐘後再試`。
+- 前端 `App.jsx` 以 `./components/messageToast` 匯入 `MessageToast.jsx`，大小寫不一致，在區分大小寫的檔案系統（Linux）上找不到檔案。
 - 前端 `Login.jsx`、`ProductedRoute.jsx` 使用未解構的 `VITE_APP_API_COOKIE_PATH`，token 失效時拋出 ReferenceError、舊 cookie 清不掉。登入寫入 cookie 時也帶上相同的 `path`。
 - 前端 `AdminOrders.jsx` 使用未定義的 `navigate`，token 失效時訂單頁出錯，而不是導回登入頁。
 - 前端登出改為呼叫 `POST /logout`，token 在伺服器端立即失效，不再只清 cookie。

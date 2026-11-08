@@ -62,7 +62,8 @@ const Login = () => {
         expired,
       )};path=${VITE_APP_API_COOKIE_PATH}`;
     } catch (error) {
-      setAlertMsg(`登入失敗 ${error}`);
+      // 顯示後端原因，例如 429 會提示多久後可以再試
+      setAlertMsg(error.response?.data?.message || "登入失敗，請再試一次");
     } finally {
       setIsLoading(false);
     }
