@@ -45,6 +45,9 @@
 - 前端登出改為呼叫 `POST /logout`，token 在伺服器端立即失效，不再只清 cookie。
 - 前端購物車頁每次購物車變動都重建商品 modal，開啟中的 modal 可能無法關閉；改為只建立一次，離開頁面時釋放。
 - 前端文章的 `content` 一律送出 `"default"`：後台新增「內文」欄位，文章頁改為顯示 `content`，`description` 只當作首頁卡片的摘要。本機既有文章的 `content` 以 `description` 補上。
+- 前端開啟 modal 後立刻送出時，modal 不會自動關閉（Bootstrap 在開啟動畫期間忽略 `hide()`）。新增 `utils/modal.js` 的 `createModal`，等動畫結束後再關閉，後台三個頁面與購物車頁改用它。
+- 前端後台新增、更新、刪除失敗時只顯示「更新失敗!」等固定文字，改為附上後端回傳的原因；沒有回應（網路錯誤）時不再於 catch 中拋錯。
+- 前端文章 modal 的標題誤寫為「產品」。
 - 前端 404 頁的提示原本在 render 中觸發，改到 effect 內；離開頁面時清除 3 秒後跳轉的計時器。
 - 分頁查無資料時，`current_page` 改為 0（原本是 1），與 Hexschool 實際回應一致。
 

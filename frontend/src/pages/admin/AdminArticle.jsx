@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Modal } from "bootstrap";
+import { createModal } from "../../utils/modal";
 import AdminArticleTable from "./AdminArticleTable";
 import AdminArticleModal from "./AdminArticleModal";
 import Loading from "../../components/Loading";
@@ -57,7 +57,7 @@ const AdminArticle = () => {
       }
     })();
 
-    articleModalRef.current = new Modal(modalRef.current, {
+    articleModalRef.current = createModal(modalRef.current, {
       backdrop: "static",
       keyboard: false,
     });
@@ -204,11 +204,13 @@ const AdminArticle = () => {
       showSuccess(res.data.message);
       articleModalRef.current.hide();
       getArticleInfo();
-    } catch {
+    } catch (error) {
+      // 帶出後端的原因，例如「content 屬性不得為空」
+      const reason = error.response?.data?.message ?? "";
       if (modalType === "edit") {
-        showError(`更新失敗!`);
+        showError(`更新失敗! ${reason}`);
       } else {
-        showError(`新增失敗! `);
+        showError(`新增失敗! ${reason}`);
       }
     } finally {
       setIsLoading(false);
@@ -225,7 +227,7 @@ const AdminArticle = () => {
       articleModalRef.current.hide();
       getArticleInfo();
     } catch (error) {
-      showError(`刪除失敗! ${error.response.data.message}`);
+      showError(`刪除失敗! ${error.response?.data?.message ?? ""}`);
     } finally {
       setIsLoading(false);
     }

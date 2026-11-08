@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Modal } from "bootstrap";
+import { createModal } from "../../utils/modal";
 import AdminProductTable from "./AdminProductTable";
 import AdminProductModal from "./AdminProductModal";
 import Loading from "../../components/Loading";
@@ -62,7 +62,7 @@ function AdminProducts() {
       }
     })();
 
-    productModalRef.current = new Modal(modalRef.current, {
+    productModalRef.current = createModal(modalRef.current, {
       backdrop: "static",
       keyboard: false,
     });
@@ -156,7 +156,7 @@ function AdminProducts() {
       setProducts(res.data.products);
       setPagiantion(res.data.pagination);
     } catch (error) {
-      showError(error.response.data.message);
+      showError(error.response?.data?.message ?? "取得資料失敗，請重新登入");
       setIsAuth(false);
     } finally {
       setIsLoading(false);
@@ -193,11 +193,13 @@ function AdminProducts() {
       showSuccess(res.data.message);
       productModalRef.current.hide();
       getProductInfo();
-    } catch {
+    } catch (error) {
+      // 帶出後端的原因，例如「content 屬性不得為空」
+      const reason = error.response?.data?.message ?? "";
       if (modalType === "edit") {
-        showError(`更新失敗!`);
+        showError(`更新失敗! ${reason}`);
       } else {
-        showError(`新增失敗! `);
+        showError(`新增失敗! ${reason}`);
       }
     } finally {
       setIsLoading(false);
@@ -214,7 +216,7 @@ function AdminProducts() {
       productModalRef.current.hide();
       getProductInfo();
     } catch (error) {
-      showError(`刪除失敗! ${error.response.data.message}`);
+      showError(`刪除失敗! ${error.response?.data?.message ?? ""}`);
     } finally {
       setIsLoading(false);
     }

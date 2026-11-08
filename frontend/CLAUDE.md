@@ -9,7 +9,7 @@ npm run dev                                             # 連本機後端（.env
 VITE_APP_API_BASE=http://localhost:4010 npm run dev      # 連 mock server（先在根目錄 npm run openapi:mock）
 ```
 
-環境變數會優先於 `.env.local`。`.env.local` 不在 git 裡，新環境需要自行建立，欄位見 `../docs/README.md`。
+環境變數會優先於 `.env.local`。`.env.local` 不在 git 裡，新環境從 `.env.example` 複製，欄位說明見 `../docs/README.md`。
 
 ## 開發原則
 

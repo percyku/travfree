@@ -46,10 +46,10 @@ const AdminArticleModal = ({
           <div className="modal-header">
             <h5 className="modal-title " id="exampleModalLabel">
               {modalType === "delete"
-                ? "刪除產品"
+                ? "刪除文章"
                 : modalType === "edit"
-                  ? "更新產品"
-                  : "新增產品"}
+                  ? "更新文章"
+                  : "新增文章"}
             </h5>
             <button
               type="button"

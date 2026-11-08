@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import * as bootstrap from "bootstrap";
+import { createModal } from "../../utils/modal";
 import { currency } from "../../utils/filter";
 import CartEmpty from "./CartEmpty";
 import SingleProductModal from "./SingleProductModal";
@@ -28,7 +28,7 @@ const CartCheckout = () => {
 
   // Modal 只建立一次。原本每次 carts 變動都重建，開啟中的 modal 會無法關閉
   useEffect(() => {
-    productModalRef.current = new bootstrap.Modal("#productModal", {
+    productModalRef.current = createModal("#productModal", {
       keyboard: false,
       // backdrop: "static",
     });

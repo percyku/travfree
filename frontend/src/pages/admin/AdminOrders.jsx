@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Modal } from "bootstrap";
+import { createModal } from "../../utils/modal";
 
 import AdminOrderModal from "./AdminOrderModal";
 import AdminOrderTable from "./AdminOrderTable";
@@ -57,7 +57,7 @@ const AdminOrders = () => {
       }
     })();
 
-    orderModalRef.current = new Modal(modalRef.current, {
+    orderModalRef.current = createModal(modalRef.current, {
       backdrop: "static",
       keyboard: false,
     });
@@ -103,8 +103,8 @@ const AdminOrders = () => {
       getOrderInfo();
       showSuccess(res.data.message);
       orderModalRef.current.hide();
-    } catch {
-      showError("更新失敗");
+    } catch (error) {
+      showError(`更新失敗! ${error.response?.data?.message ?? ""}`);
     } finally {
       setIsLoading(false);
     }
