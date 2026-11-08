@@ -38,7 +38,7 @@ const AdminArticle = () => {
     tag: [],
     title: "title1234",
     num: 1,
-    content: "default",
+    content: "",
   });
   const [modalType, setModalType] = useState("");
   const tags = ["亞洲", "歐洲", "美洲"];
@@ -89,7 +89,7 @@ const AdminArticle = () => {
       tag: article.tag || [],
       title: article.title || "",
       num: article.num || -1,
-      content: article.content || "default",
+      content: article.content || "",
     });
     articleModalRef.current.show();
 
@@ -172,6 +172,11 @@ const AdminArticle = () => {
   };
 
   const addOrUpdateArticleData = async (id) => {
+    // 後端也會檢查（tag 至少選擇一個），這裡先擋下，不必送出請求
+    if (!templateData.tag || templateData.tag.length === 0) {
+      showError("請至少選擇一個分類");
+      return;
+    }
     const articleData = {
       data: {
         ...templateData,

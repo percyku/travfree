@@ -1380,6 +1380,7 @@ components:
         title: { type: string, example: 大英帝國巡禮 }
         description:
           type: string
+          description: 摘要，顯示在首頁的文章卡片
           example: 倫敦旅遊必去大英博物館、倫敦塔、白金漢宮及搭乘倫敦眼，夏季（6-8月）天氣最舒適。
         image:
           type: string
@@ -1398,18 +1399,20 @@ components:
         isPublic: { type: boolean, example: true }
         content:
           type: string
-          description: 前台清單不含；單篇與後台清單含
+          description: 內文，純文字，換行以 `\n` 保存，前端不以 HTML 解析。前台清單不含；單篇與後台清單含
           example: 第一天從大英博物館開始，下午前往倫敦塔與塔橋……
         num: { type: integer, description: 只在分頁清單出現, example: 1 }
     ArticleInput:
       type: object
-      required: [title, description, author, content]
+      required: [title, description, author, content, tag]
       properties:
         title: { type: string, example: 大英帝國巡禮 }
-        description: { type: string, example: 倫敦旅遊必去大英博物館、倫敦塔、白金漢宮及搭乘倫敦眼。 }
+        description: { type: string, description: 摘要, example: 倫敦旅遊必去大英博物館、倫敦塔、白金漢宮及搭乘倫敦眼。 }
         image: { type: string, example: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be' }
         tag:
           type: array
+          description: 分類，至少一個。未傳或空陣列回 400 `tag 至少選擇一個`
+          minItems: 1
           items: { type: string }
           example: [歐洲]
         create_at:
@@ -1419,7 +1422,7 @@ components:
           example: 1774092156547
         author: { type: string, example: Oscar }
         isPublic: { type: boolean, example: true }
-        content: { type: string, example: 第一天從大英博物館開始，下午前往倫敦塔與塔橋…… }
+        content: { type: string, description: 內文，純文字, example: 第一天從大英博物館開始，下午前往倫敦塔與塔橋…… }
 
     Coupon:
       type: object

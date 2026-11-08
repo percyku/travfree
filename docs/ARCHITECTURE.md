@@ -262,5 +262,4 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 ### 前端
 
 - 前端沒有優惠券與付款的 UI，這兩組 API 目前只能直接呼叫。
-- `AdminArticleModal` 沒有 `content` 欄位，新文章的 `content` 一律是 `"default"`；`SingleArticle` 也不顯示 `content`。從 Hexschool 匯入的文章 `content` 也都是 `"default"`，內文實際放在 `description`，要補上欄位前需先決定兩者的用途。
 - Bootstrap 只有在開啟動畫（約 0.5 秒）結束後才接受 `hide()`。本機 API 回應很快，若開啟 modal 後立刻送出，資料會成功但 modal 不會自動關閉，按取消即可。

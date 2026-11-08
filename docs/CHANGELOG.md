@@ -21,12 +21,13 @@
 - 專案納入 git；`backend/CLAUDE.md`、`frontend/CLAUDE.md` 分別記錄各區規則。
 - 登入次數限制：同一 IP 對同一帳號 15 分鐘內失敗 5 次，或同一 IP 失敗 20 次，鎖 15 分鐘，期間回 429 並附 `Retry-After`（秒），密碼正確也擋。參數在 `app.login-limit.*`。
 - `prod` profile（`application-prod.properties`）：`JWT_SECRET`、`DB_PASSWORD`、`ADMIN_PASSWORD` 未設定、使用開發預設值，或 `JWT_SECRET` 不足 32 bytes 時拒絕啟動。
-- 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個。
+- 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個；之後加上文章分類必填的測試，共 79 個。
 
 ### Changed
 
 - **API 路徑移除 `api_path`**：`/v2/api/react-week2-api/...` 改為 `/v2/api/...`，例如 `/v2/api/products`、`/v2/api/admin/products`。舊路徑回 404，不保留相容。`/v2/admin/signin`、`/v2/logout`、`/v2/api/user/check`、`/v2/uploads/*` 不變。
 - 移除後端設定 `app.api-path`。
+- 文章的 `tag` 改為必填，至少一個；未傳或空陣列回 400 `tag 至少選擇一個`。後台文章表單送出前也會先檢查。
 - 開始前端開發，移除「不修改 `frontend/`」的規則。
 - 前端移除 `VITE_APP_API_PATH`，API 網址改為 `${VITE_APP_API_BASE}/api/...`；存 token 的 cookie 改名為 `freetrav-token`，已登入的人需重新登入一次。
 - 登入頁的帳號欄位預設改為空白（原本是 Hexschool 的個人帳號）。
@@ -43,6 +44,7 @@
 - 前端 `AdminOrders.jsx` 使用未定義的 `navigate`，token 失效時訂單頁出錯，而不是導回登入頁。
 - 前端登出改為呼叫 `POST /logout`，token 在伺服器端立即失效，不再只清 cookie。
 - 前端購物車頁每次購物車變動都重建商品 modal，開啟中的 modal 可能無法關閉；改為只建立一次，離開頁面時釋放。
+- 前端文章的 `content` 一律送出 `"default"`：後台新增「內文」欄位，文章頁改為顯示 `content`，`description` 只當作首頁卡片的摘要。本機既有文章的 `content` 以 `description` 補上。
 - 前端 404 頁的提示原本在 render 中觸發，改到 effect 內；離開頁面時清除 3 秒後跳轉的計時器。
 - 分頁查無資料時，`current_page` 改為 0（原本是 1），與 Hexschool 實際回應一致。
 

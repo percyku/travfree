@@ -139,18 +139,36 @@ const AdminArticleModal = ({
                   <hr />
                   <div className="mb-2">
                     <label htmlFor="description" className="form-label">
-                      文章描述
+                      摘要（顯示在首頁的文章卡片）
                     </label>
                     <textarea
                       id="description"
                       className="form-control"
-                      placeholder="請輸入產品描述"
+                      placeholder="請輸入文章摘要"
+                      rows={2}
                       value={templateData.description}
                       onChange={handleModalInputChange}
                     ></textarea>
                   </div>
 
+                  <div className="mb-2">
+                    <label htmlFor="content" className="form-label">
+                      內文
+                    </label>
+                    <textarea
+                      id="content"
+                      className="form-control"
+                      placeholder="請輸入文章內文"
+                      rows={8}
+                      value={templateData.content}
+                      onChange={handleModalInputChange}
+                    ></textarea>
+                  </div>
+
                   <div className="mb-5">
+                    <div className="form-label">
+                      分類<span className="text-danger">（至少選一個）</span>
+                    </div>
                     {tags?.map((tag, i) => {
                       let isChecked = templateData.tag?.find((item) =>
                         item === tag ? true : false,

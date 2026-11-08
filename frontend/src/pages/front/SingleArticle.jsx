@@ -80,7 +80,13 @@ const SingleArticle = () => {
                   </div>
 
                   <div>
-                    <p className="text-start fs-5">{article.description}</p>
+                    {/* 內文是純文字，以 pre-line 保留換行，不當作 HTML 解析 */}
+                    <p
+                      className="text-start fs-5"
+                      style={{ whiteSpace: "pre-line" }}
+                    >
+                      {article.content}
+                    </p>
                   </div>
                 </div>
               </div>

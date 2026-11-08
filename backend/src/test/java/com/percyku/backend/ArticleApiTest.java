@@ -17,7 +17,11 @@ class ArticleApiTest extends ApiTestSupport {
 	private static final long CREATE_AT_MILLIS = 1774092156547L;
 
 	private static Map<String, Object> articleBody(String title, boolean isPublic) {
-		return data(Map.of(
+		return data(articleFields(title, isPublic));
+	}
+
+	private static Map<String, Object> articleFields(String title, boolean isPublic) {
+		return Map.of(
 				"id", "",
 				"num", -1,
 				"title", title,
@@ -27,7 +31,7 @@ class ArticleApiTest extends ApiTestSupport {
 				"create_at", CREATE_AT_MILLIS,
 				"author", "Oscar",
 				"isPublic", isPublic,
-				"content", "完整內文"));
+				"content", "完整內文");
 	}
 
 	private String createArticle(String title, boolean isPublic) throws Exception {
@@ -101,6 +105,28 @@ class ArticleApiTest extends ApiTestSupport {
 		mockMvc.perform(auth(delete(API + "/admin/article/" + id)))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").value("找不到文章"));
+	}
+
+	@Test
+	void articleRequiresAtLeastOneTag() throws Exception {
+		Map<String, Object> article = new java.util.HashMap<>(articleFields("沒有分類", true));
+		article.put("tag", List.of());
+		adminPost(API + "/admin/article", data(article))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("tag 至少選擇一個"));
+
+		article.remove("tag");
+		adminPost(API + "/admin/article", data(article))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("tag 至少選擇一個"));
+
+		// 更新時也要檢查，既有文章不能把分類全部取消
+		String id = createArticle("有分類", true);
+		article.put("tag", List.of());
+		adminPut(API + "/admin/article/" + id, data(article))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("tag 至少選擇一個"));
 	}
 
 	@Test

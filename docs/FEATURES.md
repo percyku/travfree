@@ -149,8 +149,11 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 - `GET ~/admin/article/{id}`：不存在回 404 `找不到文章`。
 - `POST ~/admin/article`、`PUT ~/admin/article/{id}`：回傳 `已建立文章`、`已更新文章`。
 - `DELETE ~/admin/article/{id}`：不存在回 404 `找不到文章`。
+- 新增與更新時 `tag` 未傳或為空陣列，回 400 `tag 至少選擇一個`。既有沒有分類的文章仍可讀取，但下次更新時必須補上。
 
-欄位：`title`、`description`、`author`、`content` 必填；`image`、`tag`、`isPublic` 選填。
+欄位：`title`、`description`、`author`、`content` 必填；`tag` 必填且至少一個；`image`、`isPublic` 選填。
+
+`description` 是**摘要**，顯示在首頁的文章卡片；`content` 是**內文**，顯示在文章頁。內文是純文字，前端以 `white-space: pre-line` 保留換行，不當作 HTML 解析。
 
 `create_at` 原值保存，**不換算單位**。前端傳 `Date.now()`（毫秒）並以 `new Date(create_at)` 顯示。新增時未傳則用目前毫秒，更新時未傳則保留原值。
 
