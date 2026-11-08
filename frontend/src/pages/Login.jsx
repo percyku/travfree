@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Loading from "../components/Loading";
-const { VITE_APP_API_BASE, VITE_APP_TOKEN_NAME } = import.meta.env;
+const { VITE_APP_API_BASE, VITE_APP_TOKEN_NAME, VITE_APP_API_COOKIE_PATH } =
+  import.meta.env;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const Login = () => {
       setAuthData({ token, expired });
       document.cookie = `${VITE_APP_TOKEN_NAME}=${token};expires=${new Date(
         expired,
-      )};`;
+      )};path=${VITE_APP_API_COOKIE_PATH}`;
     } catch (error) {
       setAlertMsg(`登入失敗 ${error}`);
     } finally {

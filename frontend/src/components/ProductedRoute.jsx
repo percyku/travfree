@@ -3,7 +3,8 @@ import axios from "axios";
 import { RotatingTriangles } from "react-loader-spinner";
 import { useNavigate } from "react-router";
 
-const { VITE_APP_API_BASE, VITE_APP_TOKEN_NAME } = import.meta.env;
+const { VITE_APP_API_BASE, VITE_APP_TOKEN_NAME, VITE_APP_API_COOKIE_PATH } =
+  import.meta.env;
 
 const ProductedRoute = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Modal } from "bootstrap";
 
@@ -10,6 +11,7 @@ import useMessage from "../../hooks/useMessage";
 
 const { VITE_APP_API_BASE } = import.meta.env;
 const AdminOrders = () => {
+  const navigate = useNavigate();
   const { showSuccess, showError } = useMessage();
 
   const [isLoading, setIsLoading] = useState(false);

@@ -30,12 +30,16 @@
 - 開始前端開發，移除「不修改 `frontend/`」的規則。
 - 前端移除 `VITE_APP_API_PATH`，API 網址改為 `${VITE_APP_API_BASE}/api/...`；存 token 的 cookie 改名為 `freetrav-token`，已登入的人需重新登入一次。
 - 登入頁的帳號欄位預設改為空白（原本是 Hexschool 的個人帳號）。
+- 新增 `frontend/.env.example`，新環境複製為 `.env.local` 即可。
 - CORS 預設允許的來源加入 `http://localhost:8081`，讓 Swagger UI 的 Try it out 可以呼叫本機後端。
 - `backend/pom.xml` 新增 test scope 的 `swagger-request-validator-mockmvc`。
 - `backend/pom.xml` 新增 test scope 的 H2 相依性。
 
 ### Fixed
 
+- 前端 `Login.jsx`、`ProductedRoute.jsx` 使用未解構的 `VITE_APP_API_COOKIE_PATH`，token 失效時拋出 ReferenceError、舊 cookie 清不掉。登入寫入 cookie 時也帶上相同的 `path`。
+- 前端 `AdminOrders.jsx` 使用未定義的 `navigate`，token 失效時訂單頁出錯，而不是導回登入頁。
+- 前端登出改為呼叫 `POST /logout`，token 在伺服器端立即失效，不再只清 cookie。
 - 分頁查無資料時，`current_page` 改為 0（原本是 1），與 Hexschool 實際回應一致。
 
 ### 與 Hexschool 的差異

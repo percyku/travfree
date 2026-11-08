@@ -30,7 +30,7 @@ cd frontend
 npm run dev
 ```
 
-前端的 `.env.local` 不在 git 裡，新環境需要自行建立：
+前端的 `.env.local` 不在 git 裡，新環境從範本複製：`cp frontend/.env.example frontend/.env.local`。內容如下：
 
 ```bash
 VITE_APP_API_BASE=http://localhost:8080/v2

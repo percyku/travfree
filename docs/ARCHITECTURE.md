@@ -261,10 +261,6 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 
 ### 前端
 
-- `Login.jsx:45`、`ProductedRoute.jsx:33` 使用未解構的 `VITE_APP_API_COOKIE_PATH`，token 失效時會拋 ReferenceError，舊 cookie 清不掉。實際影響：畫面仍會回到登入頁，重新登入後恢復正常。
-- `AdminOrders.jsx:40` 使用未定義的 `navigate`，token 失效時訂單頁會出錯，而不是導回登入頁。
-- `NavAdmin.jsx` 登出只清 cookie，沒有呼叫 `POST /logout`，token 在到期前（預設 7 天）仍然有效。
 - 前端沒有優惠券與付款的 UI，這兩組 API 目前只能直接呼叫。
-- `.env.local` 被 `frontend/.gitignore` 排除，新 clone 的環境沒有設定檔，需要依 [README.md](README.md) 自行建立。
-- `AdminArticleModal` 沒有 `content` 欄位，新文章的 `content` 一律是 `"default"`；`SingleArticle` 也不顯示 `content`。
+- `AdminArticleModal` 沒有 `content` 欄位，新文章的 `content` 一律是 `"default"`；`SingleArticle` 也不顯示 `content`。從 Hexschool 匯入的文章 `content` 也都是 `"default"`，內文實際放在 `description`，要補上欄位前需先決定兩者的用途。
 - Bootstrap 只有在開啟動畫（約 0.5 秒）結束後才接受 `hide()`。本機 API 回應很快，若開啟 modal 後立刻送出，資料會成功但 modal 不會自動關閉，按取消即可。

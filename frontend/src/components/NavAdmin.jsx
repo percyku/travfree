@@ -1,10 +1,20 @@
 import { NavLink, useNavigate } from "react-router-dom";
-const { VITE_APP_API_COOKIE_PATH, VITE_APP_TOKEN_NAME } = import.meta.env;
+import axios from "axios";
+const { VITE_APP_API_BASE, VITE_APP_API_COOKIE_PATH, VITE_APP_TOKEN_NAME } =
+  import.meta.env;
 const NavAdmin = () => {
   const navigate = useNavigate();
-  const logout = () => {
-    document.cookie = `${VITE_APP_TOKEN_NAME}=; max-age=0; path=${VITE_APP_API_COOKIE_PATH}`;
-    navigate(`/login`);
+  const logout = async () => {
+    try {
+      // 讓伺服器端撤銷 token，否則 token 在到期前仍然有效
+      await axios.post(`${VITE_APP_API_BASE}/logout`);
+    } catch {
+      // 網路錯誤時仍要清掉本機的 token
+    } finally {
+      document.cookie = `${VITE_APP_TOKEN_NAME}=; max-age=0; path=${VITE_APP_API_COOKIE_PATH}`;
+      delete axios.defaults.headers.common.Authorization;
+      navigate(`/login`);
+    }
   };
 
   const handleActvie = ({ isActive }) => {
