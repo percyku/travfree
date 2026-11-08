@@ -28,9 +28,7 @@ export const createAsyncGetCart = createAsyncThunk(
   "cart/createAsyncGetCart",
   async (_, { dispatch }) => {
     try {
-      const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/cart`,
-      );
+      const res = await axios.get(`${VITE_APP_API_BASE}/api/cart`);
       dispatch(updateCart(res.data.data));
     } catch (error) {
       dispatch(
@@ -160,6 +158,36 @@ export const createAsyncDeleteAllCart = createAsyncThunk(
       dispatch(
         createAsyncMessage({
           message: error.response?.data?.message || `刪除全部項目失敗`,
+          success: false,
+        }),
+      );
+      throw error;
+    } finally {
+      dispatch(updateLoading(false));
+    }
+  },
+);
+
+// 優惠券只套用在目前購物車內的品項，之後才加入的品項不帶優惠（見 spec 的 POST /api/coupon）
+export const createAsyncApplyCoupon = createAsyncThunk(
+  "cart/createAsyncApplyCoupon",
+  async (code, { dispatch }) => {
+    try {
+      dispatch(updateLoading(true));
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/coupon`, {
+        data: { code },
+      });
+      dispatch(
+        createAsyncMessage({
+          message: res.data.message,
+          success: true,
+        }),
+      );
+      dispatch(createAsyncGetCart());
+    } catch (error) {
+      dispatch(
+        createAsyncMessage({
+          message: error.response?.data?.message || "套用優惠券失敗",
           success: false,
         }),
       );

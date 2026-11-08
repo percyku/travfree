@@ -16,6 +16,7 @@ import AdminLayout from "../layout/AdminLayout";
 import AdminProducts from "../pages/admin/AdminProducts";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminArticle from "../pages/admin/AdminArticle";
+import AdminCoupons from "../pages/admin/AdminCoupons";
 import NotFound from "../pages/NotFound";
 
 const routes = [
@@ -85,6 +86,10 @@ const routes = [
       {
         path: "articles",
         element: <AdminArticle />,
+      },
+      {
+        path: "coupons",
+        element: <AdminCoupons />,
       },
     ],
   },

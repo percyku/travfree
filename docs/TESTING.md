@@ -82,7 +82,6 @@ cd frontend && VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
 5. 確認成功頁的品項與總計。
 6. 到後台修改訂單的付款與外送狀態，確認付款日期顯示正確。
 7. 重新整理頁面，確認仍維持登入。
+8. 後台新增優惠券；前台購物車套用優惠碼，確認優惠券折抵與總計；送出訂單後在成功頁付款，確認付款時間。
 
-前端沒有 UI 的優惠券與付款，需要直接呼叫 API 驗證。
-
-用瀏覽器自動化時要注意，Bootstrap modal 在開啟動畫結束前會忽略 `hide()`。腳本要等動畫結束再送出，否則會誤判成 modal 關不掉。
+Bootstrap modal 在開啟動畫結束前會忽略 `hide()`，前端以 `utils/modal.js` 的 `createModal` 處理，送出後會等動畫結束再關閉。

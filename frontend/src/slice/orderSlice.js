@@ -29,9 +29,7 @@ export const createAsyncGetOrder = createAsyncThunk(
   "order/createAsyncGetOrder",
   async (orderId, { dispatch }) => {
     try {
-      const res = await axios.get(
-        `${VITE_APP_API_BASE}/api/order/${orderId}`,
-      );
+      const res = await axios.get(`${VITE_APP_API_BASE}/api/order/${orderId}`);
 
       dispatch(updateOrder(res.data));
     } catch (error) {
@@ -51,10 +49,7 @@ export const createAsyncSubmitForm = createAsyncThunk(
   async (form, { dispatch }) => {
     dispatch(updateLoading(true));
     try {
-      const res = await axios.post(
-        `${VITE_APP_API_BASE}/api/order`,
-        form,
-      );
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/order`, form);
       dispatch(
         createAsyncMessage({
           message: "送出訂單成功",
@@ -73,6 +68,34 @@ export const createAsyncSubmitForm = createAsyncThunk(
       throw error;
     } finally {
       dispatch(createAsyncGetCart());
+      dispatch(updateLoading(false));
+    }
+  },
+);
+
+// 只標記為已付款，沒有串接金流（見 spec 的 POST /api/pay/{id}）
+export const createAsyncPayOrder = createAsyncThunk(
+  "order/createAsyncPayOrder",
+  async (orderId, { dispatch }) => {
+    dispatch(updateLoading(true));
+    try {
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/pay/${orderId}`);
+      dispatch(
+        createAsyncMessage({
+          message: res.data.message,
+          success: true,
+        }),
+      );
+      await dispatch(createAsyncGetOrder(orderId));
+    } catch (error) {
+      dispatch(
+        createAsyncMessage({
+          message: error.response?.data?.message || "付款失敗",
+          success: false,
+        }),
+      );
+      throw error;
+    } finally {
       dispatch(updateLoading(false));
     }
   },

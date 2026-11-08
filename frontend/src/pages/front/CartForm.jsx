@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { currency } from "../../utils/filter";
+import CartPriceRows from "./CartPriceRows";
 import { updateOrderId, createAsyncSubmitForm } from "../../slice/orderSlice";
 const CartForm = () => {
   const navigate = useNavigate();
@@ -11,10 +12,6 @@ const CartForm = () => {
   const orderId = useSelector((state) => state.order.orderId);
   const carts = useSelector((state) => state.cart.carts);
   const final_total = useSelector((state) => state.cart.final_total);
-  // 原價小計可以直接從 carts 算出，不需要另外存成 state
-  const origPrice = carts.reduce((acc, cart) => {
-    return acc + cart.product.origin_price * cart.qty;
-  }, 0);
 
   useEffect(() => {
     if (orderId !== "") {
@@ -211,21 +208,7 @@ const CartForm = () => {
                 <div className="col col-lg-4 d-none d-lg-block">
                   <div className="card bg-white rounded-4 p-7 border-0">
                     <h3 className="fs-4 fw-bold text-neutral-100">費用明細</h3>
-                    <div className="border-bottom py-9 mb-9">
-                      <div className="d-flex flex-nowrap justify-content-between z text-neutral-80 mb-4">
-                        <p className="fs-5">原價小計</p>
-                        <p className="fs-5 fw-bold">
-                          NT$ {currency(origPrice)}
-                        </p>
-                      </div>
-
-                      <div className="d-flex flex-nowrap justify-content-between text-neutral-80">
-                        <p className="fs-5">優惠折抵</p>
-                        <p className="fs-5 fw-bold text-primary-60">
-                          - {origPrice - final_total}
-                        </p>
-                      </div>
-                    </div>
+                    <CartPriceRows />
 
                     <div className="d-flex flex-nowrap justify-content-between align-items-center text-neutral-80 mb-9">
                       <p className="fs-5">總計</p>

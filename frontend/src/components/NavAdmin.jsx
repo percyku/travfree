@@ -46,6 +46,13 @@ const NavAdmin = () => {
                 </NavLink>
               </span>
             </li>
+            <li className="nav-item">
+              <span>
+                <NavLink className={handleActvie} to="/admin/coupons">
+                  優惠券列表
+                </NavLink>
+              </span>
+            </li>
           </ul>
           <div
             className="collapse navbar-collapse justify-content-end"

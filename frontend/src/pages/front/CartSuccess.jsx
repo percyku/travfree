@@ -1,11 +1,21 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createAsyncGetOrder } from "../../slice/orderSlice";
+import {
+  createAsyncGetOrder,
+  createAsyncPayOrder,
+} from "../../slice/orderSlice";
+import { currency } from "../../utils/filter";
 function CartSuccess() {
   const { orderId } = useParams();
   const dispatch = useDispatch();
   const orders = useSelector((state) => state.order.orders);
+  const isLoading = useSelector((state) => state.order.isLoading);
+
+  // 只標記為已付款，沒有串接金流；結果提示由 thunk 顯示
+  const payOrder = () => {
+    dispatch(createAsyncPayOrder(orderId)).catch(() => {});
+  };
 
   useEffect(() => {
     dispatch(createAsyncGetOrder(orderId));
@@ -67,12 +77,41 @@ function CartSuccess() {
                       </li>
                     );
                   })}
-                  <li className="list-group-item px-0 pb-0 mb-4">
+                  <li className="list-group-item px-0 pb-0">
                     <div className="d-flex justify-content-between mt-2">
                       <p className="mb-0 h4 fw-bold">總計</p>
-                      <p className="mb-0 h4 fw-bold">NT${orders.total}</p>
+                      <p className="mb-0 h4 fw-bold">
+                        NT${currency(orders.total)}
+                      </p>
                     </div>
                   </li>
+                  {orders.id && (
+                    <li className="list-group-item px-0 pb-0 mb-4">
+                      <div className="d-flex justify-content-between align-items-center mt-2">
+                        <p className="mb-0 fw-bold">付款狀態</p>
+                        {orders.is_paid ? (
+                          <p className="mb-0 text-success fw-bold">
+                            已付款
+                            {/* paid_date 是 Unix 秒 */}
+                            {orders.paid_date &&
+                              `（${new Date(orders.paid_date * 1000).toLocaleString()}）`}
+                          </p>
+                        ) : (
+                          <div className="d-flex align-items-center">
+                            <p className="mb-0 me-3 text-danger">未付款</p>
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              disabled={isLoading}
+                              onClick={payOrder}
+                            >
+                              立即付款
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>

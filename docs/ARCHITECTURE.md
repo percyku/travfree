@@ -66,13 +66,14 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | `/product/:id` | `SingleProduct` | 公開 | 單一產品 |
 | `/searchproduct/:search` | `SearchProduct` | 公開 | 依標題或分類搜尋 |
 | `/article/:id` | `SingleArticle` | 公開 | 單篇文章 |
-| `/cartcheckout` | `CartCheckout` | 公開 | 購物車 |
+| `/cartcheckout` | `CartCheckout` | 公開 | 購物車，可套用優惠碼 |
 | `/cartform` | `CartForm` | 公開 | 填寫訂購資料 |
-| `/cartsuccess/:orderId` | `CartSuccess` | 公開 | 訂購完成 |
+| `/cartsuccess/:orderId` | `CartSuccess` | 公開 | 訂購完成，可付款 |
 | `/login` | `Login` | 公開 | 管理者登入 |
 | `/admin/products` | `AdminProducts` | 需登入 | 產品管理 |
 | `/admin/orders` | `AdminOrders` | 需登入 | 訂單管理 |
 | `/admin/articles` | `AdminArticle` | 需登入 | 文章管理 |
+| `/admin/coupons` | `AdminCoupons` | 需登入 | 優惠券管理 |
 
 ### REST API
 
@@ -95,10 +96,10 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | PUT | `~/admin/order/{id}` | Admin | ✓ | 更新付款與外送狀態 |
 | DELETE | `~/admin/order/{id}` | Admin | | 刪除訂單 |
 | DELETE | `~/admin/orders/all` | Admin | | 刪除全部訂單 |
-| GET | `~/admin/coupons` | Admin | | 優惠券分頁 |
-| POST | `~/admin/coupon` | Admin | | 新增優惠券 |
-| PUT | `~/admin/coupon/{id}` | Admin | | 更新優惠券 |
-| DELETE | `~/admin/coupon/{id}` | Admin | | 刪除優惠券 |
+| GET | `~/admin/coupons` | Admin | ✓ | 優惠券分頁 |
+| POST | `~/admin/coupon` | Admin | ✓ | 新增優惠券 |
+| PUT | `~/admin/coupon/{id}` | Admin | ✓ | 更新優惠券 |
+| DELETE | `~/admin/coupon/{id}` | Admin | ✓ | 刪除優惠券 |
 | GET | `~/admin/articles` | Admin | ✓ | 文章分頁 |
 | GET | `~/admin/article/{id}` | Admin | | 單篇文章 |
 | POST | `~/admin/article` | Admin | ✓ | 新增文章 |
@@ -112,11 +113,11 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | PUT | `~/cart/{id}` | 公開 | ✓ | 更新數量 |
 | DELETE | `~/cart/{id}` | 公開 | ✓ | 刪除單一品項 |
 | DELETE | `~/carts` | 公開 | ✓ | 清空購物車 |
-| POST | `~/coupon` | 公開 | | 套用優惠券 |
+| POST | `~/coupon` | 公開 | ✓ | 套用優惠券 |
 | POST | `~/order` | 公開 | ✓ | 建立訂單 |
 | GET | `~/orders` | **Admin** | | 訂單分頁（與 Hexschool 不同） |
 | GET | `~/order/{id}` | 公開 | ✓ | 單筆訂單 |
-| POST | `~/pay/{id}` | 公開 | | 付款 |
+| POST | `~/pay/{id}` | 公開 | ✓ | 付款 |
 | GET | `~/articles` | 公開 | ✓ | 公開文章分頁 |
 | GET | `~/article/{id}` | 公開 | ✓ | 單篇公開文章 |
 | GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 37 個 API 內） |
@@ -261,4 +262,4 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 
 ### 前端
 
-- 前端沒有優惠券與付款的 UI，這兩組 API 目前只能直接呼叫。
+目前沒有已知的前端問題。

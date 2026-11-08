@@ -5,6 +5,8 @@ import { createModal } from "../../utils/modal";
 import { currency } from "../../utils/filter";
 import CartEmpty from "./CartEmpty";
 import SingleProductModal from "./SingleProductModal";
+import CouponForm from "./CouponForm";
+import CartPriceRows from "./CartPriceRows";
 import {
   createAsyncDeleteAllCart,
   createAsyncDeleteCart,
@@ -18,11 +20,6 @@ const CartCheckout = () => {
   const isLoading = useSelector((state) => state.cart.isLoading);
   const carts = useSelector((state) => state.cart.carts);
   const final_total = useSelector((state) => state.cart.final_total);
-  // 原價小計可以直接從 carts 算出，不需要另外存成 state
-  const origPrice = carts.reduce((acc, cart) => {
-    return acc + cart.product.origin_price * cart.qty;
-  }, 0);
-
   const [product, setProduct] = useState({});
   const productModalRef = useRef(null);
 
@@ -194,21 +191,8 @@ const CartCheckout = () => {
                 <div className="col col-lg-4 d-none d-lg-block">
                   <div className="card bg-white rounded-4 p-7 border-0">
                     <h3 className="fs-4 fw-bold text-neutral-100">費用明細</h3>
-                    <div className="border-bottom py-9 mb-9">
-                      <div className="d-flex flex-nowrap justify-content-between z text-neutral-80 mb-4">
-                        <p className="fs-5">原價小計</p>
-                        <p className="fs-5 fw-bold">
-                          NT$ {currency(origPrice)}
-                        </p>
-                      </div>
-
-                      <div className="d-flex flex-nowrap justify-content-between text-neutral-80">
-                        <p className="fs-5">優惠折抵</p>
-                        <p className="fs-5 fw-bold text-primary-60">
-                          - {origPrice - final_total}
-                        </p>
-                      </div>
-                    </div>
+                    <CouponForm />
+                    <CartPriceRows />
 
                     <div className="d-flex flex-nowrap justify-content-between align-items-center text-neutral-80 mb-9">
                       <p className="fs-5">總計</p>
@@ -257,8 +241,10 @@ const CartCheckout = () => {
                           data-bs-parent="#accordionFlushExample"
                         >
                           <div className="accordion-body py-0">
+                            <CouponForm />
+                            <CartPriceRows />
                             <h3 className="text-neutral-100 fs-4">
-                              NT$ {final_total}
+                              總計 NT$ {currency(final_total)}
                             </h3>
                           </div>
                         </div>

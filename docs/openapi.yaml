@@ -36,7 +36,7 @@ tags:
   - name: '管理控制台 - 訂單 (Orders)'
     description: 後台訂單管理，需要 admin token
   - name: '管理控制台 - 優惠券 (Coupon)'
-    description: 後台優惠券管理，需要 admin token（前端目前沒有 UI）
+    description: 後台優惠券管理，需要 admin token
   - name: '管理控制台 - 上傳圖片 (Upload)'
     description: 後台圖片上傳，需要 admin token
   - name: '管理控制台 - 文章 (Article)'
@@ -46,11 +46,11 @@ tags:
   - name: '客戶購物 - 購物車 (Cart)'
     description: 購物車，全站共用一台
   - name: '客戶購物 - 優惠券 (Coupon)'
-    description: 套用優惠券（前端目前沒有 UI）
+    description: 套用優惠券，前端在購物車頁使用
   - name: '客戶購物 - 結帳 (Order)'
     description: 結帳與查詢訂單
   - name: '客戶購物 - 付款 (Pay)'
-    description: 付款，只標記狀態（前端目前沒有 UI）
+    description: 付款，只標記狀態，前端在訂單成功頁使用
   - name: '客戶購物 - 文章 (Article)'
     description: 前台文章瀏覽，只含公開文章
   - name: '圖片檔案 (Uploads)'

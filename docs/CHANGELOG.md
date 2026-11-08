@@ -4,6 +4,7 @@
 
 ### Added
 
+- 前端優惠券與付款 UI：後台「優惠券列表」（`/admin/coupons`）可新增、編輯、刪除，折扣以實付比例輸入並顯示折數，到期日有效到當天 23:59:59；購物車頁可輸入優惠碼，費用明細分開列出商品特價折抵與優惠券折抵；訂單成功頁顯示付款狀態並可付款。
 - 新增 Spring Boot 後端，實作 Hexschool 電商 API 的全部 37 個端點，前端不需修改程式碼即可串接。
 - 認證：Spring Security + JWT（HS256），接受裸 token 與 `Bearer` 兩種格式；登出會撤銷該帳號既有 token。
 - 啟動時建立預設 admin 帳號 `admin@gmail.com`。
