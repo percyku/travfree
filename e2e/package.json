@@ -1,0 +1,13 @@
+{
+  "name": "travfree-e2e",
+  "private": true,
+  "description": "Playwright E2E 測試，對 docker compose 環境執行。從根目錄執行 npm run e2e。",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

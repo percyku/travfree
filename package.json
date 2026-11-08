@@ -9,7 +9,8 @@
     "seed": "node scripts/seed.mjs",
     "seed:export": "node scripts/seed-export.mjs",
     "db:backup": "bash scripts/db-backup.sh",
-    "db:restore": "bash scripts/db-restore.sh"
+    "db:restore": "bash scripts/db-restore.sh",
+    "e2e": "bash scripts/e2e.sh"
   },
   "devDependencies": {
     "@redocly/cli": "2.66.0",

@@ -4,6 +4,8 @@
 
 ### Added
 
+- E2E 測試（`npm run e2e`）：Playwright 在獨立的 docker compose 環境（`:8100`、全新資料庫）走完前台購物（搜尋 → 購物車 → 優惠碼 → 結帳 → 付款）、後台產品（新增 → 前台可見 → 刪除）與後台訂單（修改付款與外送狀態）。CI 的 Docker compose job 也會執行，失敗時上傳報告。取代 `docs/TESTING.md` 中大部分的手動端到端驗證。
+- `docker-compose.yml` 的資料庫連接埠與 volume 名稱可用 `DB_PORT`、`DB_VOLUME` 指定，預設值不變。
 - 種子資料：`npm run seed` 透過 API 匯入 `scripts/seed/data.json` 的 30 筆產品、5 篇文章與 1 張優惠券，已存在的資料會略過；`npm run seed:export` 從後台重新匯出。
 - 資料庫備份與還原：`npm run db:backup` 存到 `backups/`（不進 git，含上傳的圖片），`npm run db:restore -- <檔案>` 確認後還原。CI 的 Docker compose job 會實際執行匯入、備份、清空與還原。
 - Docker：`backend/Dockerfile`、`frontend/Dockerfile`（nginx 提供前端並轉發 `/v2`）與根目錄的 `docker-compose.yml`，`docker compose up -d --build` 一次啟動前端、後端與資料庫（`http://localhost:8000`）。沒有 `.env` 時使用開發設定，部署時依 `.env.example` 設定 prod profile 與密鑰。資料庫沿用原本的 volume `backend_postgres-data`。

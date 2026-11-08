@@ -141,6 +141,8 @@ cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRI
 | 變數 | 預設值 | 說明 |
 |---|---|---|
 | `APP_PORT` | `8000` | 對外的連接埠 |
+| `DB_PORT` | `5432` | 資料庫在本機的連接埠 |
+| `DB_VOLUME` | `backend_postgres-data` | 資料庫的 volume 名稱。E2E 用它建立獨立的資料庫 |
 | `PUBLIC_BASE_URL` | `http://localhost:8000/v2` | 上傳圖片網址的開頭，要與實際網址一致 |
 | `SPRING_PROFILES_ACTIVE`、`DB_PASSWORD`、`JWT_SECRET`、`ADMIN_EMAIL`、`ADMIN_PASSWORD` | 開發預設值 | 同上方的環境變數；`.env` 沒有設定時不傳入，由後端使用預設值 |
 

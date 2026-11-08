@@ -8,6 +8,8 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
 
 cd frontend
 npm test              # 執行一次；npm run test:watch 會持續監看
+
+npm run e2e           # 在根目錄，E2E（需要 Docker），見下方「E2E 測試」
 ```
 
 後端不需要 Docker。測試使用 `test` profile 與 H2 記憶體資料庫的 PostgreSQL 模式，設定在 `src/test/resources/application-test.properties`。
@@ -21,7 +23,7 @@ npm test              # 執行一次；npm run test:watch 會持續監看
 | OpenAPI spec | `npm run openapi:lint` |
 | 後端測試 | `./mvnw -B test`（Java 21、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
 | 前端 lint、測試與建置 | `npm run lint`、`npm test`、`npm run build` |
-| Docker compose | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`；接著匯入種子資料兩次（第二次應全部略過），再備份 → `down -v` → 還原，確認種子資料都還在。失敗時輸出各服務的 log |
+| Docker compose 與 E2E | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`；接著匯入種子資料兩次（第二次應全部略過），再備份 → `down -v` → 還原，確認種子資料都還在；最後執行 E2E。失敗時輸出各服務的 log，並上傳 `e2e-report`（Playwright 報告） |
 
 - CI 跑在區分大小寫的 Linux 上，可以抓到 macOS 上發現不了的匯入路徑大小寫錯誤。
 - 同一個分支有新的 push 時，會取消還在跑的舊檢查。
@@ -135,27 +137,63 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 - 不使用 `createMemoryRouter`：data router 在 jsdom 下建立 `Request` 會與 Node 的 `AbortSignal` 衝突。頁面沒有用到 loader，用 `MemoryRouter` 即可。
 
 
-## 端到端驗證
+## E2E 測試
 
-H2 無法完全代表 PostgreSQL，尤其是 `jsonb` 欄位。修改 entity 或 JSON 欄位後，請在真實環境驗證：
+Playwright（Chromium）在真實瀏覽器中，對 docker compose 環境（nginx、後端、PostgreSQL）走完主要流程。測試在 `e2e/`。
 
 ```bash
-docker compose up -d db     # 在根目錄
-cd backend
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
-# 另開終端機
-cd frontend && VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
+npm run e2e                               # 在根目錄執行
+npm run e2e -- --headed                   # 開啟瀏覽器視窗觀看
+npm run e2e -- tests/shopping.spec.js     # 只跑一個檔案
+E2E_KEEP=1 npm run e2e                    # 結束後保留環境（http://localhost:8100）
+cd e2e && npm run report                  # 查看上一次的 HTML 報告（失敗時含截圖、錄影與 trace）
 ```
 
-也可以用 `docker compose up -d --build` 啟動完整環境（`http://localhost:8000`），更接近部署的狀態。在瀏覽器走完主要流程：
+`npm run e2e`（`scripts/e2e.sh`）會啟動**獨立的環境**：專案名稱 `travfree-e2e`、網站 `:8100`、資料庫 `:5433`、全新的 volume，匯入種子資料後執行測試，結束時整套刪除。平常用的 `:8000` 環境與資料不受影響，也不會讀根目錄的 `.env`。第一次執行會安裝 Playwright 與 Chromium。
 
-1. 以 `admin@gmail.com` 登入，進入後台。
-2. 新增產品（含上傳圖片）與文章，並勾選啟用。
-3. 到前台確認產品與文章出現。
-4. 加入購物車、調整數量、填寫資料並送出訂單。
-5. 確認成功頁的品項與總計。
-6. 到後台修改訂單的付款與外送狀態，確認付款日期顯示正確。
-7. 重新整理頁面，確認仍維持登入。
-8. 後台新增優惠券；前台購物車套用優惠碼，確認優惠券折抵與總計；送出訂單後在成功頁付款，確認付款時間。
+| 測試 | 涵蓋範圍 |
+|---|---|
+| `shopping.spec.js` | 首頁搜尋 → 行程頁加入購物車 → 套用優惠碼 `Test50` → 填寫資料 → 送出訂單 → 成功頁付款 → 購物車已清空 |
+| `admin-products.spec.js` | 後台登入、新增並上架產品 → 前台行程列表看得到 → 後台刪除 → 前台看不到 |
+| `admin-orders.spec.js` | 以 API 下單 → 後台訂單列表看得到 → 改為已付款、外送中 → 重新開啟確認 → API 查詢確認 |
+
+### 查看報告
+
+每次執行都會產生新的 HTML 報告，覆蓋上一次的。
+
+```bash
+cd e2e && npm run report      # 開啟 http://localhost:9323，看完按 Ctrl+C 關閉
+```
+
+- 每個測試列出 `test.step` 的步驟與耗時，點進去可以看到每一步的操作。
+- **失敗的測試**另外附上：失敗當下的截圖、整段操作的錄影、trace。點 trace 會開啟 Trace Viewer，可以逐步看每個操作前後的畫面、當時的 DOM、網路請求與 console。
+- 通過的測試預設不保存截圖與 trace。想看完整過程時執行 `npm run e2e -- --trace on`。
+
+**CI 失敗時**：到 GitHub 的 Actions 頁面，打開失敗的那次執行，在頁面下方的 **Artifacts** 下載 `e2e-report`，解壓縮後：
+
+```bash
+cd e2e && npx playwright show-report <解壓縮的資料夾>/playwright-report
+npx playwright show-trace <解壓縮的資料夾>/test-results/<測試名稱>/trace.zip   # 只看 trace
+```
+
+trace 也可以直接拖曳到 [trace.playwright.dev](https://trace.playwright.dev) 查看，不需要安裝。
+
+### 撰寫原則
+
+- **依賴種子資料**（`scripts/seed/data.json`）：購物測試使用「台北3日遊」與優惠碼 `Test50`，修改種子時要一併確認。
+- **購物車全站共用**，測試依序執行（`workers: 1`），需要購物車的測試在開始前清空。
+- 測試建立的資料加上 `uniqueId()`，不依賴執行順序，也不依賴資料庫是否全新。
+- 和 Vitest 一樣，從使用者的角度查詢元素（label、按鈕文字、role）。桌機版的費用明細用「費用明細」卡片限定範圍。
+- 準備資料（例如後台測試需要的訂單）可以直接呼叫 API（`placeOrderByApi`），測試本身走畫面。
+- 不重試（`retries: 0`）：不穩定的測試要修正，而不是被重試蓋過。
+- 共用的操作放在 `e2e/tests/helpers.js`。
+
+### 手動驗證
+
+E2E 還沒涵蓋的項目，修改相關功能後請在瀏覽器確認：
+
+- 上傳圖片、新增與編輯文章，前台文章頁的顯示。
+- 重新整理頁面後仍維持登入、登出。
+- 修改 entity 或 JSON 欄位後，在真實 PostgreSQL 上走一次相關流程（H2 無法完全代表 PostgreSQL，尤其是 `jsonb` 欄位）。
 
 Bootstrap modal 在開啟動畫結束前會忽略 `hide()`，前端以 `utils/modal.js` 的 `createModal` 處理，送出後會等動畫結束再關閉。
