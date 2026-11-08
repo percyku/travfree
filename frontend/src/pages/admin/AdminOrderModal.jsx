@@ -1,3 +1,6 @@
+import { discountLabel, summarizeCoupons } from "../../utils/coupon";
+import { currency } from "../../utils/filter";
+
 const AdminOrderModal = ({
   modalRef,
   tempOrder,
@@ -5,6 +8,10 @@ const AdminOrderModal = ({
   updateOrderInfo,
   closeModal,
 }) => {
+  // 優惠券資訊來自下單當下的快照，之後刪除或修改優惠券都不影響
+  const { subtotal, couponDiscount, coupons } = summarizeCoupons(
+    tempOrder.products,
+  );
   return (
     <div
       className="modal fade"
@@ -82,6 +89,9 @@ const AdminOrderModal = ({
                   <tr>
                     <th>品項名稱</th>
                     <th>數量</th>
+                    <th className="text-end">小計</th>
+                    <th className="text-end">折扣後</th>
+                    <th>優惠券</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -89,13 +99,48 @@ const AdminOrderModal = ({
                     <tr key={cart.id}>
                       <td>{cart.product.title}</td>
                       <td>{cart.qty}</td>
+                      <td className="text-end">${currency(cart.total)}</td>
+                      <td className="text-end">
+                        ${currency(cart.final_total)}
+                      </td>
+                      <td>{cart.coupon?.code ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td className="border-0 text-end">總金額</td>
-                    <td className="border-0">${tempOrder.total}</td>
+                    <td colSpan={3} className="border-0 text-end">
+                      商品小計
+                    </td>
+                    <td className="border-0 text-end">${currency(subtotal)}</td>
+                    <td className="border-0" />
+                  </tr>
+                  <tr>
+                    <td colSpan={3} className="border-0 text-end">
+                      優惠券折抵
+                    </td>
+                    <td className="border-0 text-end text-danger">
+                      -${currency(couponDiscount)}
+                    </td>
+                    <td className="border-0">
+                      {coupons.length === 0
+                        ? "未使用"
+                        : coupons
+                            .map(
+                              (coupon) =>
+                                `${coupon.code}（${coupon.title}，${discountLabel(coupon.percent)}）`,
+                            )
+                            .join("、")}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={3} className="border-0 text-end fw-bold">
+                      實付金額
+                    </td>
+                    <td className="border-0 text-end fw-bold">
+                      ${currency(tempOrder.total)}
+                    </td>
+                    <td className="border-0" />
                   </tr>
                 </tfoot>
               </table>

@@ -25,3 +25,25 @@ export const discountLabel = (percent) => {
 };
 
 export const isExpired = (seconds) => seconds * 1000 < Date.now();
+
+/**
+ * 從訂單（或購物車）品項的優惠券快照整理出優惠資訊。
+ * 品項的 coupon 只在有套用時出現；套用後才加入的品項沒有 coupon，所以不能假設每個品項都有。
+ * @returns {{ subtotal: number, couponDiscount: number, coupons: object[] }}
+ *   subtotal 是售價小計（各品項 total 相加），couponDiscount 是優惠券折抵金額
+ */
+export const summarizeCoupons = (items) => {
+  const list = Object.values(items || {});
+  const subtotal = list.reduce((sum, item) => sum + item.total, 0);
+  const finalTotal = list.reduce((sum, item) => sum + item.final_total, 0);
+  const byId = new Map(
+    list
+      .filter((item) => item.coupon)
+      .map((item) => [item.coupon.id, item.coupon]),
+  );
+  return {
+    subtotal,
+    couponDiscount: subtotal - finalTotal,
+    coupons: [...byId.values()],
+  };
+};

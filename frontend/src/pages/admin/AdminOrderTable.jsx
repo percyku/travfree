@@ -1,3 +1,5 @@
+import { summarizeCoupons } from "../../utils/coupon";
+
 const AdminOrderTable = ({ orders, openModal }) => {
   return (
     <>
@@ -7,6 +9,7 @@ const AdminOrderTable = ({ orders, openModal }) => {
             <th scope="col">訂單 id</th>
             <th scope="col">購買用戶</th>
             <th scope="col">訂單金額</th>
+            <th scope="col">優惠券</th>
             <th scope="col">付款狀態</th>
             <th scope="col">付款日期</th>
             <th scope="col">留言訊息</th>
@@ -23,6 +26,11 @@ const AdminOrderTable = ({ orders, openModal }) => {
                   {order.user?.email}
                 </td>
                 <td>${order.total}</td>
+                <td>
+                  {summarizeCoupons(order.products)
+                    .coupons.map((coupon) => coupon.code)
+                    .join("、") || "—"}
+                </td>
                 <td>
                   {order.is_paid ? (
                     <span className="text-success fw-bold">付款完成</span>

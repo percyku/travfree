@@ -64,11 +64,16 @@ const AdminProductModal = ({
           </div>
           <div className="modal-body">
             {modalType === "delete" ? (
-              <p className="h4">
-                確定要刪除
-                <span className="text-danger">{templateData.title}</span>
-                嗎?
-              </p>
+              <>
+                <p className="h4">
+                  確定要刪除
+                  <span className="text-danger">{templateData.title}</span>
+                  嗎?
+                </p>
+                <p className="text-muted mb-0">
+                  刪除後無法復原，購物車中的這項商品會一併移除，歷史訂單不受影響。只是暫時不販售的話，建議改為取消「是否啟用」。
+                </p>
+              </>
             ) : (
               <div className="row">
                 <div className="col-sm-4">

@@ -33,12 +33,16 @@ const AdminCouponModal = ({
 
           <div className="modal-body">
             {modalType === "delete" ? (
-              <p className="h5">
-                確定要刪除
-                <span className="text-danger">{templateData.title}</span>（
-                {templateData.code}
-                ）嗎？已套用在購物車的優惠會一併移除，歷史訂單不受影響。
-              </p>
+              <>
+                <p className="h5">
+                  確定要刪除
+                  <span className="text-danger">{templateData.title}</span>（
+                  {templateData.code}）嗎？
+                </p>
+                <p className="text-muted mb-0">
+                  刪除後無法復原，已套用在購物車的優惠會一併移除，歷史訂單不受影響。只是暫停使用的話，建議改為取消「啟用」。
+                </p>
+              </>
             ) : (
               <>
                 <div className="mb-3">
