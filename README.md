@@ -134,8 +134,13 @@ cd frontend
 npm test
 npm run lint
 
-npm run e2e   # 在根目錄：以 Playwright 在獨立的 Docker 環境走完主要流程
+# 在根目錄：以 Playwright 在獨立的 Docker 環境走完主要流程
+npm run e2e
+npm run e2e -- --headed       # 開啟瀏覽器視窗，看測試自動操作
+cd e2e && npm run report      # 查看上一次的報告（http://localhost:9323）
 ```
+
+E2E 的其他選項與報告內容見 [docs/TESTING.md](docs/TESTING.md#e2e-測試)。
 
 後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。前端用 Vitest 與 React Testing Library 測主要流程，以 MSW 模擬 API，請求與回應同樣對照 `openapi.yaml` 檢查。push 到 `main` 或開 PR 時，GitHub Actions 會自動執行 spec 檢查與前後端的測試，並以 docker compose 實際啟動一次，做基本檢查與 E2E 測試。
 
