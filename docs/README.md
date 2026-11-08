@@ -18,11 +18,11 @@ Vite + React 前端（`frontend/`）搭配 Spring Boot 後端（`backend/`）。
 需要 JDK 21、Node.js 與 Docker。系統預設若是其他版本的 JDK，請如下指定 `JAVA_HOME`。
 
 ```bash
-# 1. 啟動 PostgreSQL
-cd backend
-docker compose up -d
+# 1. 只啟動 PostgreSQL（在根目錄）
+docker compose up -d db
 
 # 2. 啟動後端（http://localhost:8080/v2）
+cd backend
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
 
 # 3. 另開終端機啟動前端（http://localhost:5173）
@@ -55,6 +55,8 @@ VITE_APP_TOKEN_NAME=freetrav-token
 | `admin@gmail.com` | `Test123456` |
 
 新資料庫沒有任何產品或文章，請先到後台建立，前台才會有內容。
+
+要一次啟動前端、後端與資料庫，見下方的 [Docker](#docker)。
 
 ## API 契約
 
@@ -100,7 +102,52 @@ java.lang.IllegalStateException: prod profile 的設定不完整，拒絕啟動�
 
 `ADMIN_PASSWORD` 只在 admin 帳號不存在時用來建立帳號，之後修改它不會改變既有密碼，但 prod profile 仍要求設定。`PUBLIC_BASE_URL`、`CORS_ALLOWED_ORIGINS` 不檢查，但預設值是 localhost，部署時也要設定。
 
-**反向代理。** 登入次數限制以 IP 計算，預設取連線的來源位址，不信任 `X-Forwarded-For`，避免被偽造。放在 Nginx、負載平衡器等反向代理後面時，所有請求的來源都會是代理本身，要設定 `SERVER_FORWARD_HEADERS_STRATEGY=native`，並確認代理會覆寫（而不是附加）使用者傳來的 `X-Forwarded-For`。
+**反向代理。** 登入次數限制以 IP 計算，預設取連線的來源位址，不信任 `X-Forwarded-For`，避免被偽造。放在 Nginx、負載平衡器等反向代理後面時，所有請求的來源都會是代理本身，要設定 `SERVER_FORWARD_HEADERS_STRATEGY=native`，並確認代理會覆寫（而不是附加）使用者傳來的 `X-Forwarded-For`。docker compose 已經這樣設定。
+
+設定 `native` 之後，代理**不要**單獨帶 `X-Forwarded-Proto`：Tomcat 收到它會把連接埠改成 80/443，非預設連接埠（例如 `:8000`）的同源請求會被誤判為跨來源，回 403 `Invalid CORS request`。在前面加上處理 HTTPS 的負載平衡器時，要連同 `X-Forwarded-Port` 一起設定。
+
+## Docker
+
+根目錄的 `docker-compose.yml` 啟動三個服務：
+
+```
+瀏覽器 ──► frontend（nginx，http://localhost:8000）
+             ├─ /        → React 打包後的靜態檔
+             └─ /v2/...  → backend:8080 ──► db（PostgreSQL 16）
+```
+
+前後端是同一個網址，不需要設定 CORS。
+
+```bash
+docker compose up -d --build   # 建置並啟動全部
+docker compose up -d db        # 只啟動資料庫（開發模式）
+docker compose logs -f backend # 查看後端 log
+docker compose down            # 停止；加上 -v 會連資料一起刪除
+./scripts/smoke-test.sh        # 基本檢查，部署設定要帶 ADMIN_PASSWORD=...
+```
+
+**設定。** 沒有 `.env` 時使用開發設定，帳密與 `./mvnw spring-boot:run` 相同。部署時複製範本並填入密鑰：
+
+```bash
+cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRING_PROFILES_ACTIVE=prod
+```
+
+| 變數 | 預設值 | 說明 |
+|---|---|---|
+| `APP_PORT` | `8000` | 對外的連接埠 |
+| `PUBLIC_BASE_URL` | `http://localhost:8000/v2` | 上傳圖片網址的開頭，要與實際網址一致 |
+| `SPRING_PROFILES_ACTIVE`、`DB_PASSWORD`、`JWT_SECRET`、`ADMIN_EMAIL`、`ADMIN_PASSWORD` | 開發預設值 | 同上方的環境變數；`.env` 沒有設定時不傳入，由後端使用預設值 |
+
+**資料。** 資料庫存在 volume `backend_postgres-data`，沿用原本 `backend/docker-compose.yml` 建立的 volume，所以開發模式與 Docker 用的是同一份資料。上傳的圖片存在 volume `travfree_uploads`。
+
+- `DB_PASSWORD` 只在 volume 第一次建立時生效。既有資料庫要換密碼時，先在資料庫內執行 `ALTER USER travfree PASSWORD '...'`。
+- 圖片的 `imageUrl` 以上傳當時的 `PUBLIC_BASE_URL` 開頭。開發模式（`:8080`）上傳的圖片存在 `backend/uploads/`，在 Docker 環境不會顯示。
+
+**映像。**
+
+- `backend/Dockerfile`：JDK 映像打包 jar（略過測試，測試由 CI 另外跑），JRE 映像以非 root 使用者執行。
+- `frontend/Dockerfile`：Node 映像建置，nginx 映像提供靜態檔。`VITE_` 變數在建置時寫進 JS，預設 `VITE_APP_API_BASE=/v2`（相對路徑），要改用 `--build-arg`。nginx 設定在 `frontend/nginx.conf`，`client_max_body_size` 放寬為 10m，讓超過 3MB 的上傳由後端回 JSON 錯誤。
+- 資料庫的連接埠只開給本機（`127.0.0.1:5432`），不對外開放。
 
 ## 文件索引
 

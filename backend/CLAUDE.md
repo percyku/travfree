@@ -6,7 +6,7 @@ Spring Boot 3.5 + Java 21 + PostgreSQL。共用規則與 API 契約見根目錄�
 
 ```bash
 # 需要 JDK 21，系統預設不是 21
-docker compose up -d
+(cd .. && docker compose up -d db)   # 資料庫在根目錄的 docker-compose.yml
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run   # http://localhost:8080/v2
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
 ```

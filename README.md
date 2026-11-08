@@ -46,18 +46,29 @@ freetrav/
 
 ## 快速開始
 
-需要 JDK 21、Node.js 與 Docker。
+### 用 Docker 一次啟動
+
+只需要 Docker。前端、後端與資料庫都在容器裡執行：
 
 ```bash
 git clone https://github.com/percyku/freetrav.git
 cd freetrav
+docker compose up -d --build   # http://localhost:8000
+```
 
-# 1. 啟動 PostgreSQL
-cd backend
-docker compose up -d
+開啟 `http://localhost:8000/#/login` 登入。沒有 `.env` 時使用開發設定；部署時的設定見 [docs/README.md](docs/README.md#docker)。
+
+### 開發模式
+
+修改程式時，資料庫用 Docker，前後端在本機執行，存檔後立即生效。需要 JDK 21、Node.js 與 Docker。
+
+```bash
+# 1. 只啟動 PostgreSQL（在根目錄）
+docker compose up -d db
 
 # 2. 啟動後端：http://localhost:8080/v2
 #    系統預設不是 JDK 21 時，用 JAVA_HOME 指定
+cd backend
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
 
 # 3. 另開終端機，啟動前端：http://localhost:5173
@@ -99,7 +110,7 @@ npm test
 npm run lint
 ```
 
-後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。前端用 Vitest 與 React Testing Library 測主要流程，以 MSW 模擬 API，請求與回應同樣對照 `openapi.yaml` 檢查。push 到 `main` 或開 PR 時，GitHub Actions 會自動執行 spec 檢查與前後端的測試。
+後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。前端用 Vitest 與 React Testing Library 測主要流程，以 MSW 模擬 API，請求與回應同樣對照 `openapi.yaml` 檢查。push 到 `main` 或開 PR 時，GitHub Actions 會自動執行 spec 檢查與前後端的測試，並以 docker compose 實際啟動一次做基本檢查。
 
 ## 文件
 

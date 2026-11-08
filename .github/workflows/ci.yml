@@ -1,4 +1,4 @@
-# push 到 main 或開 PR 時自動檢查 spec、後端與前端。說明見 docs/TESTING.md 的「CI」。
+# push 到 main 或開 PR 時自動檢查 spec、後端、前端，並以 docker compose 實際啟動一次。說明見 docs/TESTING.md 的「CI」。
 name: CI
 
 on:
@@ -68,3 +68,34 @@ jobs:
       # MSW 模擬 API，並對 ../docs/openapi.yaml 檢查請求與回應
       - run: npm test
       - run: npm run build
+
+  docker:
+    name: Docker compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # 以 prod profile 啟動，密鑰每次隨機產生、只在這次執行使用
+      - name: 產生臨時的 .env
+        run: |
+          db_password=$(openssl rand -hex 16)
+          jwt_secret=$(openssl rand -base64 48 | tr -d '\n')
+          admin_password=$(openssl rand -hex 12)
+          echo "::add-mask::$db_password"
+          echo "::add-mask::$jwt_secret"
+          echo "::add-mask::$admin_password"
+          {
+            echo "SPRING_PROFILES_ACTIVE=prod"
+            echo "DB_PASSWORD=$db_password"
+            echo "JWT_SECRET=$jwt_secret"
+            echo "ADMIN_PASSWORD=$admin_password"
+          } > .env
+      - name: 建置並啟動
+        run: docker compose up -d --build --wait
+      - name: Smoke test
+        run: ADMIN_PASSWORD=$(sed -n 's/^ADMIN_PASSWORD=//p' .env) ./scripts/smoke-test.sh
+      - name: 失敗時輸出 logs
+        if: failure()
+        run: docker compose logs --no-color
+      - name: 清除
+        if: always()
+        run: docker compose down -v

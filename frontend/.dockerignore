@@ -1,0 +1,9 @@
+node_modules/
+dist/
+# 本機的 .env.local 不能進映像，否則會蓋掉上面的建置參數
+.env.local
+.env.*.local
+*.log
+CLAUDE.md
+Dockerfile
+.dockerignore

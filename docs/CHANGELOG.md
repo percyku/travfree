@@ -4,6 +4,8 @@
 
 ### Added
 
+- Docker：`backend/Dockerfile`、`frontend/Dockerfile`（nginx 提供前端並轉發 `/v2`）與根目錄的 `docker-compose.yml`，`docker compose up -d --build` 一次啟動前端、後端與資料庫（`http://localhost:8000`）。沒有 `.env` 時使用開發設定，部署時依 `.env.example` 設定 prod profile 與密鑰。資料庫沿用原本的 volume `backend_postgres-data`。
+- CI 新增 Docker compose job：以 prod profile 與隨機密鑰啟動全新環境，執行 `scripts/smoke-test.sh`。
 - CI（`.github/workflows/ci.yml`）：push 到 `main` 或開 PR 時，以 GitHub Actions 執行 OpenAPI lint、後端測試，以及前端 lint、測試與建置。
 - 前端自動化測試（`cd frontend && npm test`）：Vitest + React Testing Library + MSW，涵蓋登入、後台路由保護、購物車、優惠券、結帳與付款，以及後台產品、文章、訂單、優惠券管理與登出，共 90 個。MSW 的每個請求與回應都會對 `docs/openapi.yaml` 檢查，前端送錯格式或測試假資料與 spec 不符時測試失敗。說明見 `docs/TESTING.md`。
 - `DELETE /api/coupon`：移除購物車已套用的優惠券；前端在已套用的優惠碼旁加上「移除」。
@@ -31,6 +33,8 @@
 
 ### Changed
 
+- 移除 `backend/docker-compose.yml`，資料庫改由根目錄的 `docker-compose.yml` 提供，開發時執行 `docker compose up -d db`。
+- 前端 `vite.config.js` 的 `base` 改為 `/`（原本 production 是舊專案 gh-pages 的 `/react-training-2025-final/`），並移除 `gh-pages` 與 `deploy` script。
 - **API 路徑移除 `api_path`**：`/v2/api/react-week2-api/...` 改為 `/v2/api/...`，例如 `/v2/api/products`、`/v2/api/admin/products`。舊路徑回 404，不保留相容。`/v2/admin/signin`、`/v2/logout`、`/v2/api/user/check`、`/v2/uploads/*` 不變。
 - 移除後端設定 `app.api-path`。
 - 已套用的優惠券改為只在**啟用且未過期**時有效，停用或過期立即不再折扣（原本只在套用時檢查到期日）。

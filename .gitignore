@@ -10,3 +10,6 @@ backend.zip
 # IDE 工具產生的升級紀錄
 .github/modernize/
 backend/.github/modernize/
+
+# docker compose 的密鑰，範本見 .env.example
+.env

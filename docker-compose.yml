@@ -1,0 +1,67 @@
+# 前端（nginx）、後端、資料庫一起啟動：docker compose up -d --build
+# 只啟動資料庫、在本機跑後端開發：docker compose up -d db
+# 沒有 .env 時使用開發設定；部署時複製 .env.example 為 .env 並設定密鑰。說明見 docs/README.md。
+name: travfree
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: travfree
+      POSTGRES_USER: travfree
+      # 只在 volume 第一次建立時生效，之後改密碼要在資料庫內修改
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-travfree}
+    ports:
+      # 只開給本機，讓 ./mvnw spring-boot:run 可以連線；不對外開放
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U travfree -d travfree"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_URL=jdbc:postgresql://db:5432/travfree
+      - DB_PASSWORD=${DB_PASSWORD:-travfree}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:8000/v2}
+      # 在 nginx 後面，以 X-Forwarded-For 取得真實 client IP（登入次數限制使用）
+      - SERVER_FORWARD_HEADERS_STRATEGY=native
+      # 以下沒有寫值：.env 有設定才傳入，否則使用後端的開發預設值
+      - SPRING_PROFILES_ACTIVE
+      - JWT_SECRET
+      - ADMIN_EMAIL
+      - ADMIN_PASSWORD
+    volumes:
+      - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost:8080/v2/api/articles"]
+      interval: 5s
+      timeout: 3s
+      start_period: 30s
+      retries: 20
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8000}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  # 沿用原本 backend/docker-compose.yml 建立的 volume，既有資料不用搬
+  postgres-data:
+    name: backend_postgres-data
+  uploads:

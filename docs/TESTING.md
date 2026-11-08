@@ -14,17 +14,20 @@ npm test              # 執行一次；npm run test:watch 會持續監看
 
 ## CI
 
-`.github/workflows/ci.yml`：push 到 `main` 或開 PR 時，GitHub Actions 在 Linux 上同時跑三個 job，結果在 repo 的 **Actions** 分頁：
+`.github/workflows/ci.yml`：push 到 `main` 或開 PR 時，GitHub Actions 在 Linux 上同時跑四個 job，結果在 repo 的 **Actions** 分頁：
 
 | Job | 內容 |
 |---|---|
 | OpenAPI spec | `npm run openapi:lint` |
 | 後端測試 | `./mvnw -B test`（Java 21、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
 | 前端 lint、測試與建置 | `npm run lint`、`npm test`、`npm run build` |
+| Docker compose | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`。失敗時輸出各服務的 log |
 
 - CI 跑在區分大小寫的 Linux 上，可以抓到 macOS 上發現不了的匯入路徑大小寫錯誤。
 - 同一個分支有新的 push 時，會取消還在跑的舊檢查。
 - 依賴以 `npm ci` 依照 lock 檔安裝，新增套件時要一併 commit `package-lock.json`。
+
+`scripts/smoke-test.sh` 透過 nginx 檢查：首頁與 JS 載入、API 轉發、admin 登入與 token、後台 API、同源的寫入請求不被 CORS 擋下、錯誤回應是後端的 JSON。本機在 `docker compose up` 之後也可以執行。
 
 ## 契約驗證
 
@@ -137,13 +140,14 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 H2 無法完全代表 PostgreSQL，尤其是 `jsonb` 欄位。修改 entity 或 JSON 欄位後，請在真實環境驗證：
 
 ```bash
-cd backend && docker compose up -d
+docker compose up -d db     # 在根目錄
+cd backend
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
 # 另開終端機
 cd frontend && VITE_APP_API_BASE=http://localhost:8080/v2 npm run dev
 ```
 
-在瀏覽器走完主要流程：
+也可以用 `docker compose up -d --build` 啟動完整環境（`http://localhost:8000`），更接近部署的狀態。在瀏覽器走完主要流程：
 
 1. 以 `admin@gmail.com` 登入，進入後台。
 2. 新增產品（含上傳圖片）與文章，並勾選啟用。

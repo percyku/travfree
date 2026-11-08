@@ -78,9 +78,9 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 - 帳號比對不分大小寫，並去除前後空白。
 - 訊息中的分鐘數無條件進位；`Retry-After` 是剩餘秒數，至少 1。
 - 參數在 `app.login-limit.*`（`max-failures-per-account`、`max-failures-per-ip`、`window`、`lockout`）。
-- 計數存在記憶體，重啟後歸零。IP 取自 `request.getRemoteAddr()`，放在反向代理後面時見 [README.md](README.md) 的部署說明。
+- 計數存在記憶體，重啟後歸零。IP 取自 `request.getRemoteAddr()`，放在反向代理後面時見 [README.md](README.md) 的部署說明；docker compose 已設定。
 
-前端 `Login.jsx` 不看狀態碼，429 會顯示為 `登入失敗 AxiosError: ...`，不會壞掉。
+前端 `Login.jsx` 顯示後端回傳的訊息，429 時會看到 `登入失敗次數過多，請 15 分鐘後再試`。
 
 ### 驗證 `POST /v2/api/user/check`
 

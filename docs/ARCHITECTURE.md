@@ -12,6 +12,8 @@ Spring Boot（context-path /v2）
 PostgreSQL            本機 uploads/ 目錄（由 /v2/uploads/** 提供）
 ```
 
+以 docker compose 執行時，瀏覽器先連到 nginx：靜態檔由 nginx 提供，`/v2` 轉給後端，前後端同源。見 [README.md](README.md#docker)。
+
 後端採 controller → service → repository 分層，基礎套件為 `com.percyku.backend`：
 
 | 套件 | 職責 |
