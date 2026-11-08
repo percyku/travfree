@@ -62,7 +62,15 @@ paths:
     post:
       tags: ['登入及驗證']
       summary: 管理者登入
-      description: Body **不包** `data`。帳號不存在與密碼錯誤回應相同，不透露是哪一項錯誤。
+      description: |
+        Body **不包** `data`。帳號不存在與密碼錯誤回應相同，不透露是哪一項錯誤。
+
+        **登入次數限制**（Hexschool 沒有這項）：以下任一種達到上限就鎖 15 分鐘，期間回 429，**密碼正確也擋**。
+
+        - 同一 IP 對同一帳號 15 分鐘內失敗 5 次。登入成功會歸零。
+        - 同一 IP 不分帳號 15 分鐘內失敗 20 次。
+
+        鎖定期間的請求不計入失敗次數；欄位空白的 400 也不計入。
       operationId: signin
       security: []  # 公開
       requestBody:
@@ -95,6 +103,17 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: '登入失敗' }
+        '429':
+          description: 登入失敗次數過多，暫時鎖定
+          headers:
+            Retry-After:
+              description: 距離解除鎖定的**秒**數
+              required: true
+              schema: { type: integer, minimum: 1, example: 900 }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '登入失敗次數過多，請 15 分鐘後再試' }
         default: { $ref: '#/components/responses/Failure' }
 
   /logout:

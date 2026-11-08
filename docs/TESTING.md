@@ -40,6 +40,7 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 | 測試 | 涵蓋範圍 |
 |---|---|
 | `AuthApiTest` | 登入、token 格式、登出撤銷、無效 token 不影響公開 API、Admin 路由權限 |
+| `LoginRateLimitApiTest` | 登入次數限制：帳號鎖定、密碼正確也擋、換 IP 不受影響、IP 總量、成功歸零、429 與 `Retry-After` |
 | `ProductApiTest` | 產品 CRUD、上下架連動、分頁、排序、分類、驗證訊息 |
 | `ArticleApiTest` | 文章 CRUD、公開與否的連動、`content` 可見範圍、`create_at` 原值保存 |
 | `CartApiTest` | 購物車、數量累加、即時計價、優惠券計算、優惠券管理 |
@@ -47,9 +48,11 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 | `UploadApiTest` | 圖片上傳與讀取、內容檢查、大小限制 |
 | `HttpContractTest` | 走真實 Tomcat：`/v2` 前綴、CORS、超過上傳上限的回應 |
 | `BackendApplicationTests` | 應用程式可以啟動 |
+| `security.LoginAttemptLimiterTest` | 單元測試：鎖定到期、計數視窗過期、鎖定不延長、秒數進位。整合測試無法快轉時鐘 |
+| `config.ProductionConfigCheckTest` | prod profile 缺少密鑰、使用預設值、密鑰太短時拒絕啟動，含真實啟動一次確認註冊與設定檔生效 |
 | `OpenApiContractConfig` | 不是測試，讓所有 MockMvc 回應都對 spec 驗證 |
 
-`ApiTestSupport` 是共用基底：每個測試前清空業務資料並重新登入，也提供建立產品、加入購物車、結帳等輔助方法。
+`ApiTestSupport` 是共用基底：每個測試前清空業務資料與登入次數計數並重新登入，也提供建立產品、加入購物車、結帳等輔助方法。MockMvc 請求都來自 `127.0.0.1`，要測不同 IP 時用 `.with(request -> { request.setRemoteAddr(...); return request; })`。
 
 ## 撰寫原則
 

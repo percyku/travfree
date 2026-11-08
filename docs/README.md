@@ -64,7 +64,7 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 
 ## 環境變數
 
-全部都有本機開發用的預設值。**部署時必須覆寫 `JWT_SECRET`、`ADMIN_PASSWORD` 與 `DB_PASSWORD`。**
+全部都有本機開發用的預設值。**部署時必須用 prod profile，並設定 `JWT_SECRET`、`ADMIN_PASSWORD` 與 `DB_PASSWORD`。**
 
 | 變數 | 預設值 | 說明 |
 |---|---|---|
@@ -75,6 +75,25 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081` | 允許的前端來源，逗號分隔 |
 | `PUBLIC_BASE_URL` | `http://localhost:8080/v2` | 上傳圖片網址的開頭 |
 | `UPLOAD_DIR` | `./uploads` | 圖片存放目錄 |
+| `SPRING_PROFILES_ACTIVE` | 無 | 部署時設為 `prod` |
+
+## 部署
+
+設定 `SPRING_PROFILES_ACTIVE=prod` 後，`application-prod.properties` 會清掉三項開發預設值，由 `ProductionConfigCheck` 在連線資料庫前檢查。下列情況會拒絕啟動，錯誤訊息列出所有有問題的變數：
+
+- `JWT_SECRET`、`DB_PASSWORD`、`ADMIN_PASSWORD` 未設定或空白。
+- 等於開發用的預設值。
+- `JWT_SECRET` 不足 32 bytes。
+
+```text
+java.lang.IllegalStateException: prod profile 的設定不完整，拒絕啟動：
+  - JWT_SECRET 未設定
+  - DB_PASSWORD 不可使用開發用的預設值
+```
+
+`ADMIN_PASSWORD` 只在 admin 帳號不存在時用來建立帳號，之後修改它不會改變既有密碼，但 prod profile 仍要求設定。`PUBLIC_BASE_URL`、`CORS_ALLOWED_ORIGINS` 不檢查，但預設值是 localhost，部署時也要設定。
+
+**反向代理。** 登入次數限制以 IP 計算，預設取連線的來源位址，不信任 `X-Forwarded-For`，避免被偽造。放在 Nginx、負載平衡器等反向代理後面時，所有請求的來源都會是代理本身，要設定 `SERVER_FORWARD_HEADERS_STRATEGY=native`，並確認代理會覆寫（而不是附加）使用者傳來的 `X-Forwarded-For`。
 
 ## 文件索引
 

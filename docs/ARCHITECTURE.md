@@ -16,14 +16,14 @@ PostgreSQL            本機 uploads/ 目錄（由 /v2/uploads/** 提供）
 
 | 套件 | 職責 |
 |---|---|
-| `config` | `SecurityConfig`（授權規則、CORS）、`AppProperties`（`app.*` 設定）、`WebConfig`（圖片靜態資源）、`AdminSeeder` |
-| `security` | `JwtService`、`JwtAuthenticationFilter`、`JsonSecurityErrorHandler`（JSON 格式的 401/403） |
+| `config` | `SecurityConfig`（授權規則、CORS）、`AppProperties`（`app.*` 設定）、`WebConfig`（圖片靜態資源）、`AdminSeeder`、`ProductionConfigCheck`（prod profile 的密鑰檢查） |
+| `security` | `JwtService`、`JwtAuthenticationFilter`、`JsonSecurityErrorHandler`（JSON 格式的 401/403）、`LoginAttemptLimiter`（登入次數限制） |
 | `entity` | JPA entity，由 `apply(request)` 接收輸入 |
 | `repository` | Spring Data JPA |
 | `dto` | request/response record，`ApiResponses`（回應外層）、`PagedResult`（分頁） |
 | `service` | 業務邏輯與交易邊界 |
 | `controller` | `Admin*` 對應 `/admin` 路由，`Front*` 對應公開路由，`AuthController` 處理認證 |
-| `exception` | `ApiException`、`GlobalExceptionHandler` |
+| `exception` | `ApiException`、`TooManyRequestsException`（429，附 `Retry-After`）、`GlobalExceptionHandler` |
 
 ## 相容性原則
 
@@ -51,6 +51,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | 未設定的 `api_path` | 200，空資料 | 404 | 本專案只服務 `app.api-path` 一個路徑 |
 | `POST /logout` | — | 遞增 `token_version`，該帳號既有 token 全部失效 | JWT 無狀態，需要版本號才能真正登出 |
 | `paid_date` | 由傳入資料決定 | 由伺服器在付款狀態變更時決定 | 否則後台勾選已付款後，列表會同時顯示「付款完成」與「未付款」 |
+| `POST /admin/signin` | 無次數限制 | 失敗過多回 429 | 防止暴力破解，規則見 [FEATURES.md](FEATURES.md) |
 
 ## 路由表
 
@@ -255,8 +256,8 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 - **購物車全站共用。** 前端匿名呼叫，沒有 `withCredentials` 也沒有訪客識別，後端無法區分訪客，這與 Hexschool 相同。不同瀏覽器看到同一台購物車，任何人結帳都會清空它。要做到每人一台，必須修改前端，或改為同源部署並使用 cookie。
 - **只有 `GET /order/{id}` 的 UUID 保護訂單個資。** 知道訂單 id 的人都能查詢。這是前端完成頁需要的公開行為。
 - **圖片存在本機磁碟。** 多台伺服器或無狀態容器部署時，需要改用共用儲存空間，並調整 `ImageStorageService`。
-- **登入沒有次數限制。** 對外部署前應加上。
-- 開發用預設密鑰與密碼寫在 `application.properties`，部署時必須以環境變數覆寫。
+- **登入次數限制存在記憶體。** 重啟後歸零，多台伺服器之間也不共用計數，只適用單一實例部署。要水平擴充時改用 Redis 等共用儲存。
+- 開發用預設密鑰與密碼寫在 `application.properties`。以 prod profile 部署時，沒有覆寫就拒絕啟動；**不用 prod profile 部署就不會檢查。**
 
 ### 前端（依規格不修改）
 

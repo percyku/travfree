@@ -11,6 +11,7 @@ import com.percyku.backend.dto.ApiResponses;
 import com.percyku.backend.dto.SigninRequest;
 import com.percyku.backend.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -23,8 +24,9 @@ public class AuthController {
 	}
 
 	@PostMapping("/admin/signin")
-	public Map<String, Object> signin(@Valid @RequestBody SigninRequest request) {
-		AuthService.SigninResult result = authService.signin(request);
+	public Map<String, Object> signin(@Valid @RequestBody SigninRequest request, HttpServletRequest httpRequest) {
+		// 預設不信任 X-Forwarded-For；放在反向代理後面時，以 server.forward-headers-strategy 設定
+		AuthService.SigninResult result = authService.signin(request, httpRequest.getRemoteAddr());
 		Map<String, Object> body = ApiResponses.message("登入成功", "uid", result.uid());
 		body.put("token", result.token().token());
 		body.put("expired", result.token().expiredAtMillis());

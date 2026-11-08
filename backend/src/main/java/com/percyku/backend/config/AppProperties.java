@@ -12,7 +12,8 @@ public record AppProperties(
 		String uploadDir,
 		Jwt jwt,
 		Admin admin,
-		Cors cors) {
+		Cors cors,
+		LoginLimit loginLimit) {
 
 	public record Jwt(String secret, Duration ttl) {
 	}
@@ -21,5 +22,14 @@ public record AppProperties(
 	}
 
 	public record Cors(List<String> allowedOrigins) {
+	}
+
+	/**
+	 * 登入失敗次數限制。兩種計數在 window 內各自累計，任一種達到上限就鎖 lockout。
+	 *
+	 * @param maxFailuresPerAccount 同一 IP 對同一帳號的失敗上限，登入成功會歸零
+	 * @param maxFailuresPerIp 同一 IP 不分帳號的失敗上限
+	 */
+	public record LoginLimit(int maxFailuresPerAccount, int maxFailuresPerIp, Duration window, Duration lockout) {
 	}
 }

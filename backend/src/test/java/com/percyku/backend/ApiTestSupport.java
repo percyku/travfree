@@ -27,6 +27,7 @@ import com.percyku.backend.repository.CartItemRepository;
 import com.percyku.backend.repository.CouponRepository;
 import com.percyku.backend.repository.OrderRepository;
 import com.percyku.backend.repository.ProductRepository;
+import com.percyku.backend.security.LoginAttemptLimiter;
 
 /** 走真實的 JWT 流程：先用預設 admin 登入，再以前端相同的裸 token 呼叫 API。 */
 @SpringBootTest
@@ -58,6 +59,9 @@ abstract class ApiTestSupport {
 	@Autowired
 	ArticleRepository articleRepository;
 
+	@Autowired
+	LoginAttemptLimiter loginAttemptLimiter;
+
 	String token;
 
 	@BeforeEach
@@ -67,6 +71,8 @@ abstract class ApiTestSupport {
 		productRepository.deleteAll();
 		couponRepository.deleteAll();
 		articleRepository.deleteAll();
+		// 所有 MockMvc 請求都來自 127.0.0.1，不清空的話登入失敗會跨測試累計
+		loginAttemptLimiter.reset();
 		token = signin();
 	}
 

@@ -19,6 +19,9 @@
 - 契約測試：所有 MockMvc 整合測試的回應都會自動對 `openapi.yaml` 驗證。
 - 根目錄 `package.json`：`openapi:lint`、`openapi:preview`、`openapi:mock`（Redocly CLI、Swagger UI、Prism）。`openapi:preview` 在 `http://localhost:8081` 提供 Swagger UI。
 - 專案納入 git；`backend/CLAUDE.md`、`frontend/CLAUDE.md` 分別記錄各區規則。
+- 登入次數限制：同一 IP 對同一帳號 15 分鐘內失敗 5 次，或同一 IP 失敗 20 次，鎖 15 分鐘，期間回 429 並附 `Retry-After`（秒），密碼正確也擋。參數在 `app.login-limit.*`。
+- `prod` profile（`application-prod.properties`）：`JWT_SECRET`、`DB_PASSWORD`、`ADMIN_PASSWORD` 未設定、使用開發預設值，或 `JWT_SECRET` 不足 32 bytes 時拒絕啟動。
+- 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個。
 
 ### Changed
 
@@ -34,4 +37,5 @@
 
 - `GET ~/orders` 改為需要 admin token，避免公開全部訂單個資。
 - Admin 文章清單包含 `content`，避免前端編輯時覆寫內文。
+- `POST ~/admin/signin` 失敗次數過多時回 429，Hexschool 沒有次數限制。
 - 其他差異見 [ARCHITECTURE.md](ARCHITECTURE.md)。
