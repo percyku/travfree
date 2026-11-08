@@ -38,7 +38,7 @@ const ProductedRoute = ({ children }) => {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [navigate]);
 
   if (isLoading) {
     return <RotatingTriangles />;

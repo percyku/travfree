@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createAsyncAddCart } from "../../slice/cartSlice";
@@ -50,27 +50,28 @@ const Product = () => {
         }),
       );
     }
-  }, [currentCategory]);
+    // tempPage、tempCategory 刻意不放進依賴：它們只用來在從產品頁返回時還原頁碼，
+    // 這個 effect 讀完就把它們重設為 0，放進依賴會讓 effect 立刻重跑並跳回第 1 頁
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCategory, dispatch]);
 
   const handleAddCart = (id, qty = 1) => {
     dispatch(createAsyncAddCart({ id, qty }));
   };
 
-  const changePage = useCallback(
-    (e, page) => {
-      e.preventDefault();
-      setCurrentPage(page);
+  // Pagination 沒有用 memo，包 useCallback 沒有效果
+  const changePage = (e, page) => {
+    e.preventDefault();
+    setCurrentPage(page);
 
-      dispatch(
-        createAsyncGetProducts({
-          page: page,
-          category: currentCategory,
-        }),
-      );
-      window.scrollTo(0, 0);
-    },
-    [currentCategory],
-  );
+    dispatch(
+      createAsyncGetProducts({
+        page: page,
+        category: currentCategory,
+      }),
+    );
+    window.scrollTo(0, 0);
+  };
 
   const getMoreInfo = async (id) => {
     dispatch(

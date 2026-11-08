@@ -4,12 +4,13 @@ import { Toaster, toast } from "react-hot-toast";
 
 const NotFound = () => {
   const navigate = useNavigate();
-  toast.error("這是錯誤頁面3秒後轉回首頁");
   useEffect(() => {
-    setTimeout(() => {
+    toast.error("這是錯誤頁面3秒後轉回首頁");
+    const timer = setTimeout(() => {
       navigate("/", { replace: true });
     }, 3000);
-  }, []);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <>

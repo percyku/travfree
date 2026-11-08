@@ -13,7 +13,7 @@ const SingleArticle = () => {
   };
   useEffect(() => {
     dispatch(createAsyncGetArticle(id));
-  }, [id]);
+  }, [id, dispatch]);
   return (
     <div className="margin-top travel-bg ">
       <div className="container">

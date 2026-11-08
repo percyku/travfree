@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
@@ -11,22 +11,17 @@ const CartForm = () => {
   const orderId = useSelector((state) => state.order.orderId);
   const carts = useSelector((state) => state.cart.carts);
   const final_total = useSelector((state) => state.cart.final_total);
-  const [origPrice, setOrigPrice] = useState(0);
-
-  useEffect(() => {
-    const total = carts.reduce((acc, cart) => {
-      return acc + cart.product.origin_price * cart.qty;
-    }, 0);
-
-    setOrigPrice(total);
-  }, [carts]);
+  // 原價小計可以直接從 carts 算出，不需要另外存成 state
+  const origPrice = carts.reduce((acc, cart) => {
+    return acc + cart.product.origin_price * cart.qty;
+  }, 0);
 
   useEffect(() => {
     if (orderId !== "") {
       dispatch(updateOrderId(""));
       navigate(`/cartsuccess/${orderId}`);
     }
-  }, [orderId]);
+  }, [orderId, dispatch, navigate]);
 
   const {
     register,

@@ -25,7 +25,7 @@ const SingleProduct = () => {
   useEffect(() => {
     dispatch(createAsyncGetProduct(id));
     myModalPic.current = new Modal(modalRefPic.current);
-  }, [id]);
+  }, [id, dispatch]);
 
   const handleAddCart = (id, qty = 1) => {
     dispatch(createAsyncAddCart({ id, qty }));

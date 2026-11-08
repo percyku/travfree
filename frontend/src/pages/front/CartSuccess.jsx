@@ -9,7 +9,7 @@ function CartSuccess() {
 
   useEffect(() => {
     dispatch(createAsyncGetOrder(orderId));
-  }, [orderId]);
+  }, [orderId, dispatch]);
   return (
     <div className="margin-top cart-bg ">
       <div

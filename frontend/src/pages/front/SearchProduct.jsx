@@ -29,7 +29,7 @@ const SearchProduct = () => {
 
   useEffect(() => {
     dispatch(createAsyncGetSearchProducts(search));
-  }, [search]);
+  }, [search, dispatch]);
 
   const onSubmit = async (data) => {
     const { search } = data;

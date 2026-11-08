@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Modal } from "bootstrap";
@@ -68,13 +68,13 @@ const AdminArticle = () => {
         document.activeElement.blur();
       }
     });
-  }, []);
+  }, [showError]);
 
   useEffect(() => {
     if (!isAuth) {
       navigate("/login");
     }
-  }, [isAuth]);
+  }, [isAuth, navigate]);
 
   const openModal = (article, type) => {
     setTemplateData({
@@ -148,10 +148,11 @@ const AdminArticle = () => {
   };
 
   //處理Pagination page 當前數值
-  const changePage = useCallback((e, page) => {
+  // Pagination 沒有用 memo，包 useCallback 沒有效果，反而會拿到舊的 getArticleInfo
+  const changePage = (e, page) => {
     e.preventDefault();
     getArticleInfo(page);
-  }, []);
+  };
 
   const getArticleInfo = async (page = 1) => {
     try {

@@ -32,6 +32,7 @@
 - 登入頁的帳號欄位預設改為空白（原本是 Hexschool 的個人帳號）。
 - 新增 `frontend/.env.example`，新環境複製為 `.env.local` 即可。
 - 前端清除不影響行為的 lint 問題（未使用的變數與 import、空的 `finally`），`vite.config.js`、`eslint.config.js` 改用 Node 的 globals。ESLint 問題從 44 個降為 21 個，剩下的都是 React hooks 規則。
+- 前端處理 React hooks 的 lint 問題，ESLint 降為 0：補上 effect 依賴；`useMessage` 以 `useCallback` 固定回傳的函式；購物車的原價小計改為直接計算，不再存成 state；後台與產品列表的 `changePage` 移除沒有效果的 `useCallback`。`Product.jsx` 刻意不把 `tempPage`、`tempCategory` 放進依賴，原因寫在註解。
 - CORS 預設允許的來源加入 `http://localhost:8081`，讓 Swagger UI 的 Try it out 可以呼叫本機後端。
 - `backend/pom.xml` 新增 test scope 的 `swagger-request-validator-mockmvc`。
 - `backend/pom.xml` 新增 test scope 的 H2 相依性。
@@ -41,6 +42,8 @@
 - 前端 `Login.jsx`、`ProductedRoute.jsx` 使用未解構的 `VITE_APP_API_COOKIE_PATH`，token 失效時拋出 ReferenceError、舊 cookie 清不掉。登入寫入 cookie 時也帶上相同的 `path`。
 - 前端 `AdminOrders.jsx` 使用未定義的 `navigate`，token 失效時訂單頁出錯，而不是導回登入頁。
 - 前端登出改為呼叫 `POST /logout`，token 在伺服器端立即失效，不再只清 cookie。
+- 前端購物車頁每次購物車變動都重建商品 modal，開啟中的 modal 可能無法關閉；改為只建立一次，離開頁面時釋放。
+- 前端 404 頁的提示原本在 render 中觸發，改到 effect 內；離開頁面時清除 3 秒後跳轉的計時器。
 - 分頁查無資料時，`current_page` 改為 0（原本是 1），與 Hexschool 實際回應一致。
 
 ### 與 Hexschool 的差異

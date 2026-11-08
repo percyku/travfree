@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Modal } from "bootstrap";
@@ -41,7 +41,7 @@ const AdminOrders = () => {
     if (!isAuth) {
       navigate("/login");
     }
-  }, [isAuth]);
+  }, [isAuth, navigate]);
 
   useEffect(() => {
     (async () => {
@@ -68,7 +68,7 @@ const AdminOrders = () => {
         document.activeElement.blur();
       }
     });
-  }, []);
+  }, [showError]);
 
   const getOrderInfo = async (page = 1) => {
     try {
@@ -111,10 +111,11 @@ const AdminOrders = () => {
   };
 
   //處理Pagination page 當前數值
-  const changePage = useCallback((e, page) => {
+  // Pagination 沒有用 memo，包 useCallback 沒有效果，反而會拿到舊的 getOrderInfo
+  const changePage = (e, page) => {
     e.preventDefault();
     getOrderInfo(page);
-  }, []);
+  };
 
   const openModal = (singleOrder) => {
     setTempOrder({

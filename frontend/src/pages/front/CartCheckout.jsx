@@ -18,23 +18,22 @@ const CartCheckout = () => {
   const isLoading = useSelector((state) => state.cart.isLoading);
   const carts = useSelector((state) => state.cart.carts);
   const final_total = useSelector((state) => state.cart.final_total);
-  const [origPrice, setOrigPrice] = useState(0);
+  // 原價小計可以直接從 carts 算出，不需要另外存成 state
+  const origPrice = carts.reduce((acc, cart) => {
+    return acc + cart.product.origin_price * cart.qty;
+  }, 0);
 
   const [product, setProduct] = useState({});
   const productModalRef = useRef(null);
 
+  // Modal 只建立一次。原本每次 carts 變動都重建，開啟中的 modal 會無法關閉
   useEffect(() => {
-    const total = carts.reduce((acc, cart) => {
-      return acc + cart.product.origin_price * cart.qty;
-    }, 0);
-
-    setOrigPrice(total);
-
     productModalRef.current = new bootstrap.Modal("#productModal", {
       keyboard: false,
       // backdrop: "static",
     });
-  }, [carts]);
+    return () => productModalRef.current.dispose();
+  }, []);
 
   const deleteCartAll = () => {
     dispatch(createAsyncDeleteAllCart());
