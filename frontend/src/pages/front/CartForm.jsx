@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { currency } from "../../utils/filter";
 import CartPriceRows from "./CartPriceRows";
 import { updateOrderId, createAsyncSubmitForm } from "../../slice/orderSlice";
+import { createAsyncGetCart } from "../../slice/cartSlice";
 const CartForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -12,6 +13,11 @@ const CartForm = () => {
   const orderId = useSelector((state) => state.order.orderId);
   const carts = useSelector((state) => state.cart.carts);
   const final_total = useSelector((state) => state.cart.final_total);
+
+  // 進入頁面時重新讀取購物車，顯示最新金額（優惠券可能已被停用、刪除，或商品改價）
+  useEffect(() => {
+    dispatch(createAsyncGetCart());
+  }, [dispatch]);
 
   useEffect(() => {
     if (orderId !== "") {
@@ -41,7 +47,10 @@ const CartForm = () => {
   });
 
   const onSubmit = async (data) => {
-    const form = { data: { user: data, message: data.message } };
+    // 帶上畫面顯示的總計；與後端金額不同時回 409，thunk 會顯示原因並重新讀取購物車
+    const form = {
+      data: { user: data, message: data.message, final_total },
+    };
     dispatch(createAsyncSubmitForm(form));
   };
 

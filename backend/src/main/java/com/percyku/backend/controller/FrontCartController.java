@@ -69,4 +69,10 @@ public class FrontCartController {
 		long finalTotal = cartService.applyCoupon(code);
 		return ApiResponses.message("已套用優惠券:" + code, "data", Map.of("final_total", finalTotal));
 	}
+
+	@DeleteMapping("/coupon")
+	public Map<String, Object> removeCoupon() {
+		long finalTotal = cartService.removeCoupon();
+		return ApiResponses.message("已移除優惠券", "data", Map.of("final_total", finalTotal));
+	}
 }

@@ -4,6 +4,7 @@
 
 ### Added
 
+- `DELETE /api/coupon`：移除購物車已套用的優惠券；前端在已套用的優惠碼旁加上「移除」。
 - 前端優惠券與付款 UI：後台「優惠券列表」（`/admin/coupons`）可新增、編輯、刪除，折扣以實付比例輸入並顯示折數，到期日有效到當天 23:59:59；購物車頁可輸入優惠碼，費用明細分開列出商品特價折抵與優惠券折抵；訂單成功頁顯示付款狀態並可付款。
 - 後台訂單列表新增「優惠券」欄；訂單 modal 列出各品項小計、折扣後金額與優惠券，以及商品小計、優惠券折抵（含優惠碼、名稱、折數）與實付金額。資料來自下單當下的快照。
 - 後台產品與優惠券的刪除確認視窗說明刪除的影響，並建議只是暫停使用時改為停用。
@@ -24,12 +25,14 @@
 - 專案納入 git；`backend/CLAUDE.md`、`frontend/CLAUDE.md` 分別記錄各區規則。
 - 登入次數限制：同一 IP 對同一帳號 15 分鐘內失敗 5 次，或同一 IP 失敗 20 次，鎖 15 分鐘，期間回 429 並附 `Retry-After`（秒），密碼正確也擋。參數在 `app.login-limit.*`。
 - `prod` profile（`application-prod.properties`）：`JWT_SECRET`、`DB_PASSWORD`、`ADMIN_PASSWORD` 未設定、使用開發預設值，或 `JWT_SECRET` 不足 32 bytes 時拒絕啟動。
-- 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個；之後加上文章分類必填的測試，共 79 個。
+- 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個；之後加上文章分類必填的測試，共 79 個；再加上優惠券有效性、移除優惠券、結帳金額比對的測試，共 84 個。
 
 ### Changed
 
 - **API 路徑移除 `api_path`**：`/v2/api/react-week2-api/...` 改為 `/v2/api/...`，例如 `/v2/api/products`、`/v2/api/admin/products`。舊路徑回 404，不保留相容。`/v2/admin/signin`、`/v2/logout`、`/v2/api/user/check`、`/v2/uploads/*` 不變。
 - 移除後端設定 `app.api-path`。
+- 已套用的優惠券改為只在**啟用且未過期**時有效，停用或過期立即不再折扣（原本只在套用時檢查到期日）。
+- `POST /api/order` 新增選填的 `final_total`，與購物車金額不同時回 409 `訂單金額已變動，請重新確認`。前端送出訂單時帶上畫面顯示的總計，進入填寫資料頁時重新讀取購物車。
 - 文章的 `tag` 改為必填，至少一個；未傳或空陣列回 400 `tag 至少選擇一個`。後台文章表單送出前也會先檢查。
 - 開始前端開發，移除「不修改 `frontend/`」的規則。
 - 前端移除 `VITE_APP_API_PATH`，API 網址改為 `${VITE_APP_API_BASE}/api/...`；存 token 的 cookie 改名為 `freetrav-token`，已登入的人需重新登入一次。

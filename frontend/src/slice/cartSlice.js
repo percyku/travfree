@@ -198,5 +198,32 @@ export const createAsyncApplyCoupon = createAsyncThunk(
   },
 );
 
+export const createAsyncRemoveCoupon = createAsyncThunk(
+  "cart/createAsyncRemoveCoupon",
+  async (_, { dispatch }) => {
+    try {
+      dispatch(updateLoading(true));
+      const res = await axios.delete(`${VITE_APP_API_BASE}/api/coupon`);
+      dispatch(
+        createAsyncMessage({
+          message: res.data.message,
+          success: true,
+        }),
+      );
+      dispatch(createAsyncGetCart());
+    } catch (error) {
+      dispatch(
+        createAsyncMessage({
+          message: error.response?.data?.message || "移除優惠券失敗",
+          success: false,
+        }),
+      );
+      throw error;
+    } finally {
+      dispatch(updateLoading(false));
+    }
+  },
+);
+
 export const { updateCart, updateLoading } = cartSlice.actions;
 export default cartSlice.reducer;

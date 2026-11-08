@@ -1,5 +1,7 @@
 package com.percyku.backend.dto;
 
+import java.time.Instant;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.percyku.backend.entity.CartItem;
@@ -19,7 +21,11 @@ public record LineItemResponse(
 
 	public static LineItemResponse from(CartItem item) {
 		long total = (long) item.getProduct().getPrice() * item.getQty();
+		// 已停用或過期的優惠券不計折扣也不回傳；品項上的引用保留，重新啟用後恢復
 		Coupon coupon = item.getCoupon();
+		if (coupon != null && !coupon.isUsableAt(Instant.now().getEpochSecond())) {
+			coupon = null;
+		}
 		return new LineItemResponse(
 				item.getId(),
 				item.getProduct().getId(),

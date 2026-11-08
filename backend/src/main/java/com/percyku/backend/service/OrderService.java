@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,10 +53,17 @@ public class OrderService {
 			throw ApiException.badRequest("購物車內有已下架產品");
 		}
 
+		List<LineItemResponse> lines = items.stream().map(LineItemResponse::from).toList();
+		long finalTotal = lines.stream().mapToLong(LineItemResponse::finalTotal).sum();
+		// 在任何寫入之前比對，不符時不建立訂單、不清空購物車
+		if (request.finalTotal() != null && request.finalTotal() != finalTotal) {
+			throw new ApiException(HttpStatus.CONFLICT, "訂單金額已變動，請重新確認");
+		}
+
 		Order order = new Order(request.user(), request.message(), now());
 		int sortOrder = 0;
-		for (CartItem item : items) {
-			order.addItem(new OrderItem(order, LineItemResponse.from(item), sortOrder++));
+		for (LineItemResponse line : lines) {
+			order.addItem(new OrderItem(order, line, sortOrder++));
 		}
 		orderRepository.save(order);
 		cartItemRepository.deleteAllInBatch();

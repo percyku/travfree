@@ -59,4 +59,9 @@ public class Coupon extends BaseEntity {
 	public boolean isEnabled() {
 		return enabled;
 	}
+
+	/** 啟用且未過期才有效。購物車顯示與結帳都用這個規則，停用或過期立即不再折扣。 */
+	public boolean isUsableAt(long epochSecond) {
+		return enabled && dueDate >= epochSecond;
+	}
 }

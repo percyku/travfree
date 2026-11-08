@@ -82,6 +82,14 @@ public class CartService {
 	}
 
 	/** 只套用在目前購物車內的品項，之後才加入的品項不帶優惠（與 Hexschool 相同）。 */
+	/** 清除購物車所有品項的優惠券。沒有套用或購物車是空的也視為成功。 */
+	@Transactional
+	public long removeCoupon() {
+		List<CartItem> items = cartItemRepository.findAllWithDetails();
+		items.forEach(item -> item.setCoupon(null));
+		return CartSummary.of(items.stream().map(LineItemResponse::from).toList()).finalTotal();
+	}
+
 	@Transactional
 	public long applyCoupon(String code) {
 		Coupon coupon = couponRepository.findByCode(code)

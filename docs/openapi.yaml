@@ -998,8 +998,11 @@ paths:
       tags: ['客戶購物 - 優惠券 (Coupon)']
       summary: 套用優惠券
       description: |
-        只套用在**目前購物車內**的品項，之後才加入的品項不帶優惠。
-        每個品項 `final_total = round(total × percent ÷ 100)`。到期日只在套用時檢查。
+        只套用在**目前購物車內**的品項，之後才加入的品項不帶優惠。套用新的優惠券會取代舊的。
+        每個品項 `final_total = round(total × percent ÷ 100)`。
+
+        優惠券只在**啟用且未過期**時有效。套用後若被停用或過期，購物車立即不再折扣（品項也不出現 `coupon`），
+        重新啟用後恢復；被刪除則從購物車移除。
 
         | 情境 | 回應 |
         |---|---|
@@ -1052,6 +1055,31 @@ paths:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: '找不到優惠券' }
         default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: ['客戶購物 - 優惠券 (Coupon)']
+      summary: 移除已套用的優惠券
+      description: 清除購物車所有品項的優惠券，購物車回到售價。購物車沒有套用優惠券或是空的，同樣回 200。Hexschool 沒有這支 API。
+      operationId: removeCoupon
+      security: []  # 公開
+      responses:
+        '200':
+          description: 已移除
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, data]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: 已移除優惠券 }
+                  data:
+                    type: object
+                    additionalProperties: false
+                    required: [final_total]
+                    properties:
+                      final_total: { type: integer, format: int64, description: 移除後的購物車總額, example: 120000 }
+        default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── 訂單（前台） ─────────────────────────
   /api/order:
@@ -1067,6 +1095,11 @@ paths:
         | 購物車含已下架產品 | 400 `購物車內有已下架產品` |
         | 缺少 `user` | 400 `user 屬性不得為空` |
         | Email 格式錯誤 | 400 `email 格式不正確` |
+        | 帶了 `final_total` 但與目前購物車金額不同 | 409 `訂單金額已變動，請重新確認` |
+
+        **金額比對**：前端應帶上畫面顯示的 `final_total`。後台刪除或停用優惠券、優惠券過期、
+        商品改價，都會讓購物車金額改變；不一致時回 409，不建立訂單、不清空購物車，
+        前端重新讀取購物車讓顧客確認新金額。沒帶 `final_total` 則不比對。
       operationId: createOrder
       security: []  # 公開
       requestBody:
@@ -1099,6 +1132,12 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: '購物車無資料' }
+        '409':
+          description: 購物車金額與 `final_total` 不同
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '訂單金額已變動，請重新確認' }
         default: { $ref: '#/components/responses/Failure' }
 
   /api/orders:
@@ -1460,7 +1499,9 @@ components:
         coupon:
           allOf:
             - $ref: '#/components/schemas/Coupon'
-          description: 有套用優惠券時才出現
+          description: |
+            購物車：有套用且優惠券仍有效（啟用且未過期）時才出現。
+            訂單：下單當下的快照，之後修改、停用或刪除優惠券都不影響
         product: { $ref: '#/components/schemas/Product' }
     Cart:
       type: object
@@ -1496,6 +1537,11 @@ components:
             tel: { type: string, example: '0912345678' }
             address: { type: string, example: 台北市信義區市府路1號 }
         message: { type: string, example: 希望安排靠窗座位 }
+        final_total:
+          type: integer
+          format: int64
+          description: 選填。前端畫面顯示的總計（折扣後），與後端計算不同時回 409。建議一律帶上
+          example: 96000
     OrderUpdateInput:
       type: object
       description: 前端會傳整筆訂單，只有 `is_paid` 與 `status` 生效

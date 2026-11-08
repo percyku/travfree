@@ -52,6 +52,9 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | `POST /logout` | — | 遞增 `token_version`，該帳號既有 token 全部失效 | JWT 無狀態，需要版本號才能真正登出 |
 | `paid_date` | 由傳入資料決定 | 由伺服器在付款狀態變更時決定 | 否則後台勾選已付款後，列表會同時顯示「付款完成」與「未付款」 |
 | `POST /admin/signin` | 無次數限制 | 失敗過多回 429 | 防止暴力破解，規則見 [FEATURES.md](FEATURES.md) |
+| 已套用的優惠券 | 只在套用時檢查到期日，之後停用或過期仍有折扣 | 停用或過期立即不再折扣 | 停用要能立即生效 |
+| `POST /order` | 無金額比對 | 選填 `final_total`，與購物車金額不同回 409 | 避免顧客在不知情下以另一個金額成交 |
+| `DELETE /coupon` | 無 | 移除已套用的優惠券 | 顧客可以取消優惠 |
 
 ## 路由表
 
@@ -114,13 +117,14 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | DELETE | `~/cart/{id}` | 公開 | ✓ | 刪除單一品項 |
 | DELETE | `~/carts` | 公開 | ✓ | 清空購物車 |
 | POST | `~/coupon` | 公開 | ✓ | 套用優惠券 |
+| DELETE | `~/coupon` | 公開 | ✓ | 移除已套用的優惠券（Hexschool 沒有） |
 | POST | `~/order` | 公開 | ✓ | 建立訂單 |
 | GET | `~/orders` | **Admin** | | 訂單分頁（與 Hexschool 不同） |
 | GET | `~/order/{id}` | 公開 | ✓ | 單筆訂單 |
 | POST | `~/pay/{id}` | 公開 | ✓ | 付款 |
 | GET | `~/articles` | 公開 | ✓ | 公開文章分頁 |
 | GET | `~/article/{id}` | 公開 | ✓ | 單篇公開文章 |
-| GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 37 個 API 內） |
+| GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 38 個 API 內） |
 
 授權規則寫在 `SecurityConfig`，依序比對。未列入的路徑一律拒絕。
 

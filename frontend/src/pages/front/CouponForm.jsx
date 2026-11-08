@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createAsyncApplyCoupon } from "../../slice/cartSlice";
+import {
+  createAsyncApplyCoupon,
+  createAsyncRemoveCoupon,
+} from "../../slice/cartSlice";
 
 /** 購物車頁的優惠碼輸入。套用成功或失敗的提示由 thunk 顯示。 */
 const CouponForm = () => {
@@ -24,6 +27,11 @@ const CouponForm = () => {
     } catch {
       // 錯誤訊息已由 thunk 顯示，保留輸入內容方便修改
     }
+  };
+
+  const removeCoupon = () => {
+    // 錯誤訊息已由 thunk 顯示
+    dispatch(createAsyncRemoveCoupon()).catch(() => {});
   };
 
   return (
@@ -52,6 +60,14 @@ const CouponForm = () => {
         <p className="fs-6 text-neutral-80 mt-2 mb-0">
           已套用優惠碼 {appliedCode}
           {hasItemsWithoutCoupon && "，之後加入的商品需要重新套用"}
+          <button
+            type="button"
+            className="btn btn-link btn-sm p-0 ms-2 align-baseline"
+            disabled={isLoading}
+            onClick={removeCoupon}
+          >
+            移除
+          </button>
         </p>
       )}
     </form>

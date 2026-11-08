@@ -12,6 +12,8 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 class CartApiTest extends ApiTestSupport {
 
 	@Test
@@ -216,5 +218,67 @@ class CartApiTest extends ApiTestSupport {
 		mockMvc.perform(get(API + "/cart"))
 				.andExpect(jsonPath("$.data.final_total").value(1000))
 				.andExpect(jsonPath("$.data.carts[0].coupon").doesNotExist());
+	}
+
+	private String couponId(String code) throws Exception {
+		for (JsonNode coupon : read(adminGet(API + "/admin/coupons")).get("coupons")) {
+			if (coupon.get("code").asText().equals(code)) {
+				return coupon.get("id").asText();
+			}
+		}
+		throw new AssertionError("找不到優惠券: " + code);
+	}
+
+	@Test
+	void disabledOrExpiredCouponStopsDiscountImmediately() throws Exception {
+		adminPost(API + "/admin/coupon", couponBody("HALF", 50, farFuture(), 1)).andExpect(status().isOk());
+		addToCart(createProduct("東京", 1000), 1);
+		postJson(API + "/coupon", data(Map.of("code", "HALF"))).andExpect(status().isOk());
+		String id = couponId("HALF");
+
+		// 停用：購物車立即不再折扣，品項也不出現 coupon
+		adminPut(API + "/admin/coupon/" + id, couponBody("HALF", 50, farFuture(), 0)).andExpect(status().isOk());
+		mockMvc.perform(get(API + "/cart"))
+				.andExpect(jsonPath("$.data.total").value(1000))
+				.andExpect(jsonPath("$.data.final_total").value(1000))
+				.andExpect(jsonPath("$.data.carts[0].coupon").doesNotExist());
+
+		// 重新啟用：引用還在，折扣恢復
+		adminPut(API + "/admin/coupon/" + id, couponBody("HALF", 50, farFuture(), 1)).andExpect(status().isOk());
+		mockMvc.perform(get(API + "/cart"))
+				.andExpect(jsonPath("$.data.final_total").value(500))
+				.andExpect(jsonPath("$.data.carts[0].coupon.code").value("HALF"));
+
+		// 過期：同樣立即不再折扣
+		adminPut(API + "/admin/coupon/" + id, couponBody("HALF", 50, 1555459200L, 1)).andExpect(status().isOk());
+		mockMvc.perform(get(API + "/cart"))
+				.andExpect(jsonPath("$.data.final_total").value(1000))
+				.andExpect(jsonPath("$.data.carts[0].coupon").doesNotExist());
+	}
+
+	@Test
+	void removeCouponRestoresPriceAndIsIdempotent() throws Exception {
+		adminPost(API + "/admin/coupon", couponBody("HALF", 50, farFuture(), 1)).andExpect(status().isOk());
+		addToCart(createProduct("東京", 1000), 2);
+		postJson(API + "/coupon", data(Map.of("code", "HALF")))
+				.andExpect(jsonPath("$.data.final_total").value(1000));
+
+		mockMvc.perform(delete(API + "/coupon"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.success").value(true))
+				.andExpect(jsonPath("$.message").value("已移除優惠券"))
+				.andExpect(jsonPath("$.data.final_total").value(2000));
+		mockMvc.perform(get(API + "/cart"))
+				.andExpect(jsonPath("$.data.final_total").value(2000))
+				.andExpect(jsonPath("$.data.carts[0].coupon").doesNotExist());
+
+		// 沒有套用、購物車是空的，都視為成功
+		mockMvc.perform(delete(API + "/coupon"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.final_total").value(2000));
+		cartItemRepository.deleteAll();
+		mockMvc.perform(delete(API + "/coupon"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.data.final_total").value(0));
 	}
 }

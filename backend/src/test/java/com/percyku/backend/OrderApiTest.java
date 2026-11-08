@@ -199,4 +199,61 @@ class OrderApiTest extends ApiTestSupport {
 		mockMvc.perform(auth(delete(API + "/admin/orders/all"))).andExpect(status().isOk());
 		adminGet(API + "/admin/orders").andExpect(jsonPath("$.orders", hasSize(0)));
 	}
+
+	@SuppressWarnings("unchecked")
+	private static Map<String, Object> orderBodyWithTotal(long finalTotal) {
+		Map<String, Object> order = new HashMap<>((Map<String, Object>) orderBody().get("data"));
+		order.put("final_total", finalTotal);
+		return data(order);
+	}
+
+	@Test
+	void checkoutRejectsWhenFinalTotalDiffers() throws Exception {
+		addToCart(createProduct("東京", 1000), 2);
+
+		postJson(API + "/order", orderBodyWithTotal(1500))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.success").value(false))
+				.andExpect(jsonPath("$.message").value("訂單金額已變動，請重新確認"));
+		// 不建立訂單，購物車保留
+		assertThat(orderRepository.count()).isZero();
+		mockMvc.perform(get(API + "/cart")).andExpect(jsonPath("$.data.carts", hasSize(1)));
+
+		postJson(API + "/order", orderBodyWithTotal(2000))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(2000));
+	}
+
+	@Test
+	void couponDeletedAfterApplyingIsCaughtByFinalTotal() throws Exception {
+		adminPost(API + "/admin/coupon", couponBody("HALF", 50, farFuture(), 1)).andExpect(status().isOk());
+		addToCart(createProduct("東京", 1000), 1);
+		postJson(API + "/coupon", data(Map.of("code", "HALF")))
+				.andExpect(jsonPath("$.data.final_total").value(500));
+		String couponId = read(adminGet(API + "/admin/coupons")).at("/coupons/0/id").asText();
+		mockMvc.perform(auth(delete(API + "/admin/coupon/" + couponId))).andExpect(status().isOk());
+
+		// 前端畫面還是折扣後的 500
+		postJson(API + "/order", orderBodyWithTotal(500)).andExpect(status().isConflict());
+		// 重新讀取購物車後，以新金額送出
+		postJson(API + "/order", orderBodyWithTotal(1000))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(1000));
+	}
+
+	@Test
+	void disabledCouponIsNotDiscountedAtCheckout() throws Exception {
+		adminPost(API + "/admin/coupon", couponBody("HALF", 50, farFuture(), 1)).andExpect(status().isOk());
+		addToCart(createProduct("東京", 1000), 1);
+		postJson(API + "/coupon", data(Map.of("code", "HALF"))).andExpect(status().isOk());
+		String couponId = read(adminGet(API + "/admin/coupons")).at("/coupons/0/id").asText();
+		adminPut(API + "/admin/coupon/" + couponId, couponBody("HALF", 50, farFuture(), 0))
+				.andExpect(status().isOk());
+
+		String orderId = read(postJson(API + "/order", orderBody())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(1000))).get("orderId").asText();
+		JsonNode products = read(mockMvc.perform(get(API + "/order/" + orderId))).at("/order/products");
+		products.forEach(item -> assertThat(item.has("coupon")).isFalse());
+	}
 }
