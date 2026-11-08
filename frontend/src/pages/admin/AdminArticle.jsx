@@ -51,10 +51,9 @@ const AdminArticle = () => {
         );
         setArticles(res.data.articles);
         setPagiantion(res.data.pagination);
-      } catch (error) {
+      } catch {
         showError("取得資料失敗，請重新登入");
         setIsAuth(false);
-      } finally {
       }
     })();
 
@@ -163,7 +162,7 @@ const AdminArticle = () => {
 
       setArticles(res.data.articles);
       setPagiantion(res.data.pagination);
-    } catch (error) {
+    } catch {
       showError("取得資料失敗，請重新登入");
       setIsAuth(false);
     } finally {
@@ -199,7 +198,7 @@ const AdminArticle = () => {
       showSuccess(res.data.message);
       articleModalRef.current.hide();
       getArticleInfo();
-    } catch (error) {
+    } catch {
       if (modalType === "edit") {
         showError(`更新失敗!`);
       } else {

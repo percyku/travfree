@@ -51,10 +51,9 @@ const AdminOrders = () => {
         );
         setOrders(res.data.orders);
         setPagination(res.data.pagination);
-      } catch (error) {
+      } catch {
         showError("取得資料失敗，請重新登入");
         setIsAuth(false);
-      } finally {
       }
     })();
 
@@ -79,7 +78,7 @@ const AdminOrders = () => {
       );
       setOrders(res.data.orders);
       setPagination(res.data.pagination);
-    } catch (error) {
+    } catch {
       showError("取得資料失敗，請重新登入");
       setIsAuth(false);
     } finally {
@@ -104,7 +103,7 @@ const AdminOrders = () => {
       getOrderInfo();
       showSuccess(res.data.message);
       orderModalRef.current.hide();
-    } catch (error) {
+    } catch {
       showError("更新失敗");
     } finally {
       setIsLoading(false);
@@ -117,7 +116,7 @@ const AdminOrders = () => {
     getOrderInfo(page);
   }, []);
 
-  const openModal = (singleOrder, type) => {
+  const openModal = (singleOrder) => {
     setTempOrder({
       ...singleOrder,
       is_paid: singleOrder.is_paid,

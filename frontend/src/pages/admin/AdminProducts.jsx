@@ -56,10 +56,9 @@ function AdminProducts() {
         // console.log(res.data);
         setProducts(res.data.products);
         setPagiantion(res.data.pagination);
-      } catch (error) {
+      } catch {
         showError("取得資料失敗，請重新登入");
         setIsAuth(false);
-      } finally {
       }
     })();
 
@@ -193,7 +192,7 @@ function AdminProducts() {
       showSuccess(res.data.message);
       productModalRef.current.hide();
       getProductInfo();
-    } catch (error) {
+    } catch {
       if (modalType === "edit") {
         showError(`更新失敗!`);
       } else {

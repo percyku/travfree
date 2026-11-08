@@ -1,5 +1,3 @@
-import { memo } from "react";
-
 const Pagination = ({ pagination, changePage, loadingProductId }) => {
   return (
     <nav aria-label="Page navigation example">

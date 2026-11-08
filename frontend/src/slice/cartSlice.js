@@ -88,7 +88,7 @@ export const createAsyncUpdateCart = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const url = `${VITE_APP_API_BASE}/api/cart/${cartId}`;
-      const res = await axios.put(url, { data });
+      await axios.put(url, { data });
       dispatch(
         createAsyncMessage({
           message: `更新成功`,
