@@ -5,9 +5,12 @@
 ```bash
 cd backend
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
+
+cd frontend
+npm test              # 執行一次；npm run test:watch 會持續監看
 ```
 
-不需要 Docker。測試使用 `test` profile 與 H2 記憶體資料庫的 PostgreSQL 模式，設定在 `src/test/resources/application-test.properties`。
+後端不需要 Docker。測試使用 `test` profile 與 H2 記憶體資料庫的 PostgreSQL 模式，設定在 `src/test/resources/application-test.properties`。
 
 ## 契約驗證
 
@@ -61,6 +64,59 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 - **時間與金額要斷言單位與精確值。** 秒與毫秒搞混是這個專案最容易發生的錯誤。
 - **業務規則要測連動**，例如下架後 Front 看不到、改價後訂單不變，而不只測單一端點。
 - 需要真實 HTTP 行為時（CORS、multipart 上限、context-path）放進 `HttpContractTest`。MockMvc 不經過 context-path，也不會執行 Tomcat 的 multipart 上限。
+
+## 前端測試
+
+Vitest + jsdom + React Testing Library，以 MSW 攔截 axios 請求，不需要啟動後端或 mock server。設定在 `frontend/vitest.config.js`，共用工具在 `frontend/src/test/`。
+
+Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用優惠券後重新讀取購物車」這類流程，所以改用 MSW，由各測試自己模擬後端狀態。
+
+### 契約檢查
+
+用 `src/test/contract.js` 的 `api.get/post/put/delete` 定義 MSW handler，每個請求與回應都會對 `docs/openapi.yaml` 檢查，違規時該測試失敗：
+
+- 路徑與方法必須在 spec 裡，否則定義 handler 時就丟錯。
+- 前端送出的 body 必須符合 `requestBody` schema。和後端相反，前端**要**驗證請求，因為要確認的就是前端送出的格式。
+- 需要 `AdminToken` 的端點必須帶 `Authorization` header。
+- multipart 請求（圖片上傳）必須帶 spec 要求的欄位，例如 `file-to-upload`。
+- 測試假資料必須符合該狀態碼的回應 schema，spec 沒列出的狀態碼要符合 `default`。假資料和 spec 不一致時，先判斷是假資料錯還是 spec 錯。
+- 測試中出現沒有定義 handler 的請求也算違規，可以用來確認「不應該呼叫 API」的情境。
+
+`src/test/contract.test.js` 確認上述檢查本身有效。
+
+### 測試結構
+
+| 測試 | 涵蓋範圍 |
+|---|---|
+| `utils/coupon.test.js` | 到期日秒數換算、折數文字、是否過期、優惠券摘要、千分位 |
+| `pages/front/CartCheckout.test.jsx` | 費用明細金額、套用/移除優惠券、無效優惠碼、之後加入的品項提示、調整數量、刪除與清空、空購物車 |
+| `pages/front/CartForm.test.jsx` | 進入頁面重新讀取購物車、欄位驗證、送出時帶 `final_total`、409 金額變動、空購物車不能送出 |
+| `pages/front/CartSuccess.test.jsx` | 訂單品項與總計、付款後顯示付款時間、付款失敗、找不到訂單 |
+| `pages/Login.test.jsx` | 登入成功寫入 cookie、400/429 顯示後端原因、欄位驗證、已登入直接進後台、token 失效；後台路由保護 |
+| `pages/admin/AdminProducts.test.jsx` | 列表、新增（價格轉整數、空白副圖不送出）、編輯、刪除提示、圖片上傳成功與失敗、分頁、取得失敗導向登入頁 |
+| `pages/admin/AdminArticle.test.jsx` | 列表（`create_at` 毫秒）、新增（分類、內文換行、`create_at`）、未選分類、編輯保留 `create_at`、連續編輯兩篇的圖片網址、刪除、分頁 |
+| `pages/admin/AdminOrders.test.jsx` | 列表（付款時間秒）、明細的品項與優惠券快照、沒有優惠券的訂單、修改付款與外送狀態（`status` 字串）、更新失敗、分頁 |
+| `pages/admin/AdminCoupons.test.jsx` | 列表（折數、已過期、停用）、新增（到期日換算、去除空白）、未選到期日、`code` 重複、編輯、刪除提示、分頁、401 |
+| `components/NavAdmin.test.jsx` | 登出撤銷 token、網路錯誤仍清除本機 token、後台連結 |
+| `test/contract.test.js` | 契約檢查本身 |
+
+### 撰寫原則
+
+- 每個測試用 `renderRoutes`（`src/test/render.jsx`）建立新的 store 與 `MemoryRouter`，並帶上 `MessageToast`，提示訊息可以用 `.toast-body` 斷言。導向後的頁面用 `Landing` 代替。
+- 假資料用 `src/test/fixtures.js` 組出來，欄位比照 spec 範例；`lineItem` 傳入優惠券時依 spec 的公式四捨五入。
+- 需要後端狀態的流程（套用優惠券後重新讀取購物車），在測試裡用變數模擬，並記錄前端送出的請求來斷言。
+- 從使用者的角度查詢元素（label、按鈕文字、role）。桌機與手機版的費用明細同時存在，用 `within` 限定在桌機版的卡片。
+- `setup.js` 在每個測試後清除 cookie 與 axios 的預設 `Authorization`。後台頁的測試在 `beforeEach` 呼叫 `signInAsAdmin()`，模擬 `ProductedRoute` 驗證通過後的狀態。
+- Bootstrap modal 用 `findDialog()` 等它開啟，開啟後才能用 role 查詢。**開過 modal 的測試要等它完全關閉再結束**（`waitForDialogClosed()`，或用 `closeDialog()` 按取消），動畫進行中就卸載元件的話，Bootstrap 的 callback 會丟錯。
+- 要模擬網路錯誤時用 MSW 的 `http` 與 `HttpResponse.error()`，不經過契約檢查。
+
+### 環境設定的注意事項
+
+- 測試的環境變數寫在 `vitest.config.js`（API 網址為 `http://api.test/v2`、時區 `Asia/Taipei`），不受 `.env.local` 影響。
+- `react-router-dom` 在 Node 下會載入 CJS 版並另外載入一份 react-router，Router context 不共用，所以設定 alias 改用 ESM 版。
+- jsdom 的 `FormData`、`File` 與 Node 的 fetch 不相容，multipart 會被當成純文字，`setup.js` 改用 Node 內建的版本。
+- 不使用 `createMemoryRouter`：data router 在 jsdom 下建立 `Request` 會與 Node 的 `AbortSignal` 衝突。頁面沒有用到 loader，用 `MemoryRouter` 即可。
+
 
 ## 端到端驗證
 

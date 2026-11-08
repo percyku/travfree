@@ -28,7 +28,13 @@ export default defineConfig([
   },
   {
     // 設定檔在 Node 執行，不是瀏覽器
-    files: ['vite.config.js', 'eslint.config.js'],
+    files: ['vite.config.js', 'vitest.config.js', 'eslint.config.js'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // 測試在 Node（jsdom）執行，可以用 process；不需要 Fast Refresh
+    files: ['src/test/**', '**/*.test.{js,jsx}'],
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
 ])

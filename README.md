@@ -93,10 +93,11 @@ cd backend
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test   # 不需要 Docker
 
 cd frontend
+npm test
 npm run lint
 ```
 
-後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。
+後端以整合測試為主，走真實的 Security、JWT 與資料庫流程，所有回應都會對照 `openapi.yaml` 驗證。前端用 Vitest 與 React Testing Library 測主要流程，以 MSW 模擬 API，請求與回應同樣對照 `openapi.yaml` 檢查。
 
 ## 文件
 
