@@ -23,11 +23,12 @@ npm run e2e           # 在根目錄，E2E（需要 Docker），見下方「E2E 
 | OpenAPI spec | `npm run openapi:lint` |
 | 後端測試 | `./mvnw -B test`（Java 21、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
 | 前端 lint、測試與建置 | `npm run lint`、`npm test`、`npm run build` |
-| Docker compose 與 E2E | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`；接著匯入種子資料兩次（第二次應全部略過），再備份 → `down -v` → 還原，確認種子資料都還在；最後執行 E2E。失敗時輸出各服務的 log，並上傳 `e2e-report`（Playwright 報告） |
+| Docker compose 與 E2E | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`；接著匯入種子資料與展示會員各兩次（第二次應全部略過），再備份 → `down -v` → 還原，確認資料都還在；最後在 Playwright 官方映像檔（`mcr.microsoft.com/playwright`，版本取自 `e2e/package-lock.json`）裡執行 E2E。失敗時輸出各服務的 log，並上傳 `e2e-report`（Playwright 報告） |
 
 - CI 跑在區分大小寫的 Linux 上，可以抓到 macOS 上發現不了的匯入路徑大小寫錯誤。
 - 同一個分支有新的 push 時，會取消還在跑的舊檢查。
 - 依賴以 `npm ci` 依照 lock 檔安裝，新增套件時要一併 commit `package-lock.json`。
+- CI 的 E2E 不用 `playwright install --with-deps`：它要從 Ubuntu 的 apt 安裝字型，apt 的伺服器連不上時會卡住約 10 分鐘後失敗。官方映像檔已包含瀏覽器、系統套件與中文字型（手機版 Header 的排版測試需要），只需要從 Microsoft 的映像檔倉庫下載。
 
 `scripts/smoke-test.sh` 透過 nginx 檢查：首頁與 JS 載入、API 轉發、admin 登入與 token、後台 API、同源的寫入請求不被 CORS 擋下、錯誤回應是後端的 JSON。本機在 `docker compose up` 之後也可以執行。
 

@@ -59,6 +59,7 @@
 - 購物車與優惠券的 API 依呼叫者區分購物車（Hexschool 是全站共用一台）；沒有 token 也沒有 `X-Cart-Id` 時加入商品回 400 `缺少 X-Cart-Id`，格式錯誤回 400 `X-Cart-Id 格式不正確`，修改別台購物車的品項回 404。
 - 升級時移除全站共用購物車的 `cart_items` 表，裡面的品項會被捨棄（沒有擁有者）；訂單不受影響，升級前的訂單 `user_id` 是 null。
 - `LegacyUserSchemaMigration` 改名為 `LegacySchemaMigration`。
+- CI 的 E2E 改在 Playwright 官方映像檔裡執行，不再用 `playwright install --with-deps` 從 apt 安裝字型（apt 伺服器連不上時會卡住 10 分鐘後失敗），並加上 15 分鐘的上限。
 
 - GitHub repo 由 `percyku/freetrav` 改名為 `percyku/travfree`，舊網址會自動導向。根目錄 `README.md` 的「啟動與停止」整理 Docker 與開發模式的啟動、停止指令。
 - 移除 `backend/docker-compose.yml`，資料庫改由根目錄的 `docker-compose.yml` 提供，開發時執行 `docker compose up -d db`。

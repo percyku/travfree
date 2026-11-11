@@ -122,22 +122,21 @@ jobs:
           # 展示會員（含密碼）與他的訂單也還原了
           npm run -s seed:demo | tee demo.txt
           grep -q '新增訂單 0（略過 2）' demo.txt
-      # 在真實瀏覽器走完主要流程（前台購物、後台產品、後台訂單），測試在 e2e/
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: e2e/package-lock.json
-      - name: 安裝 Playwright
-        working-directory: e2e
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
+      # 在真實瀏覽器走完主要流程（前台購物、會員、後台產品、後台訂單），測試在 e2e/
+      # 在 Playwright 官方映像檔裡執行：瀏覽器與系統套件（含中文字型）都已裝好，不經過 Ubuntu 的 apt。
+      # 原本的 playwright install --with-deps 要從 apt 安裝字型，2026-11-11 runner 解析不到
+      # azure.archive.ubuntu.com，連續兩次卡 10 分鐘後失敗。映像檔版本取自 e2e/package-lock.json，升級時不必另外改。
+      # 用 host 網路連到 compose 的 :8000；npm ci 在容器內執行，取得 Linux 版的 node_modules。
       - name: E2E 測試
-        working-directory: e2e
-        env:
-          BASE_URL: http://localhost:8000
-        run: ADMIN_PASSWORD=$(sed -n 's/^ADMIN_PASSWORD=//p' ../.env) npx playwright test
+        timeout-minutes: 15
+        run: |
+          version=$(node -p "require('./e2e/package-lock.json').packages['node_modules/@playwright/test'].version")
+          docker run --rm --network host --ipc host \
+            -v "$PWD/e2e:/e2e" -w /e2e \
+            -e CI=true -e BASE_URL=http://localhost:8000 \
+            -e ADMIN_PASSWORD="$(sed -n 's/^ADMIN_PASSWORD=//p' .env)" \
+            "mcr.microsoft.com/playwright:v${version}-noble" \
+            sh -c 'npm ci --no-audit --no-fund && npx playwright test'
       - name: 上傳 E2E 報告
         if: failure()
         uses: actions/upload-artifact@v7
