@@ -1,13 +1,11 @@
-// 前台購物：搜尋 → 行程頁 → 加入購物車 → 套用優惠碼 → 填寫資料 → 送出訂單 → 付款
+// 前台購物：訪客搜尋 → 行程頁 → 加入購物車 → 套用優惠碼 → 結帳時登入 → 購物車帶到帳號 → 填寫資料 → 送出訂單 → 付款
 // 需要種子資料的「台北3日遊」（原價 50,000、售價 40,000）與優惠碼 Test50（五折）
+// 每個測試是新的瀏覽器 context，localStorage 的訪客購物車 id 不同，不需要清空購物車
 import { expect, test } from "@playwright/test";
-import { clearCart, toast } from "./helpers.js";
+import { MEMBER_PASSWORD, signupByApi, toast } from "./helpers.js";
 
-test.beforeEach(async ({ request }) => {
-  await clearCart(request);
-});
-
-test("前台購物：套用優惠碼後結帳並付款", async ({ page }) => {
+test("前台購物：訪客套用優惠碼，結帳時登入後付款", async ({ page, request }) => {
+  const member = await signupByApi(request);
   await test.step("從首頁搜尋行程", async () => {
     await page.goto("/");
     await page.getByPlaceholder("搜尋景點、地點或城市").fill("台北");
@@ -39,6 +37,21 @@ test("前台購物：套用優惠碼後結帳並付款", async ({ page }) => {
     await expect(summary.getByText("- NT$ 20,000")).toBeVisible(); // 優惠券折抵
     await expect(summary.getByText("NT$ 20,000", { exact: true })).toBeVisible(); // 總計
     await summary.getByRole("button", { name: "前往結賬" }).click();
+  });
+
+  await test.step("未登入時導向登入頁，登入後回到填寫資料頁", async () => {
+    await expect(toast(page, "請先登入會員再結帳")).toBeVisible();
+    await expect(page).toHaveURL(/#\/signin$/);
+    await page.getByLabel("Email").fill(member.email);
+    await page.getByLabel("密碼").fill(MEMBER_PASSWORD);
+    await page.getByRole("button", { name: "登入" }).click();
+    await expect(page).toHaveURL(/#\/cartform$/);
+  });
+
+  await test.step("訪客購物車與優惠帶到帳號，收件資料預先填入", async () => {
+    await expect(summary.getByText("NT$ 20,000", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("收件人姓名")).toHaveValue(member.name);
+    await expect(page.getByLabel("Email")).toHaveValue(member.email);
   });
 
   await test.step("填寫資料並送出訂單", async () => {

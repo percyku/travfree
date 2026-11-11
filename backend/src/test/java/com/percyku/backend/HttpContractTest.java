@@ -68,6 +68,21 @@ class HttpContractTest {
 				.contains("authorization");
 	}
 
+	/** 開發模式前端（:5173）與後端不同源，購物車請求帶的 X-Cart-Id 要通過預檢。 */
+	@Test
+	void preflightAllowsCartIdHeader() throws Exception {
+		HttpResponse<String> response = client.send(HttpRequest.newBuilder(uri("/api/cart"))
+				.method("OPTIONS", HttpRequest.BodyPublishers.noBody())
+				.header("Origin", FRONTEND_ORIGIN)
+				.header("Access-Control-Request-Method", "POST")
+				.header("Access-Control-Request-Headers", "content-type,x-cart-id")
+				.build(), HttpResponse.BodyHandlers.ofString());
+
+		assertThat(response.statusCode()).isEqualTo(200);
+		assertThat(response.headers().firstValue("Access-Control-Allow-Headers").orElse("").toLowerCase())
+				.contains("x-cart-id");
+	}
+
 	@Test
 	void unauthorizedResponseCarriesCorsHeadersSoFrontendCanReadIt() throws Exception {
 		HttpResponse<String> response = client.send(HttpRequest.newBuilder(uri("/api/user/check"))

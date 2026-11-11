@@ -81,3 +81,29 @@ test("一般會員進不了後台，在後台登入頁改用管理者登入", as
     await expect(page).toHaveURL(/#\/admin\/products$/);
   });
 });
+
+// 手機寬度一行只放得下一個會員連結，多了會把購物車擠到第二行、壓在首頁大圖上
+test("手機寬度的 Header 不換行（訪客與管理者）", async ({ browser, request, baseURL }) => {
+  const res = await request.post("/v2/api/user/signin", {
+    data: { username: ADMIN_EMAIL, password: ADMIN_PASSWORD },
+  });
+  const { token: adminToken } = await res.json();
+
+  for (const [who, token] of [["訪客", null], ["管理者", adminToken]]) {
+    await test.step(who, async () => {
+      const context = await browser.newContext({ viewport: { width: 360, height: 640 } });
+      if (token) await context.addCookies([{ name: TOKEN_COOKIE, value: token, url: baseURL }]);
+      const page = await context.newPage();
+      await page.goto("/");
+      const header = page.locator("nav").first();
+      const linkName = token ? "登出" : "登入";
+      await expect(header.getByRole(token ? "button" : "link", { name: linkName })).toBeVisible();
+
+      const brand = await header.getByText("#FreeTrav").boundingBox();
+      const cart = await header.getByRole("link", { name: /shopping_cart/ }).boundingBox();
+      // 購物車與 logo 在同一行
+      expect(Math.abs(cart.y + cart.height / 2 - (brand.y + brand.height / 2))).toBeLessThan(brand.height);
+      await context.close();
+    });
+  }
+});

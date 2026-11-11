@@ -5,8 +5,16 @@ import { Link } from "react-router-dom";
 import MemberSignin from "./MemberSignin";
 import { api, failure } from "../../test/contract";
 import { server } from "../../test/server";
+import { useCartMerge } from "../../test/handlers";
 import { Landing, findToast, renderRoutes } from "../../test/render";
-import { MEMBER_TOKEN, memberUser, signinSuccess } from "../../test/fixtures";
+import {
+  MEMBER_TOKEN,
+  cartResponse,
+  lineItem,
+  memberUser,
+  product,
+  signinSuccess,
+} from "../../test/fixtures";
 
 const COOKIE = import.meta.env.VITE_APP_TOKEN_NAME;
 
@@ -56,6 +64,7 @@ describe("會員登入頁", () => {
       }),
     );
     useMemberCheck();
+    useCartMerge();
     renderRoutes(routes, { route: "/signin" });
 
     await submit("traveler@example.com", "Travel2026");
@@ -66,11 +75,45 @@ describe("會員登入頁", () => {
     expect(tokenInCookie()).toBe(MEMBER_TOKEN);
   });
 
+  it("登入後把這個瀏覽器的訪客購物車併入帳號，並更新購物車", async () => {
+    server.use(
+      api.post("/api/user/signin", () => ({ json: signinSuccess(MEMBER_TOKEN) })),
+    );
+    useMemberCheck();
+    const merges = useCartMerge([lineItem(product(), 2)]);
+    const { store } = renderRoutes(routes, { route: "/signin" });
+
+    await submit("traveler@example.com", "Travel2026");
+
+    await screen.findByTestId("landing");
+    expect(merges).toEqual([
+      { cartId: localStorage.getItem("freetrav-cart-id"), authorization: MEMBER_TOKEN },
+    ]);
+    expect(merges[0].cartId).toMatch(/^[0-9a-f-]{36}$/);
+    await expect.poll(() => store.getState().cart.carts.length).toBe(1);
+  });
+
+  it("合併購物車失敗時仍完成登入", async () => {
+    server.use(
+      api.post("/api/user/signin", () => ({ json: signinSuccess(MEMBER_TOKEN) })),
+      api.post("/api/cart/merge", () => failure(400, "X-Cart-Id 格式不正確")),
+      api.get("/api/cart", () => cartResponse([])),
+    );
+    useMemberCheck();
+    renderRoutes(routes, { route: "/signin" });
+
+    await submit("traveler@example.com", "Travel2026");
+
+    expect(await screen.findByTestId("landing")).toHaveTextContent("首頁");
+    expect(tokenInCookie()).toBe(MEMBER_TOKEN);
+  });
+
   it("從其他頁面進來時，登入後回到那一頁", async () => {
     server.use(
       api.post("/api/user/signin", () => ({ json: signinSuccess(MEMBER_TOKEN) })),
     );
     useMemberCheck();
+    useCartMerge();
     renderRoutes(routes, { route: "/product" });
 
     await userEvent.click(screen.getByRole("link", { name: "前往登入" }));

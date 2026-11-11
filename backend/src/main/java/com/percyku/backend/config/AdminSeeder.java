@@ -16,7 +16,7 @@ import com.percyku.backend.repository.UserRepository;
 
 /**
  * 建立預設 admin，只有 ADMIN 角色（純後台帳號，不能結帳）。帳號已存在就不動，避免覆蓋日後修改過的密碼。
- * 在 LegacyUserSchemaMigration 之後執行。
+ * 在 LegacySchemaMigration 之後執行。
  */
 @Component
 @Order(1)

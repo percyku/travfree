@@ -32,7 +32,7 @@ public class User extends BaseEntity {
 
 	/**
 	 * DDL 允許 null：ddl-auto=update 無法對已有資料的表加上 NOT NULL 欄位。
-	 * 程式寫入時一定有值，舊資料由 LegacyUserSchemaMigration 補上。
+	 * 程式寫入時一定有值，舊資料由 LegacySchemaMigration 補上。
 	 */
 	@Column(length = NAME_MAX_LENGTH)
 	private String name;

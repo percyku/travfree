@@ -8,6 +8,9 @@ import com.percyku.backend.dto.OrderUser;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
@@ -15,6 +18,14 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "orders")
 public class Order extends BaseEntity {
+
+	/**
+	 * 下單的帳號。user_name、user_email 等欄位是收件資料，可以與帳號不同，不能用來判斷訂單屬於誰。
+	 * 會員系統之前的訂單是 null。
+	 */
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
+	private User buyer;
 
 	@Column(name = "user_name", nullable = false)
 	private String userName;
@@ -57,7 +68,8 @@ public class Order extends BaseEntity {
 	protected Order() {
 	}
 
-	public Order(OrderUser user, String message, long createAt) {
+	public Order(User buyer, OrderUser user, String message, long createAt) {
+		this.buyer = buyer;
 		this.userName = user.name();
 		this.userEmail = user.email();
 		this.userTel = user.tel();
@@ -83,6 +95,10 @@ public class Order extends BaseEntity {
 
 	public void setStatus(int status) {
 		this.status = status;
+	}
+
+	public User getBuyer() {
+		return buyer;
 	}
 
 	public String getUserName() {

@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.percyku.backend.cart.CartOwner;
 import com.percyku.backend.repository.UserRepository;
 import com.percyku.backend.security.JsonSecurityErrorHandler;
 import com.percyku.backend.security.JwtAuthenticationFilter;
@@ -43,7 +44,9 @@ public class SecurityConfig {
 						.accessDeniedHandler(errorHandler))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-						.requestMatchers("/api/user/check").authenticated()
+						.requestMatchers("/api/user/check", "/api/cart/merge").authenticated()
+						// 結帳需要一般會員；只有 ADMIN 的帳號（例如預設 admin）不能結帳
+						.requestMatchers(HttpMethod.POST, "/api/order").hasRole("USER")
 						.requestMatchers("/api/admin/**").hasRole(ADMIN)
 						// Hexschool 這支是公開的，但回應含全部訂單個資，且現有前端沒有使用，因此要求 admin
 						.requestMatchers(HttpMethod.GET, "/api/orders").hasRole(ADMIN)
@@ -60,7 +63,7 @@ public class SecurityConfig {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(properties.cors().allowedOrigins());
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", CartOwner.HEADER));
 		configuration.setMaxAge(3600L);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

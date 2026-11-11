@@ -20,9 +20,11 @@ const Header = () => {
     dispatch(checkAuth());
   }, [dispatch]);
 
+  // 登出後變回這個瀏覽器的訪客購物車（登入時已併入帳號，所以是空的）
   const handleSignout = async () => {
     await dispatch(signout());
     dispatch(createAsyncMessage({ success: true, message: "已登出" }));
+    dispatch(createAsyncGetCart());
   };
 
   // 登入、註冊後回到目前這一頁；已經在登入或註冊頁時沿用原本的來源
@@ -33,6 +35,10 @@ const Header = () => {
   const handleActvie = ({ isActive }) => {
     return isActive ? "nav-link ps-0 active-link" : "nav-link ps-0";
   };
+
+  // 手機寬度一行只放得下一個連結（再多購物車會被擠到第二行），其餘的從 md 起才顯示
+  const desktopOnly = (navLinkClass) => (state) =>
+    `${navLinkClass(state)} d-none d-md-block`;
   return (
     <>
       <nav className="navbar navbar-animate py-4 py-lg-5 fixed-top">
@@ -65,7 +71,10 @@ const Header = () => {
                   {user.name}
                 </span>
                 {isAdmin(user) && (
-                  <NavLink className={handleActvie} to="/admin/products">
+                  <NavLink
+                    className={desktopOnly(handleActvie)}
+                    to="/admin/products"
+                  >
                     後台
                   </NavLink>
                 )}
@@ -82,7 +91,11 @@ const Header = () => {
                 <NavLink className={handleActvie} to="/signin" state={{ from }}>
                   登入
                 </NavLink>
-                <NavLink className={handleActvie} to="/signup" state={{ from }}>
+                <NavLink
+                  className={desktopOnly(handleActvie)}
+                  to="/signup"
+                  state={{ from }}
+                >
                   註冊
                 </NavLink>
               </>

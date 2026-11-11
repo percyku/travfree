@@ -100,6 +100,14 @@ jobs:
           npm run -s seed
           npm run -s seed | tee seed.txt
           grep -Eq '產品 0（略過 [1-9].*文章 0（略過 [1-9].*優惠券 0（略過 [1-9]' seed.txt
+      # 展示會員與訂單走真實的註冊、購物車與結帳 API；第二次執行應略過
+      - name: 匯入展示會員與訂單
+        run: |
+          export ADMIN_PASSWORD=$(sed -n 's/^ADMIN_PASSWORD=//p' .env)
+          npm run -s seed:demo | tee demo.txt
+          grep -q '新增訂單 2（略過 0）' demo.txt
+          npm run -s seed:demo | tee demo.txt
+          grep -q '新增訂單 0（略過 2）' demo.txt
       # 備份後清空資料庫再還原，種子資料應該都還在（再匯入一次全部略過）
       - name: 備份與還原
         run: |
@@ -111,6 +119,9 @@ jobs:
           npm run -s db:restore -- --yes "$file"
           npm run -s seed | tee seed.txt
           grep -Eq '產品 0（略過 [1-9].*文章 0（略過 [1-9].*優惠券 0（略過 [1-9]' seed.txt
+          # 展示會員（含密碼）與他的訂單也還原了
+          npm run -s seed:demo | tee demo.txt
+          grep -q '新增訂單 0（略過 2）' demo.txt
       # 在真實瀏覽器走完主要流程（前台購物、後台產品、後台訂單），測試在 e2e/
       - uses: actions/setup-node@v7
         with:

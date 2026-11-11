@@ -16,16 +16,16 @@ import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.percyku.backend.config.LegacyUserSchemaMigration;
+import com.percyku.backend.config.LegacySchemaMigration;
 
-/** 模擬會員系統之前的 users 表（單一 role 欄位、沒有 name），確認啟動時的轉換。 */
-class LegacyUserSchemaMigrationTest extends ApiTestSupport {
+/** 模擬會員系統之前的資料庫（users 的單一 role 欄位、沒有 name、共用購物車的 cart_items），確認啟動時的轉換。 */
+class LegacySchemaMigrationTest extends ApiTestSupport {
 
 	@Autowired
 	JdbcTemplate jdbc;
 
 	@Autowired
-	LegacyUserSchemaMigration migration;
+	LegacySchemaMigration migration;
 
 	@Autowired
 	PasswordEncoder passwordEncoder;
@@ -64,6 +64,20 @@ class LegacyUserSchemaMigrationTest extends ApiTestSupport {
 		postJson("/admin/signin", Map.of("username", "legacy.admin@example.com", "password", "Legacy2026"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true));
+	}
+
+	@Test
+	void dropsSharedCartTable() throws Exception {
+		jdbc.execute("CREATE TABLE cart_items (id VARCHAR(36) PRIMARY KEY, product_id VARCHAR(36) UNIQUE, qty INT)");
+		jdbc.update("INSERT INTO cart_items (id, product_id, qty) VALUES ('legacy-line', 'legacy-product', 1)");
+
+		migration.run(new DefaultApplicationArguments());
+
+		assertThat(jdbc.queryForObject(
+				"SELECT COUNT(*) FROM information_schema.tables WHERE LOWER(table_name) = 'cart_items'", Integer.class))
+				.isZero();
+		// 新的購物車照常運作
+		addToCart(createProduct("東京", 1000), 1);
 	}
 
 	@Test

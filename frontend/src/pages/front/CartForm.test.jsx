@@ -1,23 +1,51 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CartForm from "./CartForm";
 import { api, failure } from "../../test/contract";
 import { server } from "../../test/server";
 import { Landing, renderRoutes } from "../../test/render";
-import { cartResponse, coupon, lineItem, product } from "../../test/fixtures";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+import {
+  MEMBER_TOKEN,
+  adminUser,
+  cartResponse,
+  coupon,
+  lineItem,
+  memberUser,
+  product,
+} from "../../test/fixtures";
 
 const ORDER_ID = "51149043-3529-456d-93de-691e7cdf5d0d";
 
-const renderCartForm = () =>
+/**
+ * 預設以一般會員進入（Header 已確認過登入狀態）。
+ * @param {object} [auth] store 的 auth 狀態
+ */
+const renderCartForm = (auth = { user: memberUser(), checked: true }) =>
   renderRoutes(
     [
       { path: "/cartform", element: <CartForm /> },
       { path: "/cartcheckout", element: <Landing name="購物車頁" /> },
       { path: "/cartsuccess/:orderId", element: <Landing name="訂單成功頁 " /> },
+      { path: "/signin", element: <SigninLanding /> },
     ],
-    { route: "/cartform" },
+    { route: "/cartform", preloadedState: { auth } },
   );
+
+/** 登入頁，顯示登入後要回到哪裡 */
+const SigninLanding = () => {
+  const location = useLocation();
+  return <p data-testid="landing">登入頁 {location.state?.from}</p>;
+};
+
+/** 清掉預先填入的值再輸入 */
+const retype = async (label, text) => {
+  const input = screen.getByLabelText(label);
+  await userEvent.clear(input);
+  await userEvent.type(input, text);
+};
 
 const summaryCard = () =>
   screen.getByRole("heading", { name: "費用明細" }).closest(".card");
@@ -26,8 +54,8 @@ const submitButton = () =>
   within(summaryCard()).getByRole("button", { name: "送出訂單" });
 
 const fillForm = async () => {
-  await userEvent.type(screen.getByLabelText("收件人姓名"), "王小明");
-  await userEvent.type(screen.getByLabelText("Email"), "test@example.com");
+  await retype("收件人姓名", "王小明");
+  await retype("Email", "test@example.com");
   await userEvent.type(screen.getByLabelText("收件人電話"), "0912345678");
   await userEvent.type(screen.getByLabelText("收件人地址"), "台北市信義區市府路1號");
   await userEvent.type(screen.getByLabelText("留言"), "希望安排靠窗座位");
@@ -36,6 +64,52 @@ const fillForm = async () => {
 const toast = (text) => screen.findByText(text, { selector: ".toast-body" });
 
 describe("填寫資料頁", () => {
+  beforeEach(() => {
+    // 結帳需要會員 token（spec 的 POST /api/order）
+    axios.defaults.headers.common.Authorization = MEMBER_TOKEN;
+  });
+
+  it("以帳號的姓名與 email 預先填入收件資料", async () => {
+    server.use(api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])));
+    renderCartForm();
+
+    expect(await screen.findByLabelText("收件人姓名")).toHaveValue("王小明");
+    expect(screen.getByLabelText("Email")).toHaveValue("traveler@example.com");
+  });
+
+  it("未登入時導向登入頁，登入後回到本頁", async () => {
+    server.use(api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])));
+    renderCartForm({ user: null, checked: true });
+
+    expect(await screen.findByTestId("landing")).toHaveTextContent("登入頁 /cartform");
+    expect(await toast("請先登入會員再結帳")).toBeInTheDocument();
+  });
+
+  it("確認登入狀態前不導向", async () => {
+    server.use(api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])));
+    renderCartForm({ user: null, checked: false });
+
+    expect(await screen.findByLabelText("收件人姓名")).toBeInTheDocument();
+    expect(screen.queryByTestId("landing")).not.toBeInTheDocument();
+  });
+
+  it("只有 ADMIN 的帳號不能結帳", async () => {
+    server.use(api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])));
+    renderCartForm({ user: adminUser(), checked: true });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("此帳號不能結帳，請改用會員帳號登入");
+    await within(summaryCard()).findByText("NT$ 40,000");
+    expect(submitButton()).toBeDisabled();
+  });
+
+  it("升級為管理者的會員（USER＋ADMIN）可以結帳", async () => {
+    server.use(api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])));
+    renderCartForm({ user: memberUser({ roles: ["USER", "ADMIN"] }), checked: true });
+
+    await within(summaryCard()).findByText("NT$ 40,000");
+    expect(submitButton()).toBeEnabled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
   it("進入頁面時重新讀取購物車，顯示最新總計", async () => {
     server.use(
       api.get("/api/cart", () =>
@@ -62,14 +136,17 @@ describe("填寫資料頁", () => {
     renderCartForm();
     await within(summaryCard()).findByText("NT$ 40,000");
 
+    // 清掉預先填入的姓名與 email
+    await userEvent.clear(screen.getByLabelText("收件人姓名"));
+    await userEvent.clear(screen.getByLabelText("Email"));
     await userEvent.click(submitButton());
     expect(await screen.findByText("請輸入收件人姓名。")).toBeInTheDocument();
     expect(screen.getByText("請輸入 Email。")).toBeInTheDocument();
     expect(screen.getByText("請輸入收件人電話。")).toBeInTheDocument();
     expect(screen.getByText("請輸入收件人地址。")).toBeInTheDocument();
 
-    await userEvent.type(screen.getByLabelText("收件人姓名"), "王");
-    await userEvent.type(screen.getByLabelText("Email"), "not-an-email");
+    await retype("收件人姓名", "王");
+    await retype("Email", "not-an-email");
     await userEvent.type(screen.getByLabelText("收件人電話"), "09-1234-5678");
     expect(await screen.findByText("姓名最少兩個字")).toBeInTheDocument();
     expect(screen.getByText("Email 格式不正確。")).toBeInTheDocument();

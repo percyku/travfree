@@ -1,7 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { createAsyncMessage } from "./messageSlice";
 import axios from "axios";
+import { cartConfig } from "../utils/cart";
 const { VITE_APP_API_BASE } = import.meta.env;
+
+// 購物車依呼叫者區分：登入時是帳號的購物車，否則是 X-Cart-Id 的訪客購物車（見 spec 的 GET /api/cart）
 export const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -28,7 +31,7 @@ export const createAsyncGetCart = createAsyncThunk(
   "cart/createAsyncGetCart",
   async (_, { dispatch }) => {
     try {
-      const res = await axios.get(`${VITE_APP_API_BASE}/api/cart`);
+      const res = await axios.get(`${VITE_APP_API_BASE}/api/cart`, cartConfig());
       dispatch(updateCart(res.data.data));
     } catch (error) {
       dispatch(
@@ -52,7 +55,7 @@ export const createAsyncAddCart = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const url = `${VITE_APP_API_BASE}/api/cart`;
-      const res = await axios.post(url, { data });
+      const res = await axios.post(url, { data }, cartConfig());
 
       dispatch(
         createAsyncMessage({
@@ -86,7 +89,7 @@ export const createAsyncUpdateCart = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const url = `${VITE_APP_API_BASE}/api/cart/${cartId}`;
-      await axios.put(url, { data });
+      await axios.put(url, { data }, cartConfig());
       dispatch(
         createAsyncMessage({
           message: `更新成功`,
@@ -115,7 +118,7 @@ export const createAsyncDeleteCart = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const url = `${VITE_APP_API_BASE}/api/cart/${id}`;
-      await axios.delete(url);
+      await axios.delete(url, cartConfig());
       dispatch(
         createAsyncMessage({
           message: `刪除成功`,
@@ -144,7 +147,7 @@ export const createAsyncDeleteAllCart = createAsyncThunk(
     try {
       dispatch(updateLoading(true));
       const url = `${VITE_APP_API_BASE}/api/carts`;
-      await axios.delete(url);
+      await axios.delete(url, cartConfig());
 
       dispatch(
         createAsyncMessage({
@@ -174,9 +177,11 @@ export const createAsyncApplyCoupon = createAsyncThunk(
   async (code, { dispatch }) => {
     try {
       dispatch(updateLoading(true));
-      const res = await axios.post(`${VITE_APP_API_BASE}/api/coupon`, {
-        data: { code },
-      });
+      const res = await axios.post(
+        `${VITE_APP_API_BASE}/api/coupon`,
+        { data: { code } },
+        cartConfig(),
+      );
       dispatch(
         createAsyncMessage({
           message: res.data.message,
@@ -203,7 +208,10 @@ export const createAsyncRemoveCoupon = createAsyncThunk(
   async (_, { dispatch }) => {
     try {
       dispatch(updateLoading(true));
-      const res = await axios.delete(`${VITE_APP_API_BASE}/api/coupon`);
+      const res = await axios.delete(
+        `${VITE_APP_API_BASE}/api/coupon`,
+        cartConfig(),
+      );
       dispatch(
         createAsyncMessage({
           message: res.data.message,

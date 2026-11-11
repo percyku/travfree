@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import MemberSignup from "./MemberSignup";
 import { api, failure } from "../../test/contract";
 import { server } from "../../test/server";
+import { useCartMerge } from "../../test/handlers";
 import { Landing, findToast, renderRoutes } from "../../test/render";
 import { MEMBER_TOKEN, memberUser, signinSuccess } from "../../test/fixtures";
 
@@ -38,6 +39,7 @@ describe("會員註冊頁", () => {
         json: { success: true, ...memberUser() },
       })),
     );
+    const merges = useCartMerge();
     renderRoutes(routes, { route: "/signup" });
 
     await fill({
@@ -54,6 +56,9 @@ describe("會員註冊頁", () => {
       data: { name: "王小明", email: "traveler@example.com", password: "Travel2026" },
     });
     expect(document.cookie).toContain(`${COOKIE}=${MEMBER_TOKEN}`);
+    // 註冊前放進購物車的商品併入新帳號
+    expect(merges).toHaveLength(1);
+    expect(merges[0].authorization).toBe(MEMBER_TOKEN);
   });
 
   it("email 已註冊時顯示後端原因", async () => {

@@ -26,7 +26,8 @@ info:
     - **金額**：都是整數，傳小數會回 400 `資料格式不正確`。
     - **認證**：`Authorization` header 放登入取得的 token，裸 token 或 `Bearer <token>` 皆可。
     - **角色**（Hexschool 沒有）：帳號可以同時有 `USER`（一般會員）與 `ADMIN`（管理者）。
-      註冊的帳號是 `USER`；預設的 `admin@gmail.com` 只有 `ADMIN`。
+      註冊的帳號是 `USER`；預設的 `admin@gmail.com` 只有 `ADMIN`。結帳需要 `USER`。
+    - **購物車**（Hexschool 是全站共用一台）：每個訪客與會員各一台，訪客以 `X-Cart-Id` header 識別，見 `GET /api/cart`。
 servers:
   - url: http://localhost:8080/v2
     description: 本機開發
@@ -46,7 +47,7 @@ tags:
   - name: '客戶購物 - 產品 (Products)'
     description: 前台產品瀏覽，只含上架產品
   - name: '客戶購物 - 購物車 (Cart)'
-    description: 購物車，全站共用一台
+    description: 購物車，每個訪客與會員各一台，見 `GET /api/cart` 的說明
   - name: '客戶購物 - 優惠券 (Coupon)'
     description: 套用優惠券，前端在購物車頁使用
   - name: '客戶購物 - 結帳 (Order)'
@@ -922,10 +923,21 @@ paths:
       tags: ['客戶購物 - 購物車 (Cart)']
       summary: 取得購物車
       description: |
-        **全站共用一台購物車**（前端匿名呼叫，後端無法區分訪客）。
+        **每個訪客與會員各一台購物車**（Hexschool 是全站共用一台）。哪一台由呼叫者決定，購物車與優惠券的 API 都相同：
+
+        | 請求 | 購物車 |
+        |---|---|
+        | 帶有效 token | 該帳號的購物車（忽略 `X-Cart-Id`） |
+        | 沒有 token，帶 `X-Cart-Id` | 該訪客的購物車，第一次加入商品時建立 |
+        | 都沒有 | 視為空的購物車；`POST /api/cart` 回 400 `缺少 X-Cart-Id` |
+
+        沒有 token 且 `X-Cart-Id` 不是 UUID 時回 400 `X-Cart-Id 格式不正確`。
+        登入後由前端呼叫 `POST /api/cart/merge`，把訪客購物車併入帳號的購物車。
+
         `total` 是原價小計、`final_total` 是折扣後小計，都依**目前售價**即時計算。
       operationId: getCart
-      security: []  # 公開
+      security: [{}, { Token: [] }]
+      parameters: [{ $ref: '#/components/parameters/CartId' }]
       responses:
         '200':
           description: 成功
@@ -952,8 +964,11 @@ paths:
         | 產品已下架 | 400 `產品已下架` |
         | `qty` 小於 1 | 400 `qty 不得小於 1` |
         | `qty` 或累加後超過 9999 | 400 `qty 不得大於 9999` |
+        | 沒有 token 也沒有 `X-Cart-Id` | 400 `缺少 X-Cart-Id` |
+        | `X-Cart-Id` 格式錯誤 | 400 `X-Cart-Id 格式不正確` |
       operationId: addToCart
-      security: []  # 公開
+      security: [{}, { Token: [] }]
+      parameters: [{ $ref: '#/components/parameters/CartId' }]
       requestBody: { $ref: '#/components/requestBodies/CartInput' }
       responses:
         '200':
@@ -989,6 +1004,7 @@ paths:
         required: true
         description: 購物車**品項** id（不是產品 id）
         schema: { type: string }
+      - $ref: '#/components/parameters/CartId'
     put:
       tags: ['客戶購物 - 購物車 (Cart)']
       summary: 設定品項數量
@@ -997,10 +1013,10 @@ paths:
 
         | 情境 | 回應 |
         |---|---|
-        | 品項不存在 | 404 `找不到購物車品項` |
+        | 品項不存在，或不在呼叫者的購物車 | 404 `找不到購物車品項` |
         | `product_id` 與品項不符 | 400 `product_id 與購物車品項不符` |
       operationId: updateCartItem
-      security: []  # 公開
+      security: [{}, { Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/CartInput' }
       responses:
         '200':
@@ -1037,8 +1053,9 @@ paths:
     delete:
       tags: ['客戶購物 - 購物車 (Cart)']
       summary: 刪除單一品項
+      description: 品項不存在，或不在呼叫者的購物車時回 404 `找不到購物車品項`。
       operationId: deleteCartItem
-      security: []  # 公開
+      security: [{}, { Token: [] }]
       responses:
         '200':
           description: 成功
@@ -1058,8 +1075,10 @@ paths:
     delete:
       tags: ['客戶購物 - 購物車 (Cart)']
       summary: 清空購物車
+      description: 只清空呼叫者的購物車。購物車不存在或已經是空的也回 200。
       operationId: clearCart
-      security: []  # 公開
+      security: [{}, { Token: [] }]
+      parameters: [{ $ref: '#/components/parameters/CartId' }]
       responses:
         '200':
           description: 成功
@@ -1067,6 +1086,47 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Message' }
               example: { success: true, message: '已刪除' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/cart/merge:
+    post:
+      tags: ['客戶購物 - 購物車 (Cart)']
+      summary: 登入後合併訪客購物車
+      description: |
+        Hexschool 沒有這支。前端在會員登入或註冊成功後呼叫，把 `X-Cart-Id` 的訪客購物車併入帳號的購物車，
+        然後刪除訪客購物車。回應是合併後的購物車，格式與 `GET /api/cart` 相同。
+
+        - 同一個產品的數量相加，超過 9999 時以 9999 計。優惠券以帳號購物車原本的為準。
+        - 帳號購物車沒有的產品整列移過去，保留原本套用的優惠券。
+        - 沒帶 `X-Cart-Id`、訪客購物車不存在或是空的，直接回傳帳號的購物車，所以重複呼叫不會重複合併。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 沒有 token | 401 `驗證錯誤, 請重新登入` |
+        | `X-Cart-Id` 格式錯誤 | 400 `X-Cart-Id 格式不正確` |
+      operationId: mergeCart
+      security: [{ Token: [] }]
+      parameters: [{ $ref: '#/components/parameters/CartId' }]
+      responses:
+        '200':
+          description: 合併後的購物車
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, data, messages]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  data: { $ref: '#/components/schemas/Cart' }
+                  messages: { $ref: '#/components/schemas/Messages' }
+        '400':
+          description: '`X-Cart-Id` 格式錯誤'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: 'X-Cart-Id 格式不正確' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
   /api/coupon:
@@ -1085,8 +1145,11 @@ paths:
         | 找不到或已停用 | 404 `找不到優惠券` |
         | 已過期 | 400 `優惠券已過期` |
         | 購物車是空的 | 400 `購物車無資料` |
+
+        套用在呼叫者的購物車，識別方式見 `GET /api/cart`。
       operationId: applyCoupon
-      security: []  # 公開
+      security: [{}, { Token: [] }]
+      parameters: [{ $ref: '#/components/parameters/CartId' }]
       requestBody:
         required: true
         content:
@@ -1134,9 +1197,10 @@ paths:
     delete:
       tags: ['客戶購物 - 優惠券 (Coupon)']
       summary: 移除已套用的優惠券
-      description: 清除購物車所有品項的優惠券，購物車回到售價。購物車沒有套用優惠券或是空的，同樣回 200。Hexschool 沒有這支 API。
+      description: 清除呼叫者購物車所有品項的優惠券，購物車回到售價。購物車沒有套用優惠券或是空的，同樣回 200。Hexschool 沒有這支 API。
       operationId: removeCoupon
-      security: []  # 公開
+      security: [{}, { Token: [] }]
+      parameters: [{ $ref: '#/components/parameters/CartId' }]
       responses:
         '200':
           description: 已移除
@@ -1163,10 +1227,13 @@ paths:
       tags: ['客戶購物 - 結帳 (Order)']
       summary: 結帳
       description: |
-        在單一交易內建立訂單、寫入品項快照並清空購物車。
+        **需要 `USER` 角色**（Hexschool 是公開的）。結帳的是帳號的購物車；在單一交易內建立訂單、
+        記錄下單的帳號、寫入品項快照並清空該購物車。`user` 是收件資料，可以與帳號的姓名、email 不同。
 
         | 情境 | 回應 |
         |---|---|
+        | 沒有 token | 401 `驗證錯誤, 請重新登入` |
+        | 帳號沒有 `USER`（例如預設 admin） | 403 `無此權限` |
         | 購物車是空的 | 400 `購物車無資料` |
         | 購物車含已下架產品 | 400 `購物車內有已下架產品` |
         | 缺少 `user` | 400 `user 屬性不得為空` |
@@ -1177,7 +1244,7 @@ paths:
         商品改價，都會讓購物車金額改變；不一致時回 409，不建立訂單、不清空購物車，
         前端重新讀取購物車讓顧客確認新金額。沒帶 `final_total` 則不比對。
       operationId: createOrder
-      security: []  # 公開
+      security: [{ Token: [] }]
       requestBody:
         required: true
         content:
@@ -1208,6 +1275,13 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: '購物車無資料' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: 帳號沒有 `USER` 角色
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '無此權限' }
         '409':
           description: 購物車金額與 `final_total` 不同
           content:
@@ -1308,6 +1382,15 @@ components:
         角色不符時回 403 `無此權限`。
 
   parameters:
+    CartId:
+      name: X-Cart-Id
+      in: header
+      required: false
+      description: |
+        訪客購物車的識別，前端產生的 UUID（存在 localStorage）。Hexschool 沒有這項。
+        **帶有效 token 時忽略**，改用帳號的購物車；只有 `POST /api/cart/merge` 會在登入時讀取它。
+        沒有 token 時格式錯誤回 400 `X-Cart-Id 格式不正確`。
+      schema: { type: string, format: uuid, example: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d }
     Page:
       name: page
       in: query
