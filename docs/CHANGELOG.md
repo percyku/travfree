@@ -11,6 +11,12 @@
   - 前台新增 `/signin`、`/signup` 頁面；Header 未登入時顯示「登入／註冊」，登入後顯示姓名與「登出」，管理者多一個「後台」連結。
   - 前端新增 `authSlice` 與 `utils/auth.js`，集中 token cookie 的讀寫與登入狀態。
   - 啟動時自動轉換舊資料庫：`users.role` 搬到 `user_roles` 後移除，並補上姓名。
+- 會員系統（階段 2）：
+  - 每個訪客與帳號各一台購物車：訪客以前端產生的 `X-Cart-Id`（存在 localStorage）識別，登入時是帳號的購物車。新增 `carts` 表，品項改存 `cart_lines`。
+  - `POST /api/cart/merge`：會員登入或註冊後把訪客購物車併入帳號，同一產品數量相加（上限 9999）。
+  - 結帳時未登入會導向會員登入頁，登入後回到填寫資料頁，並以帳號的姓名與 email 預先填入。
+  - 訂單加上 `user_id`，記錄下單的帳號。
+  - `npm run seed:demo`：透過 API 建立展示會員與 2 筆訂單，只能對本機執行；CI 會確認它可以重複執行並在備份還原後保留。
 
 - E2E 測試（`npm run e2e`）：Playwright 在獨立的 docker compose 環境（`:8100`、全新資料庫）走完前台購物（搜尋 → 購物車 → 優惠碼 → 結帳 → 付款）、後台產品（新增 → 前台可見 → 刪除）與後台訂單（修改付款與外送狀態）。CI 的 Docker compose job 也會執行，失敗時上傳報告。取代 `docs/TESTING.md` 中大部分的手動端到端驗證。
 - `docker-compose.yml` 的資料庫連接埠與 volume 名稱可用 `DB_PORT`、`DB_VOLUME` 指定，預設值不變。
@@ -49,6 +55,10 @@
 - `POST /api/user/check`：回應多了 `email`、`name`、`roles`；`uid` 的說明更正為帳號的 UUID（原本範例寫成 email）。
 - 後台路由保護與後台登入頁改為依 `roles` 判斷：只有 `ADMIN` 能進入後台。一般會員的 token 會被導向後台登入頁，但不會被清除。
 - spec 的 security scheme 由 `AdminToken` 改名為 `Token`，因為會員與管理者用同一種 token。
+- **`POST /api/order` 需要 `USER` 角色**：未登入回 401、只有 `ADMIN` 的帳號回 403 `無此權限`。結帳的是帳號的購物車，只清空該購物車。
+- 購物車與優惠券的 API 依呼叫者區分購物車（Hexschool 是全站共用一台）；沒有 token 也沒有 `X-Cart-Id` 時加入商品回 400 `缺少 X-Cart-Id`，格式錯誤回 400 `X-Cart-Id 格式不正確`，修改別台購物車的品項回 404。
+- 升級時移除全站共用購物車的 `cart_items` 表，裡面的品項會被捨棄（沒有擁有者）；訂單不受影響，升級前的訂單 `user_id` 是 null。
+- `LegacyUserSchemaMigration` 改名為 `LegacySchemaMigration`。
 
 - GitHub repo 由 `percyku/freetrav` 改名為 `percyku/travfree`，舊網址會自動導向。根目錄 `README.md` 的「啟動與停止」整理 Docker 與開發模式的啟動、停止指令。
 - 移除 `backend/docker-compose.yml`，資料庫改由根目錄的 `docker-compose.yml` 提供，開發時執行 `docker compose up -d db`。

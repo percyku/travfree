@@ -14,8 +14,8 @@
 
 | 階段 | 內容 | 狀態 |
 |---|---|---|
-| 1 | 角色改成多個、註冊與登入、`/api/user/check` 回傳角色、後台守衛只讓 `ADMIN` 進入 | 本機完成，待 commit 與 CI |
-| 2 | 每個訪客各自的購物車、登入時合併、結帳需要 `USER`、訂單加上 `user_id` | 未開始 |
+| 1 | 角色改成多個、註冊與登入、`/api/user/check` 回傳角色、後台守衛只讓 `ADMIN` 進入 | ✅ 完成（PR #1，CI 通過） |
+| 2 | 每個訪客各自的購物車、登入時合併、結帳需要 `USER`、訂單加上 `user_id`、`npm run seed:demo` | 本機完成，待 commit 與 CI |
 | 3 | 會員中心的基本資料頁 | 未開始 |
 | 4 | dashboard 的會員列表與升級／降級、禁止管理者修改自己的訂單 | 未開始 |
 | 5 | Google 登入 | 未開始 |
@@ -69,6 +69,52 @@
 - E2E：註冊 → Header 顯示姓名 → 登出 → 再登入；一般會員進不了後台。
 - 在真實 PostgreSQL 上以舊資料庫啟動一次，確認轉換成功。
 
+## 階段 2
+
+### API
+
+| 端點 | 變更 |
+|---|---|
+| 購物車與優惠券（`GET`/`POST /cart`、`PUT`/`DELETE /cart/{id}`、`DELETE /carts`、`POST`/`DELETE /coupon`） | 依「誰在呼叫」決定是哪一台購物車：有 token 時是該帳號的購物車；沒有時看 `X-Cart-Id` header（訪客的購物車） |
+| `POST /api/cart/merge` | 新增。需要登入。把 `X-Cart-Id` 的訪客購物車併入帳號的購物車，回應與 `GET /cart` 相同 |
+| `POST /api/order` | 需要 `USER`：未登入 401、只有 `ADMIN` 403。結帳的是帳號的購物車，訂單記錄 `user_id` |
+
+- `X-Cart-Id` 是前端產生的 UUID，存在 localStorage。格式錯誤回 400 `X-Cart-Id 格式不正確`。
+- 有 token 時忽略 `X-Cart-Id`，只有 merge 會讀它。
+- 沒有 token 也沒有 `X-Cart-Id`：讀取與刪除視為空的購物車；`POST /cart` 回 400 `缺少 X-Cart-Id`。
+- 修改或刪除別台購物車的品項回 404 `找不到購物車品項`，不透露品項存在。
+- 合併：同一個產品的數量相加，超過 9999 時以 9999 計；同一產品的優惠券以帳號購物車的為準，移過去的品項保留原本的優惠券。合併後刪除訪客購物車。重複呼叫不會重複合併。
+
+### 資料表
+
+- 新增 `carts(id, user_id UNIQUE NULL, guest_id UNIQUE NULL, created_at)`，`user_id` 與 `guest_id` 剛好一個有值。
+- 購物車品項改存在新的 `cart_lines(id, cart_id, product_id, qty, coupon_id, created_at)`，`(cart_id, product_id)` 唯一。
+  不沿用 `cart_items`：舊表的 `product_id` 有單欄唯一限制，而且新的 `cart_id` 要 `NOT NULL`，`ddl-auto=update` 都處理不了。
+  舊的 `cart_items` 由啟動時的轉換移除，裡面的品項沒有擁有者，直接捨棄。
+- `orders` 加上 `user_id`（可為 null，FK → users）。升級前的訂單是 null，不以 email 對應到會員。
+- `LegacyUserSchemaMigration` 改名為 `LegacySchemaMigration`，一併處理 `cart_items`。
+
+### 前端
+
+- `utils/cart.js` 產生並保存 cart id，`cartSlice` 的每個請求帶上 `X-Cart-Id`。
+- 會員登入或註冊成功後呼叫 merge，再重新讀取購物車；登出後重新讀取（變回訪客的購物車，是空的）。
+- 購物車頁的「下一步」：未登入時導向 `/signin`，登入後回到填寫資料頁。
+- 填寫資料頁：未登入導向 `/signin`；只有 `ADMIN` 時顯示不能結帳；以帳號的姓名與 email 預先填入。
+- `authSlice` 加上 `checked`，確認完登入狀態前不做導向，否則重新整理填寫資料頁時會被誤導到登入頁。
+
+### 展示資料 `npm run seed:demo`
+
+- 透過 API 註冊（或登入）展示會員 `demo@example.com`，加入購物車並結帳兩筆訂單（一筆用 `Test50` 且已付款、一筆未付款）。需要先 `npm run seed`。
+- 只允許 `API_BASE` 是 `localhost` 或 `127.0.0.1`，避免在部署環境建立公開密碼的帳號。
+- 以後台訂單列表判斷是否已建立過（訂單 email 為展示帳號），重複執行不會重複下單。
+
+### 驗證
+
+- 後端：兩個訪客的購物車互不影響、會員與訪客分開、cart id 格式、別人的品項 404、merge 的數量相加與上限與優惠券、重複 merge、結帳的權限（401／403）、訂單的 `user_id`、結帳只清空自己的購物車、舊 `cart_items` 的轉換。
+- 前端：請求帶 `X-Cart-Id`、登入後 merge、未登入導向登入頁、管理者不能結帳、預先填入姓名與 email。
+- E2E：購物流程改為訪客加入購物車並套用優惠碼 → 結帳時登入 → 購物車與優惠帶過去 → 下單。
+- 在 PostgreSQL 上以舊資料庫啟動一次。
+
 ## 進度
 
 - 2026-11-11：建立分支與計畫，開始階段 1。
@@ -77,3 +123,14 @@
   - spec 的 security scheme `AdminToken` 改名為 `Token`。
   - 原本打算在登入時擋下超過 72 bytes 的密碼，以免 bcrypt 丟例外；實測目前的 Spring Security 是回傳不符而不是丟例外，所以只保留測試。
   - 前端的 cookie 期限改用 `toUTCString()`（原本是 `Date` 的預設字串）。
+- 2026-11-11：階段 1 推上 PR #1，CI 通過。使用者決定階段 2 完成後一起 merge。
+- 2026-11-11：階段 2 在本機完成。後端 135 個測試、前端 125 個測試、E2E 5 個全部通過。
+  - 在 PostgreSQL 上以開發資料庫的備份驗證轉換：`cart_items` 移除，6 筆舊訂單 `user_id` 為 null；之後訪客加入 → 合併 → 會員結帳 → admin 結帳 403 都符合 spec。
+  - 測試用 `GuestCartTestConfig` 讓 MockMvc 預設帶 `X-Cart-Id`，既有的購物車測試不必修改；結帳的測試改以會員進行。
+  - 故意拿掉 `POST /api/order` 的 `USER` 規則時，未登入結帳是 500（controller 拿不到帳號），由權限測試抓到；規則不可移除。
+  - 填寫資料頁依賴 Header 確認的登入狀態（`auth.checked`），不另外呼叫 `/api/user/check`，避免重複請求。
+  - `seed:demo` 在 E2E 環境驗證過：第一次 2 筆、第二次略過、密碼不同與非本機時拒絕。
+  - 在開發資料庫執行時，`Test50` 是 11-09 修正前匯入的（到期日 2026-11-09，`seed` 不會更新已存在的資料），套用優惠碼時失敗，留下只建了帳號的狀態。
+    改為建立任何資料前先檢查行程與優惠碼，不符合時說明原因並停止。經使用者同意，以後台 API 把開發資料庫的 `Test50` 到期日改為 2030-12-31。
+  - 使用者在瀏覽器檢查時看到「缺少 X-Cart-Id」與管理者可以按送出：原因是分頁在重建前就開著，跑的是第 1 階段的前端（單頁應用換頁不會重新載入）。以全新的瀏覽器確認新版正確。
+  - 使用者的手機寬度截圖顯示：階段 1 加上的「登入／註冊」讓購物車被擠到第二行。改為小於 md 時隱藏「註冊」與「後台」，並加上 360px 的 E2E 檢查。

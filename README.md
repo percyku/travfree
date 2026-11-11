@@ -94,13 +94,15 @@ cd travfree
 |---|---|
 | 匯入範例資料（30 筆產品、5 篇文章、1 張優惠券） | `npm run seed` |
 | 開發模式匯入 | `API_BASE=http://localhost:8080/v2 npm run seed` |
+| 建立展示會員 `demo@example.com` / `Demo2026` 與他的 2 筆訂單（只對本機） | `npm run seed:demo` |
 | 把目前後台的內容存成新的範例資料 | `npm run seed:export` |
 | 備份整個資料庫（含訂單、帳號與上傳的圖片） | `npm run db:backup` |
 | 從備份還原（會覆蓋現有資料） | `npm run db:restore -- backups/travfree-<時間>.dump` |
 
 - **範例資料**（`scripts/seed/data.json`）在 git 裡，透過 API 匯入。已存在的資料會略過，重複執行不會重複新增。不含帳號與訂單。
+- **展示會員**（`npm run seed:demo`）要在 `npm run seed` 之後執行：透過 API 註冊會員、加入購物車並結帳（一筆套用 `Test50` 且已付款、一筆未付款），訂單會對應到這個帳號。密碼是公開的，所以只能對 `localhost` 執行；已經有展示訂單時不會重複下單。
 - **備份**存在 `backups/`，**不進 git**：裡面有訂單個資與密碼雜湊，只留在自己的電腦。
-- 典型用法：`docker compose down -v` 清空 → `docker compose up -d --build` → `npm run seed`。
+- 典型用法：`docker compose down -v` 清空 → `docker compose up -d --build` → `npm run seed` →（需要會員訂單時）`npm run seed:demo`。
 
 ### 登入
 

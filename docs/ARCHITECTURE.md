@@ -57,6 +57,8 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | 會員 | 無（只有申請者的 admin 帳號） | 註冊、前台登入，角色 `USER`／`ADMIN` 可同時擁有 | 會員系統，見 [FEATURES.md](FEATURES.md) 的認證 |
 | `POST /admin/signin` 的權限 | 帳號都是 admin | 沒有 `ADMIN` 回 403 `此帳號沒有後台權限` | 一般會員不能登入後台 |
 | `POST /api/user/check` | `{ success, uid }` | 多回 `email`、`name`、`roles` | 前端依 `roles` 判斷能否進入後台 |
+| 購物車 | 全站共用一台 | 每個訪客（`X-Cart-Id`）與帳號各一台，登入時 `POST /cart/merge` 合併 | 不同訪客不會看到、清空彼此的購物車 |
+| `POST /order` | 公開 | 需要 `USER`，訂單記錄 `user_id` | 會員才能結帳，訂單能對應到帳號 |
 | 已套用的優惠券 | 只在套用時檢查到期日，之後停用或過期仍有折扣 | 停用或過期立即不再折扣 | 停用要能立即生效 |
 | `POST /order` | 無金額比對 | 選填 `final_total`，與購物車金額不同回 409 | 避免顧客在不知情下以另一個金額成交 |
 | `DELETE /coupon` | 無 | 移除已套用的優惠券 | 顧客可以取消優惠 |
@@ -89,7 +91,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 
 路徑皆含 context-path `/v2`。下表的 `~` 代表 `/v2/api`。Hexschool 的路徑中間還有一段 `api_path`（例如 `react-week2-api`），本專案已移除。
 
-權限欄的 **Admin** 表示 token 的帳號要有 `ADMIN` 角色，只有 `USER` 時回 403；**需登入**表示任何角色都可以。詳細行為見 [FEATURES.md](FEATURES.md)。
+權限欄的 **Admin** 表示 token 的帳號要有 `ADMIN` 角色，只有 `USER` 時回 403；**USER** 表示要有 `USER` 角色；**需登入**表示任何角色都可以。購物車與優惠券的 API 是公開的，但依呼叫者區分購物車，見 [FEATURES.md](FEATURES.md) 的購物車。詳細行為見 [FEATURES.md](FEATURES.md)。
 
 | 方法 | 路徑 | 權限 | 前端有用 | 說明 |
 |---|---|---|---|---|
@@ -120,20 +122,21 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | GET | `~/products` | 公開 | ✓ | 上架產品分頁 |
 | GET | `~/products/all` | 公開 | ✓ | 全部上架產品 |
 | GET | `~/product/{id}` | 公開 | ✓ | 單一上架產品 |
-| GET | `~/cart` | 公開 | ✓ | 取得購物車 |
+| GET | `~/cart` | 公開 | ✓ | 取得購物車（依 token 或 `X-Cart-Id`） |
 | POST | `~/cart` | 公開 | ✓ | 加入購物車 |
 | PUT | `~/cart/{id}` | 公開 | ✓ | 更新數量 |
 | DELETE | `~/cart/{id}` | 公開 | ✓ | 刪除單一品項 |
 | DELETE | `~/carts` | 公開 | ✓ | 清空購物車 |
+| POST | `~/cart/merge` | 需登入 | ✓ | 登入後合併訪客購物車（Hexschool 沒有） |
 | POST | `~/coupon` | 公開 | ✓ | 套用優惠券 |
 | DELETE | `~/coupon` | 公開 | ✓ | 移除已套用的優惠券（Hexschool 沒有） |
-| POST | `~/order` | 公開 | ✓ | 建立訂單 |
+| POST | `~/order` | **USER** | ✓ | 建立訂單（與 Hexschool 不同） |
 | GET | `~/orders` | **Admin** | | 訂單分頁（與 Hexschool 不同） |
 | GET | `~/order/{id}` | 公開 | ✓ | 單筆訂單 |
 | POST | `~/pay/{id}` | 公開 | ✓ | 付款 |
 | GET | `~/articles` | 公開 | ✓ | 公開文章分頁 |
 | GET | `~/article/{id}` | 公開 | ✓ | 單篇公開文章 |
-| GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 40 個 API 內） |
+| GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 41 個 API 內） |
 
 授權規則寫在 `SecurityConfig`，依序比對。未列入的路徑一律拒絕。
 
@@ -141,7 +144,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 
 主鍵皆為 Hibernate 產生的隨機 UUID 字串。前端把 id 當不透明字串；公開的 `GET /order/{id}` 也靠它不可猜測。
 
-Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`update` 只會新增、不會改型別或刪欄位，變更既有欄位時要自行處理資料庫。目前唯一的手動轉換是 `LegacyUserSchemaMigration`（見下方 `users`）。
+Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`update` 只會新增、不會改型別或刪欄位，變更既有欄位時要自行處理資料庫。需要手動處理的轉換都在 `LegacySchemaMigration`（見下方 `users` 與 `cart_lines`）。
 
 ### `users`
 
@@ -154,7 +157,7 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 | `token_version` | int | 簽進 JWT，登出時遞增 |
 | `created_at` | timestamp | |
 
-**舊資料庫的轉換。** 會員系統之前的 `users` 有單一的 `role` 欄位（`NOT NULL`）。`LegacyUserSchemaMigration` 每次啟動時檢查，存在時把它複製到 `user_roles` 後移除，並以 email 的 `@` 前面補上沒有的姓名；轉換過就不做事。還原舊備份後重新啟動後端即可（`npm run db:restore` 會自動重新啟動）。
+**舊資料庫的轉換。** 會員系統之前的 `users` 有單一的 `role` 欄位（`NOT NULL`）。`LegacySchemaMigration` 每次啟動時檢查，存在時把它複製到 `user_roles` 後移除，並以 email 的 `@` 前面補上沒有的姓名；轉換過就不做事。還原舊備份後重新啟動後端即可（`npm run db:restore` 會自動重新啟動）。
 
 ### `user_roles`
 
@@ -202,24 +205,39 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 | `create_at` | bigint | 由前端傳入，原值保存。現有前端傳**毫秒** |
 | `is_public` | boolean | |
 
-### `cart_items`
+### `carts`
 
-全站共用一台購物車，所以沒有 `carts` 表。金額不落地，讀取時由目前售價與優惠券算出。
+每個訪客與每個帳號各一台，`user_id` 與 `guest_id` 剛好一個有值。訪客購物車在第一次加入商品時建立，合併後刪除。
 
 | 欄位 | 型別 | 說明 |
 |---|---|---|
 | `id` | varchar(36) PK | |
-| `product_id` | FK → products，UNIQUE | 每個產品最多一列 |
+| `user_id` | FK → users，UNIQUE，可為 null | 帳號的購物車 |
+| `guest_id` | varchar(36) UNIQUE，可為 null | 訪客的 `X-Cart-Id`，小寫保存 |
+| `created_at` | timestamp | |
+
+### `cart_lines`
+
+購物車的品項。金額不落地，讀取時由目前售價與優惠券算出。
+
+| 欄位 | 型別 | 說明 |
+|---|---|---|
+| `id` | varchar(36) PK | |
+| `cart_id` | FK → carts | |
+| `product_id` | FK → products | `(cart_id, product_id)` UNIQUE，每台購物車的每個產品最多一列 |
 | `qty` | int | 1–9999 |
 | `coupon_id` | FK → coupons，可為 null | |
 | `created_at` | timestamp | 排序用 |
+
+**舊的 `cart_items`。** 會員系統之前全站共用一台購物車，品項存在 `cart_items`，`product_id` 有單欄 UNIQUE。`ddl-auto=update` 無法移除這個限制，也無法對有資料的表加上 `NOT NULL` 的 `cart_id`，所以品項改存新的 `cart_lines`；`LegacySchemaMigration` 在啟動時移除 `cart_items`，裡面的品項沒有擁有者，直接捨棄。
 
 ### `orders`
 
 | 欄位 | 型別 | 說明 |
 |---|---|---|
 | `id` | varchar(36) PK | |
-| `user_name`、`user_email`、`user_tel`、`user_address` | varchar | 收件資料 |
+| `user_id` | FK → users，可為 null | 下單的帳號。會員系統之前的訂單是 null |
+| `user_name`、`user_email`、`user_tel`、`user_address` | varchar | 收件資料，可以與帳號不同，不能用來判斷訂單屬於誰 |
 | `message` | text | 留言 |
 | `total` | bigint | 折扣後總額 |
 | `is_paid` | boolean | |
@@ -265,10 +283,12 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 ### 購物與結帳
 
 ```
-加入購物車 → cart_items（只存 product、qty、coupon）
-套用優惠券 → 目前所有 cart_items 寫入 coupon_id
+決定購物車 → 有 token：帳號的 carts；沒有：X-Cart-Id 的訪客 carts（CartOwnerArgumentResolver）
+加入購物車 → cart_lines（只存 product、qty、coupon）
+套用優惠券 → 這台購物車的所有 cart_lines 寫入 coupon_id
 讀取購物車 → 依目前售價與優惠券即時計算金額
-建立訂單   → 交易內寫入 orders、order_items（快照），並清空 cart_items
+登入       → 前端呼叫 /cart/merge，訪客 cart_lines 移到帳號的 carts，刪除訪客 carts
+建立訂單   → 需要 USER；交易內寫入 orders（含 user_id）、order_items（快照），並清空帳號的 cart_lines
 付款       → 更新 is_paid、paid_date
 ```
 
@@ -279,7 +299,9 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 ### 後端
 
 - **註冊沒有次數限制，且會透露 email 是否已註冊。** 登入有次數限制，註冊沒有，可以用來大量建立帳號或探測 email。正式上線前應加上依 IP 的速率限制或驗證碼。
-- **購物車全站共用。** 前端匿名呼叫，沒有 `withCredentials` 也沒有訪客識別，後端無法區分訪客，這與 Hexschool 相同。不同瀏覽器看到同一台購物車，任何人結帳都會清空它。要做到每人一台，必須修改前端，或改為同源部署並使用 cookie。
+- **訪客購物車不會自動清除。** 沒有登入就離開的訪客購物車會一直留在 `carts`。流量變大時要加上定期清除（例如 30 天沒有更新的訪客購物車）。
+- **`X-Cart-Id` 是訪客購物車唯一的保護。** 知道 id 的人可以看到、修改那台購物車。id 是隨機 UUID，只存在該瀏覽器的 localStorage，與登入 token 的風險等級相同。
+- **同一個訪客第一次同時送出兩個加入購物車的請求**，可能因 `guest_id` 唯一限制讓其中一個失敗（400 `資料不符合限制，請確認後重試`），重試即可。前端一次只送一個，實際上不會發生。
 - **只有 `GET /order/{id}` 的 UUID 保護訂單個資。** 知道訂單 id 的人都能查詢。這是前端完成頁需要的公開行為。
 - **圖片存在本機磁碟。** 多台伺服器或無狀態容器部署時，需要改用共用儲存空間，並調整 `ImageStorageService`。
 - **登入次數限制存在記憶體。** 重啟後歸零，多台伺服器之間也不共用計數，只適用單一實例部署。要水平擴充時改用 Redis 等共用儲存。

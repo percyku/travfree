@@ -68,20 +68,22 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 |---|---|
 | `AuthApiTest` | 後台登入、token 格式、`/user/check` 的角色、登出撤銷、無效 token 不影響公開 API、Admin 路由權限 |
 | `MemberAuthApiTest` | 註冊（email 正規化、重複、各欄位驗證與邊界）、前台登入、後台登入拒絕會員且不計入失敗、前後台共用次數限制、會員 token 呼叫 Admin API 回 403、超過 bcrypt 72 bytes 的密碼 |
-| `LegacyUserSchemaMigrationTest` | 舊的 `users.role` 欄位轉換為 `user_roles`、補上姓名、重複執行不變 |
+| `LegacySchemaMigrationTest` | 舊的 `users.role` 欄位轉換為 `user_roles`、補上姓名、移除共用購物車的 `cart_items`、重複執行不變 |
+| `CartOwnershipApiTest` | 訪客之間、訪客與會員的購物車互不影響、會員忽略 `X-Cart-Id`、沒有或格式錯誤的 `X-Cart-Id`、別人的品項 404、優惠券只套用自己的、刪除產品從所有購物車移除；合併的數量相加與上限、優惠券、建立會員購物車、重複合併、權限，合併後結帳 |
 | `LoginRateLimitApiTest` | 登入次數限制：帳號鎖定、密碼正確也擋、換 IP 不受影響、IP 總量、成功歸零、429 與 `Retry-After` |
 | `ProductApiTest` | 產品 CRUD、上下架連動、分頁、排序、分類、驗證訊息 |
 | `ArticleApiTest` | 文章 CRUD、公開與否的連動、`content` 可見範圍、`create_at` 原值保存 |
 | `CartApiTest` | 購物車、數量累加、即時計價、優惠券計算、優惠券管理 |
-| `OrderApiTest` | 結帳、訂單快照、付款、Admin 更新、時間單位 |
+| `OrderApiTest` | 結帳需要 `USER`（401／403）、訂單記錄下單帳號、只清空帳號的購物車、訂單快照、付款、Admin 更新、時間單位 |
 | `UploadApiTest` | 圖片上傳與讀取、內容檢查、大小限制 |
 | `HttpContractTest` | 走真實 Tomcat：`/v2` 前綴、CORS、超過上傳上限的回應 |
 | `BackendApplicationTests` | 應用程式可以啟動 |
 | `security.LoginAttemptLimiterTest` | 單元測試：鎖定到期、計數視窗過期、鎖定不延長、秒數進位。整合測試無法快轉時鐘 |
 | `config.ProductionConfigCheckTest` | prod profile 缺少密鑰、使用預設值、密鑰太短時拒絕啟動，含真實啟動一次確認註冊與設定檔生效 |
 | `OpenApiContractConfig` | 不是測試，讓所有 MockMvc 回應都對 spec 驗證 |
+| `GuestCartTestConfig` | 不是測試，讓所有 MockMvc 請求預設帶同一個訪客的 `X-Cart-Id`，與前端相同 |
 
-`ApiTestSupport` 是共用基底：每個測試前清空業務資料、預設 admin 以外的帳號與登入次數計數並重新登入，也提供註冊會員（`signupMember`）、建立產品、加入購物車、結帳等輔助方法。MockMvc 請求都來自 `127.0.0.1`，要測不同 IP 時用 `.with(request -> { request.setRemoteAddr(...); return request; })`。
+`ApiTestSupport` 是共用基底：每個測試前清空業務資料、預設 admin 以外的帳號與登入次數計數並重新登入，也提供註冊會員（`signupMember`）、建立產品、加入購物車、結帳等輔助方法。購物的輔助方法（`addToCart`、`checkout`、`shopperPost`、`asShopper`）預設以訪客身分呼叫，設定 `shopperToken` 後改以該會員呼叫；結帳需要會員，所以 `OrderApiTest` 在 `@BeforeEach` 設定它。要指定另一個訪客時用 `asGuest(request, cartId)`。MockMvc 請求都來自 `127.0.0.1`，要測不同 IP 時用 `.with(request -> { request.setRemoteAddr(...); return request; })`。
 
 ## 撰寫原則
 
@@ -116,10 +118,11 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 |---|---|
 | `utils/coupon.test.js` | 到期日秒數換算、折數文字、是否過期、優惠券摘要、千分位 |
 | `pages/front/CartCheckout.test.jsx` | 費用明細金額、套用/移除優惠券、無效優惠碼、之後加入的品項提示、調整數量、刪除與清空、空購物車 |
-| `pages/front/CartForm.test.jsx` | 進入頁面重新讀取購物車、欄位驗證、送出時帶 `final_total`、409 金額變動、空購物車不能送出 |
+| `pages/front/CartForm.test.jsx` | 預先填入帳號的姓名與 email、未登入導向登入頁、確認登入前不導向、只有 `ADMIN` 不能結帳、`USER`＋`ADMIN` 可以結帳、進入頁面重新讀取購物車、欄位驗證、送出時帶 `final_total`、409 金額變動、空購物車不能送出 |
+| `utils/cart.test.js` | `X-Cart-Id` 的產生與保存、非安全來源與 localStorage 無法使用時的備案、購物車請求帶上 header |
 | `pages/front/CartSuccess.test.jsx` | 訂單品項與總計、付款後顯示付款時間、付款失敗、找不到訂單 |
 | `pages/Login.test.jsx` | 後台登入成功寫入 cookie、400/403/429 顯示後端原因、欄位驗證、已登入直接進後台、會員 token 不自動進入、token 失效；後台路由保護（會員導向登入頁但保留 cookie、`USER`+`ADMIN` 可進入） |
-| `pages/front/MemberSignin.test.jsx` | 會員登入寫入 cookie 與歡迎訊息、回到來源頁、400/429 顯示後端原因、欄位驗證、已登入直接離開 |
+| `pages/front/MemberSignin.test.jsx` | 會員登入寫入 cookie 與歡迎訊息、登入後合併訪客購物車並更新、合併失敗仍完成登入、回到來源頁、400/429 顯示後端原因、欄位驗證、已登入直接離開 |
 | `pages/front/MemberSignup.test.jsx` | 註冊後是登入狀態、送出的內容（去空白、不送確認密碼）、email 已註冊、密碼規則、確認密碼與姓名長度 |
 | `components/Header.test.jsx` | 未登入不呼叫 `/user/check`、會員顯示姓名與登出、管理者的後台連結、登出 |
 | `pages/admin/AdminProducts.test.jsx` | 列表、新增（價格轉整數、空白副圖不送出）、編輯、刪除提示、圖片上傳成功與失敗、分頁、取得失敗導向登入頁 |
@@ -136,7 +139,9 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 - 需要後端狀態的流程（套用優惠券後重新讀取購物車），在測試裡用變數模擬，並記錄前端送出的請求來斷言。
 - 從使用者的角度查詢元素（label、按鈕文字、role）。桌機與手機版的費用明細同時存在，用 `within` 限定在桌機版的卡片。
 - `setup.js` 在每個測試後清除 cookie 與 axios 的預設 `Authorization`。後台頁的測試在 `beforeEach` 呼叫 `signInAsAdmin()`，模擬 `ProductedRoute` 驗證通過後的狀態。
-- `/api/user/check` 的回應用 `fixtures.js` 的 `adminUser()`、`memberUser()` 組出來，登入與註冊的回應用 `signinSuccess(token)`。需要「已登入」的 store 時用 `preloadedState: { auth: { user: memberUser() } }`。
+- `/api/user/check` 的回應用 `fixtures.js` 的 `adminUser()`、`memberUser()` 組出來，登入與註冊的回應用 `signinSuccess(token)`。需要「已登入」的 store 時用 `preloadedState: { auth: { user: memberUser(), checked: true } }`。
+- 會員登入或註冊成功後會呼叫 `/api/cart/merge` 與 `/api/cart`，用 `test/handlers.js` 的 `useCartMerge()` 定義，它會回傳收到的 merge 請求。
+- `setup.js` 在每個測試後也清除 localStorage，所以每個測試的 `X-Cart-Id` 都不同。
 - Bootstrap modal 用 `findDialog()` 等它開啟，開啟後才能用 role 查詢。**開過 modal 的測試要等它完全關閉再結束**（`waitForDialogClosed()`，或用 `closeDialog()` 按取消），動畫進行中就卸載元件的話，Bootstrap 的 callback 會丟錯。
 - 要模擬網路錯誤時用 MSW 的 `http` 與 `HttpResponse.error()`，不經過契約檢查。
 
@@ -164,10 +169,10 @@ cd e2e && npm run report                  # 查看上一次的 HTML 報告（失
 
 | 測試 | 涵蓋範圍 |
 |---|---|
-| `shopping.spec.js` | 首頁搜尋 → 行程頁加入購物車 → 套用優惠碼 `Test50` → 填寫資料 → 送出訂單 → 成功頁付款 → 購物車已清空 |
+| `shopping.spec.js` | 訪客從首頁搜尋 → 行程頁加入購物車 → 套用優惠碼 `Test50` → 前往結賬時導向登入頁 → 登入後回到填寫資料頁，購物車與優惠帶到帳號、收件資料預先填入 → 送出訂單 → 成功頁付款 → 購物車已清空 |
 | `admin-products.spec.js` | 後台登入、新增並上架產品 → 前台行程列表看得到 → 後台刪除 → 前台看不到 |
-| `admin-orders.spec.js` | 以 API 下單 → 後台訂單列表看得到 → 改為已付款、外送中 → 重新開啟確認 → API 查詢確認 |
-| `member.spec.js` | 首頁註冊 → Header 顯示姓名 → 重新整理仍登入 → 登出 → 以大小寫不同的 email 再登入；會員開啟後台被導向後台登入頁 → 會員帳號被拒 → 改用管理者登入 |
+| `admin-orders.spec.js` | 以 API 註冊會員並下單 → 後台訂單列表看得到 → 改為已付款、外送中 → 重新開啟確認 → API 查詢確認 |
+| `member.spec.js` | 首頁註冊 → Header 顯示姓名 → 重新整理仍登入 → 登出 → 以大小寫不同的 email 再登入；會員開啟後台被導向後台登入頁 → 會員帳號被拒 → 改用管理者登入；360px 寬時 Header 不換行（jsdom 不套用 CSS，只能在這裡測） |
 
 ### 查看報告
 
