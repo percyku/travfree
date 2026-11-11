@@ -4,6 +4,14 @@
 
 ### Added
 
+- 會員系統（階段 1，計畫見 `docs/plans/2026-11-11-member-system.md`）：
+  - `POST /api/user/signup` 會員註冊，成功時直接登入；`POST /api/user/signin` 前台登入，任何角色都可以，與後台登入共用次數限制。
+  - 角色 `USER`、`ADMIN` 可同時擁有，存在新的 `user_roles` 表；註冊的帳號是 `USER`，預設 admin 只有 `ADMIN`。`users` 加上 `name`。
+  - email 去掉前後空白並以小寫保存，註冊與兩支登入 API 都不分大小寫。
+  - 前台新增 `/signin`、`/signup` 頁面；Header 未登入時顯示「登入／註冊」，登入後顯示姓名與「登出」，管理者多一個「後台」連結。
+  - 前端新增 `authSlice` 與 `utils/auth.js`，集中 token cookie 的讀寫與登入狀態。
+  - 啟動時自動轉換舊資料庫：`users.role` 搬到 `user_roles` 後移除，並補上姓名。
+
 - E2E 測試（`npm run e2e`）：Playwright 在獨立的 docker compose 環境（`:8100`、全新資料庫）走完前台購物（搜尋 → 購物車 → 優惠碼 → 結帳 → 付款）、後台產品（新增 → 前台可見 → 刪除）與後台訂單（修改付款與外送狀態）。CI 的 Docker compose job 也會執行，失敗時上傳報告。取代 `docs/TESTING.md` 中大部分的手動端到端驗證。
 - `docker-compose.yml` 的資料庫連接埠與 volume 名稱可用 `DB_PORT`、`DB_VOLUME` 指定，預設值不變。
 - 種子資料：`npm run seed` 透過 API 匯入 `scripts/seed/data.json` 的 30 筆產品、5 篇文章與 1 張優惠券，已存在的資料會略過；`npm run seed:export` 從後台重新匯出。
@@ -36,6 +44,11 @@
 - 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個；之後加上文章分類必填的測試，共 79 個；再加上優惠券有效性、移除優惠券、結帳金額比對的測試，共 84 個。
 
 ### Changed
+
+- `POST /admin/signin`：沒有 `ADMIN` 角色的帳號回 403 `此帳號沒有後台權限`（不計入失敗次數）。
+- `POST /api/user/check`：回應多了 `email`、`name`、`roles`；`uid` 的說明更正為帳號的 UUID（原本範例寫成 email）。
+- 後台路由保護與後台登入頁改為依 `roles` 判斷：只有 `ADMIN` 能進入後台。一般會員的 token 會被導向後台登入頁，但不會被清除。
+- spec 的 security scheme 由 `AdminToken` 改名為 `Token`，因為會員與管理者用同一種 token。
 
 - GitHub repo 由 `percyku/freetrav` 改名為 `percyku/travfree`，舊網址會自動導向。根目錄 `README.md` 的「啟動與停止」整理 Docker 與開發模式的啟動、停止指令。
 - 移除 `backend/docker-compose.yml`，資料庫改由根目錄的 `docker-compose.yml` 提供，開發時執行 `docker compose up -d db`。

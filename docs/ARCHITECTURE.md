@@ -54,6 +54,9 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | `POST /logout` | — | 遞增 `token_version`，該帳號既有 token 全部失效 | JWT 無狀態，需要版本號才能真正登出 |
 | `paid_date` | 由傳入資料決定 | 由伺服器在付款狀態變更時決定 | 否則後台勾選已付款後，列表會同時顯示「付款完成」與「未付款」 |
 | `POST /admin/signin` | 無次數限制 | 失敗過多回 429 | 防止暴力破解，規則見 [FEATURES.md](FEATURES.md) |
+| 會員 | 無（只有申請者的 admin 帳號） | 註冊、前台登入，角色 `USER`／`ADMIN` 可同時擁有 | 會員系統，見 [FEATURES.md](FEATURES.md) 的認證 |
+| `POST /admin/signin` 的權限 | 帳號都是 admin | 沒有 `ADMIN` 回 403 `此帳號沒有後台權限` | 一般會員不能登入後台 |
+| `POST /api/user/check` | `{ success, uid }` | 多回 `email`、`name`、`roles` | 前端依 `roles` 判斷能否進入後台 |
 | 已套用的優惠券 | 只在套用時檢查到期日，之後停用或過期仍有折扣 | 停用或過期立即不再折扣 | 停用要能立即生效 |
 | `POST /order` | 無金額比對 | 選填 `final_total`，與購物車金額不同回 409 | 避免顧客在不知情下以另一個金額成交 |
 | `DELETE /coupon` | 無 | 移除已套用的優惠券 | 顧客可以取消優惠 |
@@ -74,23 +77,27 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | `/cartcheckout` | `CartCheckout` | 公開 | 購物車，可套用優惠碼 |
 | `/cartform` | `CartForm` | 公開 | 填寫訂購資料 |
 | `/cartsuccess/:orderId` | `CartSuccess` | 公開 | 訂購完成，可付款 |
-| `/login` | `Login` | 公開 | 管理者登入 |
-| `/admin/products` | `AdminProducts` | 需登入 | 產品管理 |
-| `/admin/orders` | `AdminOrders` | 需登入 | 訂單管理 |
-| `/admin/articles` | `AdminArticle` | 需登入 | 文章管理 |
-| `/admin/coupons` | `AdminCoupons` | 需登入 | 優惠券管理 |
+| `/signin` | `MemberSignin` | 公開 | 會員登入，完成後回到來源頁 |
+| `/signup` | `MemberSignup` | 公開 | 會員註冊，完成後是登入狀態 |
+| `/login` | `Login` | 公開 | 後台登入，只接受 `ADMIN` |
+| `/admin/products` | `AdminProducts` | `ADMIN` | 產品管理 |
+| `/admin/orders` | `AdminOrders` | `ADMIN` | 訂單管理 |
+| `/admin/articles` | `AdminArticle` | `ADMIN` | 文章管理 |
+| `/admin/coupons` | `AdminCoupons` | `ADMIN` | 優惠券管理 |
 
 ### REST API
 
 路徑皆含 context-path `/v2`。下表的 `~` 代表 `/v2/api`。Hexschool 的路徑中間還有一段 `api_path`（例如 `react-week2-api`），本專案已移除。
 
-權限欄的 **Admin** 表示要帶 `ROLE_ADMIN` 的 token。詳細行為見 [FEATURES.md](FEATURES.md)。
+權限欄的 **Admin** 表示 token 的帳號要有 `ADMIN` 角色，只有 `USER` 時回 403；**需登入**表示任何角色都可以。詳細行為見 [FEATURES.md](FEATURES.md)。
 
 | 方法 | 路徑 | 權限 | 前端有用 | 說明 |
 |---|---|---|---|---|
-| POST | `/v2/admin/signin` | 公開 | ✓ | 登入 |
-| POST | `/v2/logout` | 公開 | | 登出，帶有效 token 時撤銷 |
-| POST | `/v2/api/user/check` | 需登入 | ✓ | 驗證 token |
+| POST | `/v2/admin/signin` | 公開 | ✓ | 後台登入，沒有 `ADMIN` 回 403 |
+| POST | `~/user/signup` | 公開 | ✓ | 會員註冊，成功時直接登入（Hexschool 沒有） |
+| POST | `~/user/signin` | 公開 | ✓ | 會員登入，任何角色（Hexschool 沒有） |
+| POST | `/v2/logout` | 公開 | ✓ | 登出，帶有效 token 時撤銷 |
+| POST | `/v2/api/user/check` | 需登入 | ✓ | 驗證 token，回傳角色 |
 | GET | `~/admin/products` | Admin | ✓ | 產品分頁 |
 | GET | `~/admin/products/all` | Admin | | 全部產品，以 id 為 key |
 | POST | `~/admin/product` | Admin | ✓ | 新增產品 |
@@ -126,7 +133,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | POST | `~/pay/{id}` | 公開 | ✓ | 付款 |
 | GET | `~/articles` | 公開 | ✓ | 公開文章分頁 |
 | GET | `~/article/{id}` | 公開 | ✓ | 單篇公開文章 |
-| GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 38 個 API 內） |
+| GET | `/v2/uploads/{file}` | 公開 | ✓ | 讀取上傳的圖片（靜態資源，不在 40 個 API 內） |
 
 授權規則寫在 `SecurityConfig`，依序比對。未列入的路徑一律拒絕。
 
@@ -134,18 +141,29 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 
 主鍵皆為 Hibernate 產生的隨機 UUID 字串。前端把 id 當不透明字串；公開的 `GET /order/{id}` 也靠它不可猜測。
 
-Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`update` 只會新增、不會改型別或刪欄位，變更既有欄位時要自行處理資料庫。
+Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`update` 只會新增、不會改型別或刪欄位，變更既有欄位時要自行處理資料庫。目前唯一的手動轉換是 `LegacyUserSchemaMigration`（見下方 `users`）。
 
 ### `users`
 
 | 欄位 | 型別 | 說明 |
 |---|---|---|
-| `id` | varchar(36) PK | |
-| `email` | varchar UNIQUE | 登入帳號 |
+| `id` | varchar(36) PK | JWT 的 subject、回應中的 `uid` |
+| `email` | varchar UNIQUE | 登入帳號，小寫保存，不能修改 |
 | `password_hash` | varchar | BCrypt |
-| `role` | varchar(20) | 目前只有 `ADMIN` |
+| `name` | varchar(30) | 姓名。DDL 允許 null（`update` 無法對有資料的表加 `NOT NULL` 欄位），程式寫入時一定有值 |
 | `token_version` | int | 簽進 JWT，登出時遞增 |
 | `created_at` | timestamp | |
+
+**舊資料庫的轉換。** 會員系統之前的 `users` 有單一的 `role` 欄位（`NOT NULL`）。`LegacyUserSchemaMigration` 每次啟動時檢查，存在時把它複製到 `user_roles` 後移除，並以 email 的 `@` 前面補上沒有的姓名；轉換過就不做事。還原舊備份後重新啟動後端即可（`npm run db:restore` 會自動重新啟動）。
+
+### `user_roles`
+
+| 欄位 | 型別 | 說明 |
+|---|---|---|
+| `user_id` | FK → users | |
+| `role` | varchar(20) | `USER` 或 `ADMIN` |
+
+主鍵為 `(user_id, role)`。每次驗證 token 都會一起讀取（`EAGER`），所以角色變更立即生效。
 
 ### `products`
 
@@ -228,10 +246,10 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 
 ### 登入與驗證
 
-1. `Login.jsx` 呼叫 `POST /v2/admin/signin`，把 `token` 與 `expired`（毫秒）寫入 cookie `freetrav-token`（名稱由 `VITE_APP_TOKEN_NAME` 設定）。
+1. 前台 `MemberSignin`（`POST ~/user/signin`）、`MemberSignup`（`POST ~/user/signup`）或後台 `Login`（`POST /v2/admin/signin`）取得 token，由 `utils/auth.js` 把 `token` 與 `expired`（毫秒）寫入 cookie `freetrav-token`（名稱由 `VITE_APP_TOKEN_NAME` 設定）。**會員與管理者共用這個 cookie**，同一個瀏覽器一次只有一個帳號登入。
 2. 前端把 cookie 的值設為 `axios.defaults.headers.common.Authorization`，所以 header 是**裸 token，沒有 `Bearer`**。Filter 兩種格式都接受。
-3. `ProductedRoute` 進入 `/admin/*` 時呼叫 `POST /v2/api/user/check`。
-4. `JwtAuthenticationFilter` 驗證簽章，讀取 user，比對 `token_version`，通過後才設定身分。
+3. `authSlice` 的 `checkAuth` 呼叫 `POST /v2/api/user/check`，把 `{ uid, email, name, roles }` 存進 Redux：前台 `Header` 在載入時呼叫，`ProductedRoute` 在進入 `/admin/*` 時呼叫並要求 `ADMIN`。
+4. `JwtAuthenticationFilter` 驗證簽章，讀取 user 與角色，比對 `token_version`，通過後以 `ROLE_USER`、`ROLE_ADMIN` 設定身分。
 
 token 無效時 Filter **不會直接拒絕**，而是以匿名身分往下走，由授權規則決定是否回 401。登入後 axios 會在所有請求帶上 token，若在 Filter 拒絕，過期 token 也會打壞公開的前台 API。
 
@@ -260,6 +278,7 @@ Admin 與 Front 讀寫同一批資料表，差別只在篩選條件：
 
 ### 後端
 
+- **註冊沒有次數限制，且會透露 email 是否已註冊。** 登入有次數限制，註冊沒有，可以用來大量建立帳號或探測 email。正式上線前應加上依 IP 的速率限制或驗證碼。
 - **購物車全站共用。** 前端匿名呼叫，沒有 `withCredentials` 也沒有訪客識別，後端無法區分訪客，這與 Hexschool 相同。不同瀏覽器看到同一台購物車，任何人結帳都會清空它。要做到每人一台，必須修改前端，或改為同源部署並使用 cookie。
 - **只有 `GET /order/{id}` 的 UUID 保護訂單個資。** 知道訂單 id 的人都能查詢。這是前端完成頁需要的公開行為。
 - **圖片存在本機磁碟。** 多台伺服器或無狀態容器部署時，需要改用共用儲存空間，並調整 `ImageStorageService`。

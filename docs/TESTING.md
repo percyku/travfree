@@ -66,7 +66,9 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 
 | 測試 | 涵蓋範圍 |
 |---|---|
-| `AuthApiTest` | 登入、token 格式、登出撤銷、無效 token 不影響公開 API、Admin 路由權限 |
+| `AuthApiTest` | 後台登入、token 格式、`/user/check` 的角色、登出撤銷、無效 token 不影響公開 API、Admin 路由權限 |
+| `MemberAuthApiTest` | 註冊（email 正規化、重複、各欄位驗證與邊界）、前台登入、後台登入拒絕會員且不計入失敗、前後台共用次數限制、會員 token 呼叫 Admin API 回 403、超過 bcrypt 72 bytes 的密碼 |
+| `LegacyUserSchemaMigrationTest` | 舊的 `users.role` 欄位轉換為 `user_roles`、補上姓名、重複執行不變 |
 | `LoginRateLimitApiTest` | 登入次數限制：帳號鎖定、密碼正確也擋、換 IP 不受影響、IP 總量、成功歸零、429 與 `Retry-After` |
 | `ProductApiTest` | 產品 CRUD、上下架連動、分頁、排序、分類、驗證訊息 |
 | `ArticleApiTest` | 文章 CRUD、公開與否的連動、`content` 可見範圍、`create_at` 原值保存 |
@@ -79,7 +81,7 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 | `config.ProductionConfigCheckTest` | prod profile 缺少密鑰、使用預設值、密鑰太短時拒絕啟動，含真實啟動一次確認註冊與設定檔生效 |
 | `OpenApiContractConfig` | 不是測試，讓所有 MockMvc 回應都對 spec 驗證 |
 
-`ApiTestSupport` 是共用基底：每個測試前清空業務資料與登入次數計數並重新登入，也提供建立產品、加入購物車、結帳等輔助方法。MockMvc 請求都來自 `127.0.0.1`，要測不同 IP 時用 `.with(request -> { request.setRemoteAddr(...); return request; })`。
+`ApiTestSupport` 是共用基底：每個測試前清空業務資料、預設 admin 以外的帳號與登入次數計數並重新登入，也提供註冊會員（`signupMember`）、建立產品、加入購物車、結帳等輔助方法。MockMvc 請求都來自 `127.0.0.1`，要測不同 IP 時用 `.with(request -> { request.setRemoteAddr(...); return request; })`。
 
 ## 撰寫原則
 
@@ -101,7 +103,7 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 
 - 路徑與方法必須在 spec 裡，否則定義 handler 時就丟錯。
 - 前端送出的 body 必須符合 `requestBody` schema。和後端相反，前端**要**驗證請求，因為要確認的就是前端送出的格式。
-- 需要 `AdminToken` 的端點必須帶 `Authorization` header。
+- 需要 `Token` 的端點必須帶 `Authorization` header。
 - multipart 請求（圖片上傳）必須帶 spec 要求的欄位，例如 `file-to-upload`。
 - 測試假資料必須符合該狀態碼的回應 schema，spec 沒列出的狀態碼要符合 `default`。假資料和 spec 不一致時，先判斷是假資料錯還是 spec 錯。
 - 測試中出現沒有定義 handler 的請求也算違規，可以用來確認「不應該呼叫 API」的情境。
@@ -116,7 +118,10 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 | `pages/front/CartCheckout.test.jsx` | 費用明細金額、套用/移除優惠券、無效優惠碼、之後加入的品項提示、調整數量、刪除與清空、空購物車 |
 | `pages/front/CartForm.test.jsx` | 進入頁面重新讀取購物車、欄位驗證、送出時帶 `final_total`、409 金額變動、空購物車不能送出 |
 | `pages/front/CartSuccess.test.jsx` | 訂單品項與總計、付款後顯示付款時間、付款失敗、找不到訂單 |
-| `pages/Login.test.jsx` | 登入成功寫入 cookie、400/429 顯示後端原因、欄位驗證、已登入直接進後台、token 失效；後台路由保護 |
+| `pages/Login.test.jsx` | 後台登入成功寫入 cookie、400/403/429 顯示後端原因、欄位驗證、已登入直接進後台、會員 token 不自動進入、token 失效；後台路由保護（會員導向登入頁但保留 cookie、`USER`+`ADMIN` 可進入） |
+| `pages/front/MemberSignin.test.jsx` | 會員登入寫入 cookie 與歡迎訊息、回到來源頁、400/429 顯示後端原因、欄位驗證、已登入直接離開 |
+| `pages/front/MemberSignup.test.jsx` | 註冊後是登入狀態、送出的內容（去空白、不送確認密碼）、email 已註冊、密碼規則、確認密碼與姓名長度 |
+| `components/Header.test.jsx` | 未登入不呼叫 `/user/check`、會員顯示姓名與登出、管理者的後台連結、登出 |
 | `pages/admin/AdminProducts.test.jsx` | 列表、新增（價格轉整數、空白副圖不送出）、編輯、刪除提示、圖片上傳成功與失敗、分頁、取得失敗導向登入頁 |
 | `pages/admin/AdminArticle.test.jsx` | 列表（`create_at` 毫秒）、新增（分類、內文換行、`create_at`）、未選分類、編輯保留 `create_at`、連續編輯兩篇的圖片網址、刪除、分頁 |
 | `pages/admin/AdminOrders.test.jsx` | 列表（付款時間秒）、明細的品項與優惠券快照、沒有優惠券的訂單、修改付款與外送狀態（`status` 字串）、更新失敗、分頁 |
@@ -131,6 +136,7 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 - 需要後端狀態的流程（套用優惠券後重新讀取購物車），在測試裡用變數模擬，並記錄前端送出的請求來斷言。
 - 從使用者的角度查詢元素（label、按鈕文字、role）。桌機與手機版的費用明細同時存在，用 `within` 限定在桌機版的卡片。
 - `setup.js` 在每個測試後清除 cookie 與 axios 的預設 `Authorization`。後台頁的測試在 `beforeEach` 呼叫 `signInAsAdmin()`，模擬 `ProductedRoute` 驗證通過後的狀態。
+- `/api/user/check` 的回應用 `fixtures.js` 的 `adminUser()`、`memberUser()` 組出來，登入與註冊的回應用 `signinSuccess(token)`。需要「已登入」的 store 時用 `preloadedState: { auth: { user: memberUser() } }`。
 - Bootstrap modal 用 `findDialog()` 等它開啟，開啟後才能用 role 查詢。**開過 modal 的測試要等它完全關閉再結束**（`waitForDialogClosed()`，或用 `closeDialog()` 按取消），動畫進行中就卸載元件的話，Bootstrap 的 callback 會丟錯。
 - 要模擬網路錯誤時用 MSW 的 `http` 與 `HttpResponse.error()`，不經過契約檢查。
 
@@ -161,6 +167,7 @@ cd e2e && npm run report                  # 查看上一次的 HTML 報告（失
 | `shopping.spec.js` | 首頁搜尋 → 行程頁加入購物車 → 套用優惠碼 `Test50` → 填寫資料 → 送出訂單 → 成功頁付款 → 購物車已清空 |
 | `admin-products.spec.js` | 後台登入、新增並上架產品 → 前台行程列表看得到 → 後台刪除 → 前台看不到 |
 | `admin-orders.spec.js` | 以 API 下單 → 後台訂單列表看得到 → 改為已付款、外送中 → 重新開啟確認 → API 查詢確認 |
+| `member.spec.js` | 首頁註冊 → Header 顯示姓名 → 重新整理仍登入 → 登出 → 以大小寫不同的 email 再登入；會員開啟後台被導向後台登入頁 → 會員帳號被拒 → 改用管理者登入 |
 
 ### 查看報告
 
