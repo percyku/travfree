@@ -98,6 +98,13 @@ test("手機寬度的 Header 不換行（訪客與管理者）", async ({ browse
       const header = page.locator("nav").first();
       const linkName = token ? "登出" : "登入";
       await expect(header.getByRole(token ? "button" : "link", { name: linkName })).toBeVisible();
+      // 購物車圖示是 Google Fonts 的 Material Icons。字型到之前顯示的是很寬的文字「shopping_cart」，
+      // 會暫時把購物車擠到第二行；CI 下載字型較慢，不等的話會量到這個瞬間
+      await page.waitForFunction(() =>
+        [...document.fonts].some(
+          (font) => font.family.replace(/"/g, "") === "Material Icons Outlined" && font.status === "loaded",
+        ),
+      );
 
       const brand = await header.getByText("#FreeTrav").boundingBox();
       const cart = await header.getByRole("link", { name: /shopping_cart/ }).boundingBox();
