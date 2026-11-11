@@ -25,12 +25,14 @@ info:
       文章的 `create_at` 原值保存（前端傳 `Date.now()` 毫秒）。
     - **金額**：都是整數，傳小數會回 400 `資料格式不正確`。
     - **認證**：`Authorization` header 放登入取得的 token，裸 token 或 `Bearer <token>` 皆可。
+    - **角色**（Hexschool 沒有）：帳號可以同時有 `USER`（一般會員）與 `ADMIN`（管理者）。
+      註冊的帳號是 `USER`；預設的 `admin@gmail.com` 只有 `ADMIN`。
 servers:
   - url: http://localhost:8080/v2
     description: 本機開發
 tags:
   - name: '登入及驗證'
-    description: 登入、登出與登入狀態檢查
+    description: 註冊、登入、登出與登入狀態檢查
   - name: '管理控制台 - 產品 (Products)'
     description: 後台產品管理，需要 admin token
   - name: '管理控制台 - 訂單 (Orders)'
@@ -63,14 +65,25 @@ paths:
       tags: ['登入及驗證']
       summary: 管理者登入
       description: |
-        Body **不包** `data`。帳號不存在與密碼錯誤回應相同，不透露是哪一項錯誤。
+        後台登入頁使用。Body **不包** `data`。帳號不存在與密碼錯誤回應相同，不透露是哪一項錯誤。
+        密碼正確但帳號沒有 `ADMIN` 角色時回 403（Hexschool 沒有一般會員，所以沒有這項）。
+
+        `username` 前後的空白會去掉並轉成小寫再比對。
 
         **登入次數限制**（Hexschool 沒有這項）：以下任一種達到上限就鎖 15 分鐘，期間回 429，**密碼正確也擋**。
+        與 `POST /api/user/signin` 共用同一組計數。
 
         - 同一 IP 對同一帳號 15 分鐘內失敗 5 次。登入成功會歸零。
         - 同一 IP 不分帳號 15 分鐘內失敗 20 次。
 
-        鎖定期間的請求不計入失敗次數；欄位空白的 400 也不計入。
+        鎖定期間的請求不計入失敗次數；欄位空白的 400 與沒有權限的 403 也不計入。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `登入失敗` | 帳號不存在或密碼錯誤 |
+        | 400 | `username 屬性不得為空`、`password 屬性不得為空` | 欄位空白，多個時以 `、` 連接 |
+        | 403 | `此帳號沒有後台權限` | 密碼正確但沒有 `ADMIN` 角色 |
+        | 429 | `登入失敗次數過多，請 N 分鐘後再試` | 鎖定中 |
       operationId: signin
       security: []  # 公開
       requestBody:
@@ -79,41 +92,92 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/SigninInput' }
       responses:
-        '200':
-          description: 登入成功
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: false
-                required: [success, message, uid, token, expired]
-                properties:
-                  success: { type: boolean, enum: [true] }
-                  message: { type: string, example: 登入成功 }
-                  uid: { type: string, description: 管理者帳號, example: admin@gmail.com }
-                  token: { type: string, description: JWT，預設 7 天有效, example: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20ifQ.c2lnbmF0dXJl }
-                  expired:
-                    type: integer
-                    format: int64
-                    description: 到期時間，Unix **毫秒**，前端直接用來設定 cookie 期限
-                    example: 1793799088000
+        '200': { $ref: '#/components/responses/SigninSuccess' }
         '400':
           description: 請求內容錯誤
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: '登入失敗' }
-        '429':
-          description: 登入失敗次數過多，暫時鎖定
-          headers:
-            Retry-After:
-              description: 距離解除鎖定的**秒**數
-              required: true
-              schema: { type: integer, minimum: 1, example: 900 }
+        '403':
+          description: 帳號沒有 `ADMIN` 角色
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Failure' }
-              example: { success: false, message: '登入失敗次數過多，請 15 分鐘後再試' }
+              example: { success: false, message: '此帳號沒有後台權限' }
+        '429': { $ref: '#/components/responses/TooManySigninAttempts' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/signup:
+    post:
+      tags: ['登入及驗證']
+      summary: 會員註冊
+      description: |
+        Hexschool 沒有這支。建立 `USER` 角色的帳號，成功時直接登入，回應與登入相同。
+
+        - `email` 前後的空白會去掉並轉成小寫，之後不能修改。大小寫不同的 email 視為同一個。
+        - `password` 8–64 個字元，只能用英數與半形符號（不含空白），至少要有一個英文字母與一個數字。
+        - `name` 去掉前後空白後 1–30 個字。
+
+        多個欄位錯誤時，訊息排序後以 `、` 連接。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `此 Email 已註冊` | email 已存在（不分大小寫） |
+        | 400 | `email 屬性不得為空`、`email 格式不正確` | |
+        | 400 | `password 屬性不得為空`、`密碼需為 8–64 個英數或半形符號，且至少包含一個英文字母與一個數字` | |
+        | 400 | `name 屬性不得為空`、`name 不得超過 30 個字` | |
+        | 400 | `data 屬性不得為空`、`資料格式不正確` | 沒有 `data` 或 JSON 錯誤 |
+      operationId: signup
+      security: []  # 公開
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/SignupInput' }
+      responses:
+        '200': { $ref: '#/components/responses/SigninSuccess' }
+        '400':
+          description: 請求內容錯誤或 email 已註冊
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '此 Email 已註冊' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/signin:
+    post:
+      tags: ['登入及驗證']
+      summary: 會員登入
+      description: |
+        Hexschool 沒有這支。前台登入頁使用，任何角色的帳號都可以登入。Body 與回應和 `POST /admin/signin` 相同，
+        也共用同一組登入次數限制。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `登入失敗` | 帳號不存在或密碼錯誤 |
+        | 400 | `username 屬性不得為空`、`password 屬性不得為空` | 欄位空白 |
+        | 429 | `登入失敗次數過多，請 N 分鐘後再試` | 鎖定中 |
+      operationId: memberSignin
+      security: []  # 公開
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SigninInput' }
+      responses:
+        '200': { $ref: '#/components/responses/SigninSuccess' }
+        '400':
+          description: 請求內容錯誤
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '登入失敗' }
+        '429': { $ref: '#/components/responses/TooManySigninAttempts' }
         default: { $ref: '#/components/responses/Failure' }
 
   /logout:
@@ -122,7 +186,7 @@ paths:
       summary: 登出
       description: 帶有效 token 時，該帳號**所有**既有 token 立即失效。沒帶或無效 token 也回 200。
       operationId: logout
-      security: [{}, { AdminToken: [] }]
+      security: [{}, { Token: [] }]
       responses:
         '200':
           description: 成功
@@ -136,8 +200,11 @@ paths:
     post:
       tags: ['登入及驗證']
       summary: 檢查登入狀態
+      description: |
+        任何角色的 token 都可以使用。Hexschool 只回 `uid`；`email`、`name`、`roles` 是本專案加的，
+        前端用 `roles` 判斷能不能進入後台。
       operationId: checkUser
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: token 有效
@@ -146,10 +213,19 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [success, uid]
+                required: [success, uid, email, name, roles]
                 properties:
                   success: { type: boolean, enum: [true] }
-                  uid: { type: string, example: admin@gmail.com }
+                  uid: { type: string, description: 帳號 id（UUID）, example: 3f1c2a8e-5b7d-4e2f-9a61-0c8d4b2e7f90 }
+                  email: { type: string, example: admin@gmail.com }
+                  name: { type: string, example: 管理者 }
+                  roles:
+                    type: array
+                    description: 帳號的角色，不重複、順序不固定。升級為管理者的會員同時有 `USER` 與 `ADMIN`
+                    minItems: 1
+                    uniqueItems: true
+                    items: { $ref: '#/components/schemas/Role' }
+                    example: [ADMIN]
         '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
@@ -160,7 +236,7 @@ paths:
       summary: 全部產品（不分頁）
       description: 包含未上架產品。`products` 是**以 id 為 key 的物件**，不是陣列，舊到新。
       operationId: adminListAllProducts
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -195,7 +271,7 @@ paths:
       summary: 產品分頁
       description: 包含未上架產品。
       operationId: adminListProducts
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Category'
@@ -223,7 +299,7 @@ paths:
       tags: ['管理控制台 - 產品 (Products)']
       summary: 新增產品
       operationId: adminCreateProduct
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/ProductInput' }
       responses:
         '200':
@@ -249,7 +325,7 @@ paths:
       summary: 更新產品
       description: 整筆覆寫。id 不存在回 404 `id 不存在`。
       operationId: adminUpdateProduct
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/ProductInput' }
       responses:
         '200':
@@ -277,7 +353,7 @@ paths:
       summary: 刪除產品
       description: 同時移除購物車內的該產品；歷史訂單有快照，不受影響。id 不存在回 404 `找不到產品`。
       operationId: adminDeleteProduct
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -307,7 +383,7 @@ paths:
         | 格式不符、空檔案、欄位名稱錯誤 | 400 `檔案格式錯誤` |
         | 超過 3MB | 400 `檔案大小不得超過 3MB` |
       operationId: adminUploadImage
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody:
         required: true
         content:
@@ -376,7 +452,7 @@ paths:
       summary: 文章分頁
       description: 包含未公開文章，依 `create_at` 新到舊。**包含 `content`**（Hexschool 不含），前端編輯時直接用清單資料帶入內文。
       operationId: adminListArticles
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       parameters:
         - $ref: '#/components/parameters/Page'
       responses:
@@ -403,7 +479,7 @@ paths:
       tags: ['管理控制台 - 文章 (Article)']
       summary: 新增文章
       operationId: adminCreateArticle
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/ArticleInput' }
       responses:
         '200':
@@ -429,7 +505,7 @@ paths:
       summary: 單篇文章
       description: 不存在回 404 `找不到文章`。
       operationId: adminGetArticle
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -455,7 +531,7 @@ paths:
       summary: 更新文章
       description: '`create_at` 未傳時保留原值。'
       operationId: adminUpdateArticle
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/ArticleInput' }
       responses:
         '200':
@@ -482,7 +558,7 @@ paths:
       tags: ['管理控制台 - 文章 (Article)']
       summary: 刪除文章
       operationId: adminDeleteArticle
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -505,7 +581,7 @@ paths:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 訂單分頁
       operationId: adminListOrders
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       parameters:
         - $ref: '#/components/parameters/Page'
       responses:
@@ -530,7 +606,7 @@ paths:
         | 訂單不存在 | 404 `找不到訂單` |
         | `status` 超出範圍 | 400 `status 必須介於 0 到 3` |
       operationId: adminUpdateOrder
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody:
         required: true
         content:
@@ -565,7 +641,7 @@ paths:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 刪除訂單
       operationId: adminDeleteOrder
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -587,7 +663,7 @@ paths:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 刪除全部訂單
       operationId: adminDeleteAllOrders
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -604,7 +680,7 @@ paths:
       tags: ['管理控制台 - 優惠券 (Coupon)']
       summary: 優惠券分頁
       operationId: adminListCoupons
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       parameters:
         - $ref: '#/components/parameters/Page'
       responses:
@@ -632,7 +708,7 @@ paths:
       summary: 新增優惠券
       description: '`code` 重複回 400 `code 已存在`。'
       operationId: adminCreateCoupon
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/CouponInput' }
       responses:
         '200':
@@ -658,7 +734,7 @@ paths:
       summary: 更新優惠券
       description: id 不存在回 404 `id 不存在`。
       operationId: adminUpdateCoupon
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       requestBody: { $ref: '#/components/requestBodies/CouponInput' }
       responses:
         '200':
@@ -686,7 +762,7 @@ paths:
       summary: 刪除優惠券
       description: 同時清除購物車對它的引用，購物車回到原價；歷史訂單有快照，不受影響。id 不存在回 404 `找不到優惠券`。
       operationId: adminDeleteCoupon
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       responses:
         '200':
           description: 成功
@@ -1146,7 +1222,7 @@ paths:
       summary: 訂單分頁（需要 admin）
       description: '**與 Hexschool 不同**：需要 admin token，因為回應含全部訂單的個資。'
       operationId: listOrders
-      security: [{ AdminToken: [] }]
+      security: [{ Token: [] }]
       parameters:
         - $ref: '#/components/parameters/Page'
       responses:
@@ -1222,11 +1298,14 @@ paths:
 
 components:
   securitySchemes:
-    AdminToken:
+    Token:
       type: apiKey
       in: header
       name: Authorization
-      description: 登入取得的 token。裸 token 或 `Bearer <token>` 皆可。前端存在 cookie，但後端只讀這個 header。
+      description: |
+        登入或註冊取得的 token。裸 token 或 `Bearer <token>` 皆可。前端存在 cookie，但後端只讀這個 header。
+        會員與管理者用同一種 token，需要哪個角色寫在各端點的說明；`/api/admin/**` 與 `GET /api/orders` 需要 `ADMIN`，
+        角色不符時回 403 `無此權限`。
 
   parameters:
     Page:
@@ -1291,6 +1370,35 @@ components:
                   qty: { type: integer, minimum: 1, maximum: 9999 }
 
   responses:
+    SigninSuccess:
+      description: 登入成功
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [success, message, uid, token, expired]
+            properties:
+              success: { type: boolean, enum: [true] }
+              message: { type: string, description: 登入為 `登入成功`，註冊為 `註冊成功`, example: 登入成功 }
+              uid: { type: string, description: 帳號 id（UUID）, example: 3f1c2a8e-5b7d-4e2f-9a61-0c8d4b2e7f90 }
+              token: { type: string, description: JWT，預設 7 天有效, example: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20ifQ.c2lnbmF0dXJl }
+              expired:
+                type: integer
+                format: int64
+                description: 到期時間，Unix **毫秒**，前端直接用來設定 cookie 期限
+                example: 1793799088000
+    TooManySigninAttempts:
+      description: 登入失敗次數過多，暫時鎖定
+      headers:
+        Retry-After:
+          description: 距離解除鎖定的**秒**數
+          required: true
+          schema: { type: integer, minimum: 1, example: 900 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+          example: { success: false, message: '登入失敗次數過多，請 15 分鐘後再試' }
     OrderPage:
       description: 成功
       content:
@@ -1355,8 +1463,22 @@ components:
       type: object
       required: [username, password]
       properties:
-        username: { type: string, example: admin@gmail.com }
+        username: { type: string, description: email，不分大小寫, example: admin@gmail.com }
         password: { type: string, example: Test123456 }
+    SignupInput:
+      type: object
+      required: [email, password, name]
+      properties:
+        email: { type: string, format: email, example: traveler@example.com }
+        password:
+          type: string
+          description: 8–64 個英數或半形符號（不含空白），至少一個英文字母與一個數字
+          example: Travel2026
+        name: { type: string, description: 去掉前後空白後 1–30 個字, example: 王小明 }
+    Role:
+      type: string
+      enum: [USER, ADMIN]
+      description: '`USER` 一般會員；`ADMIN` 管理者'
 
     Product:
       type: object

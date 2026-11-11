@@ -1,20 +1,12 @@
+import { useDispatch } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
-import axios from "axios";
-const { VITE_APP_API_BASE, VITE_APP_API_COOKIE_PATH, VITE_APP_TOKEN_NAME } =
-  import.meta.env;
+import { signout } from "../slice/authSlice";
 const NavAdmin = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const logout = async () => {
-    try {
-      // 讓伺服器端撤銷 token，否則 token 在到期前仍然有效
-      await axios.post(`${VITE_APP_API_BASE}/logout`);
-    } catch {
-      // 網路錯誤時仍要清掉本機的 token
-    } finally {
-      document.cookie = `${VITE_APP_TOKEN_NAME}=; max-age=0; path=${VITE_APP_API_COOKIE_PATH}`;
-      delete axios.defaults.headers.common.Authorization;
-      navigate(`/login`);
-    }
+    await dispatch(signout());
+    navigate(`/login`);
   };
 
   const handleActvie = ({ isActive }) => {

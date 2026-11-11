@@ -2,7 +2,7 @@
 // 用 api.get/post/put/delete 定義 MSW handler：
 //   - 路徑與方法必須在 spec 裡，否則定義時就丟錯
 //   - 前端送出的 body 必須符合 requestBody schema
-//   - 需要 AdminToken 的端點必須帶 Authorization header
+//   - 需要 Token 的端點必須帶 Authorization header
 //   - 測試假資料必須符合該狀態碼的回應 schema
 // 不符合的項目記在 violations，setup.js 會在每個測試結束時檢查並讓測試失敗。
 import { readFileSync } from "node:fs";
@@ -69,7 +69,7 @@ const define = (method, path, resolver) => {
 
   return http[method](mswPath, async ({ request, params }) => {
     if (requiresAdmin(operation) && !request.headers.get("authorization")) {
-      violations.push(`${label}：需要 admin token，但請求沒有 Authorization`);
+      violations.push(`${label}：需要 token，但請求沒有 Authorization`);
     }
 
     let body;

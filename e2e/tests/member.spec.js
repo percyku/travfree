@@ -1,0 +1,83 @@
+// 會員：註冊 → 登出 → 再登入；一般會員進不了後台
+import { expect, test } from "@playwright/test";
+import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  MEMBER_PASSWORD,
+  TOKEN_COOKIE,
+  signupByApi,
+  toast,
+  uniqueId,
+} from "./helpers.js";
+
+test("會員註冊後是登入狀態，登出後可以再登入", async ({ page }) => {
+  const id = uniqueId();
+  const name = `E2E 會員 ${id}`;
+  const email = `e2e-member-${id}@example.com`;
+  const header = page.locator("nav").first();
+
+  await test.step("從首頁進入註冊頁並註冊", async () => {
+    await page.goto("/");
+    await header.getByRole("link", { name: "註冊" }).click();
+    await page.getByLabel("姓名").fill(name);
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("密碼", { exact: true }).fill(MEMBER_PASSWORD);
+    await page.getByLabel("確認密碼").fill(MEMBER_PASSWORD);
+    await page.getByRole("button", { name: "註冊" }).click();
+  });
+
+  await test.step("回到首頁，Header 顯示姓名", async () => {
+    await expect(toast(page, `註冊成功，歡迎 ${name}`)).toBeVisible();
+    await expect(page).toHaveURL(/#\/$/);
+    await expect(header.getByText(name, { exact: true })).toBeVisible();
+    await expect(header.getByRole("link", { name: "後台" })).toHaveCount(0);
+  });
+
+  await test.step("重新整理後仍是登入狀態", async () => {
+    await page.reload();
+    await expect(header.getByText(name, { exact: true })).toBeVisible();
+  });
+
+  await test.step("登出", async () => {
+    await header.getByRole("button", { name: "登出" }).click();
+    await expect(toast(page, "已登出")).toBeVisible();
+    await expect(header.getByRole("link", { name: "登入" })).toBeVisible();
+  });
+
+  await test.step("以大小寫不同的 email 再登入", async () => {
+    await header.getByRole("link", { name: "登入" }).click();
+    await page.getByLabel("Email").fill(email.toUpperCase());
+    await page.getByLabel("密碼").fill(MEMBER_PASSWORD);
+    await page.getByRole("button", { name: "登入" }).click();
+    await expect(toast(page, `歡迎回來，${name}`)).toBeVisible();
+    await expect(header.getByText(name, { exact: true })).toBeVisible();
+  });
+});
+
+test("一般會員進不了後台，在後台登入頁改用管理者登入", async ({ page, context, request, baseURL }) => {
+  const member = await signupByApi(request);
+  await context.addCookies([{ name: TOKEN_COOKIE, value: member.token, url: baseURL }]);
+
+  await test.step("以會員身分開啟後台，被導向後台登入頁", async () => {
+    await page.goto("/#/admin/products");
+    await expect(page).toHaveURL(/#\/login$/);
+    await expect(
+      page.getByText("目前登入的帳號沒有後台權限，請改用管理者帳號登入"),
+    ).toBeVisible();
+  });
+
+  await test.step("會員帳號在後台登入頁被拒絕", async () => {
+    await page.getByLabel("Email address").fill(member.email);
+    await page.getByLabel("Password").fill(MEMBER_PASSWORD);
+    await page.getByRole("button", { name: "登入" }).click();
+    await expect(page.getByText("此帳號沒有後台權限")).toBeVisible();
+    await expect(page).toHaveURL(/#\/login$/);
+  });
+
+  await test.step("改用管理者登入後進入後台", async () => {
+    await page.getByLabel("Email address").fill(ADMIN_EMAIL);
+    await page.getByLabel("Password").fill(ADMIN_PASSWORD);
+    await page.getByRole("button", { name: "登入" }).click();
+    await expect(page).toHaveURL(/#\/admin\/products$/);
+  });
+});

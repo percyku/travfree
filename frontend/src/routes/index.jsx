@@ -9,6 +9,8 @@ import Product from "../pages/front/Product";
 import SingleProduct from "../pages/front/SingleProduct";
 import SearchProduct from "../pages/front/SearchProduct";
 import SingleArticle from "../pages/front/SingleArticle";
+import MemberSignin from "../pages/front/MemberSignin";
+import MemberSignup from "../pages/front/MemberSignup";
 
 import Login from "../pages/Login";
 import ProductedRoute from "../components/ProductedRoute";
@@ -59,6 +61,14 @@ const routes = [
       {
         path: "cartsuccess/:orderId",
         element: <CartSuccess />,
+      },
+      {
+        path: "signin",
+        element: <MemberSignin />,
+      },
+      {
+        path: "signup",
+        element: <MemberSignup />,
       },
     ],
   },

@@ -25,6 +25,22 @@ export const loginAsAdmin = async (page) => {
   await expect(page).toHaveURL(/#\/admin\/products$/);
 };
 
+/** 前端存 token 的 cookie 名稱（frontend/Dockerfile 的 VITE_APP_TOKEN_NAME） */
+export const TOKEN_COOKIE = "freetrav-token";
+export const MEMBER_PASSWORD = "Travel2026";
+
+/** 透過 API 註冊會員，回傳 { email, name, token } */
+export const signupByApi = async (request) => {
+  const id = uniqueId();
+  const member = { email: `e2e-member-${id}@example.com`, name: `E2E 會員 ${id}` };
+  const res = await request.post("/v2/api/user/signup", {
+    data: { data: { ...member, password: MEMBER_PASSWORD } },
+  });
+  const body = await res.json();
+  expect(body.success, body.message).toBe(true);
+  return { ...member, token: body.token };
+};
+
 /** 透過 API 下單（加入購物車 → 結帳），回傳訂單 id。用於需要既有訂單的後台測試 */
 export const placeOrderByApi = async (request, { productTitle, user }) => {
   const { products } = await (await request.get("/v2/api/products/all")).json();

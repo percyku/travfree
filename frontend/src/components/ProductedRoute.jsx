@@ -1,46 +1,31 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { useDispatch } from "react-redux";
 import { RotatingTriangles } from "react-loader-spinner";
 import { useNavigate } from "react-router";
+import { checkAuth } from "../slice/authSlice";
+import { isAdmin } from "../utils/auth";
 
-const { VITE_APP_API_BASE, VITE_APP_TOKEN_NAME, VITE_APP_API_COOKIE_PATH } =
-  import.meta.env;
-
+/**
+ * 後台路由保護：token 必須有 ADMIN 角色。
+ * 一般會員的 token 也會導向登入頁，但不清除，讓會員回前台時仍然是登入狀態。
+ */
 const ProductedRoute = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [allowed, setAllowed] = useState(false);
+
   useEffect(() => {
     (async () => {
-      try {
-        setIsLoading(true);
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith(`${VITE_APP_TOKEN_NAME}=`))
-          ?.split("=")[1];
-        axios.defaults.headers.common.Authorization = token;
-        if (token !== undefined) {
-          const res = await axios.post(`${VITE_APP_API_BASE}/api/user/check`);
-          if (res === "") {
-            navigate(`/login`);
-          } else {
-            //getProductInfo();
-          }
-        } else {
-          navigate(`/login`);
-        }
-      } catch {
-        // document.cookie = `${tokenName}; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${VITE_APP_API_COOKIE_PATH}`;
-        // 或者使用 max-age 属性
-        document.cookie = `${VITE_APP_TOKEN_NAME}=; max-age=0; path=${VITE_APP_API_COOKIE_PATH}`;
-
-        navigate(`/login`);
-      } finally {
-        setIsLoading(false);
+      const user = await dispatch(checkAuth()).unwrap();
+      if (isAdmin(user)) {
+        setAllowed(true);
+      } else {
+        navigate("/login", { replace: true });
       }
     })();
-  }, [navigate]);
+  }, [dispatch, navigate]);
 
-  if (isLoading) {
+  if (!allowed) {
     return <RotatingTriangles />;
   }
 

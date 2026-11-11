@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Loading from "../components/Loading";
-const { VITE_APP_API_BASE, VITE_APP_TOKEN_NAME, VITE_APP_API_COOKIE_PATH } =
-  import.meta.env;
+import { checkAuth } from "../slice/authSlice";
+import { isAdmin, saveToken } from "../utils/auth";
+const { VITE_APP_API_BASE } = import.meta.env;
 
+/** 後台登入頁，只接受有 ADMIN 角色的帳號。前台會員登入在 /signin */
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [alertMsg, setAlertMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [authData, setAuthData] = useState(null);
   const {
     register,
     handleSubmit,
@@ -20,34 +23,20 @@ const Login = () => {
     defaultValues: { username: "", password: "" },
   });
 
+  // 已經以管理者登入時直接進後台。一般會員的 token 留著（前台仍是登入狀態），停在這頁讓管理者登入，
+  // 否則會與 ProductedRoute 互相導向
   useEffect(() => {
     (async () => {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith(`${VITE_APP_TOKEN_NAME}=`))
-        ?.split("=")[1];
-
-      try {
-        if (token !== undefined) {
-          axios.defaults.headers.common.Authorization = token;
-          setIsLoading(true);
-          const res = await axios.post(`${VITE_APP_API_BASE}/api/user/check`);
-
-          if (res.data.success === true) {
-            navigate("/admin/products");
-          } else {
-            setAlertMsg(`登入失敗，請再試一次`);
-          }
-        }
-      } catch {
-        // document.cookie = `${tokenName}; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${VITE_APP_API_COOKIE_PATH}`;
-        // 或者使用 max-age 属性
-        document.cookie = `${VITE_APP_TOKEN_NAME}=; max-age=0; path=${VITE_APP_API_COOKIE_PATH}`;
-      } finally {
-        setIsLoading(false);
+      setIsLoading(true);
+      const user = await dispatch(checkAuth()).unwrap();
+      setIsLoading(false);
+      if (isAdmin(user)) {
+        navigate("/admin/products");
+      } else if (user) {
+        setAlertMsg("目前登入的帳號沒有後台權限，請改用管理者帳號登入");
       }
     })();
-  }, [authData, navigate]);
+  }, [dispatch, navigate]);
 
   const handleLoginSubmit = async (formData) => {
     try {
@@ -56,13 +45,10 @@ const Login = () => {
         `${VITE_APP_API_BASE}/admin/signin`,
         formData,
       );
-      const { token, expired } = res.data;
-      setAuthData({ token, expired });
-      document.cookie = `${VITE_APP_TOKEN_NAME}=${token};expires=${new Date(
-        expired,
-      )};path=${VITE_APP_API_COOKIE_PATH}`;
+      saveToken(res.data.token, res.data.expired);
+      navigate("/admin/products");
     } catch (error) {
-      // 顯示後端原因，例如 429 會提示多久後可以再試
+      // 顯示後端原因，例如 429 會提示多久後可以再試、403 表示不是管理者
       setAlertMsg(error.response?.data?.message || "登入失敗，請再試一次");
     } finally {
       setIsLoading(false);
@@ -134,6 +120,9 @@ const Login = () => {
         ) : (
           ""
         )}
+        <p className="mt-4">
+          <Link to="/">回到前台</Link>
+        </p>
         <p className="mt-5 mb-3 text-muted">&copy; 2026 我的練習網站</p>
       </div>
     </>
