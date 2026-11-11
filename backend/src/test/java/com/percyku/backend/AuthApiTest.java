@@ -15,7 +15,6 @@ import org.springframework.boot.DefaultApplicationArguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.percyku.backend.config.AdminSeeder;
-import com.percyku.backend.repository.UserRepository;
 
 class AuthApiTest extends ApiTestSupport {
 
@@ -23,9 +22,6 @@ class AuthApiTest extends ApiTestSupport {
 
 	@Autowired
 	AdminSeeder adminSeeder;
-
-	@Autowired
-	UserRepository userRepository;
 
 	@Test
 	void signinReturnsTokenAndExpiryInMilliseconds() throws Exception {
@@ -64,7 +60,12 @@ class AuthApiTest extends ApiTestSupport {
 		mockMvc.perform(post("/api/user/check").header("Authorization", token))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.success").value(true))
-				.andExpect(jsonPath("$.uid").isNotEmpty());
+				.andExpect(jsonPath("$.uid").isNotEmpty())
+				.andExpect(jsonPath("$.email").value("admin@gmail.com"))
+				.andExpect(jsonPath("$.name").value("管理者"))
+				// 預設 admin 是純後台帳號，沒有 USER
+				.andExpect(jsonPath("$.roles.length()").value(1))
+				.andExpect(jsonPath("$.roles[0]").value("ADMIN"));
 		mockMvc.perform(post("/api/user/check").header("Authorization", "Bearer " + token))
 				.andExpect(status().isOk());
 	}

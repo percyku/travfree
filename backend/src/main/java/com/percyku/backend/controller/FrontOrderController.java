@@ -2,6 +2,7 @@ package com.percyku.backend.controller;
 
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,8 +30,9 @@ public class FrontOrderController {
 	}
 
 	@PostMapping("/order")
-	public Map<String, Object> create(@Valid @RequestBody DataRequest<OrderCreateRequest> request) {
-		Order order = orderService.create(request.data());
+	public Map<String, Object> create(@Valid @RequestBody DataRequest<OrderCreateRequest> request,
+			Authentication authentication) {
+		Order order = orderService.create(authentication.getName(), request.data());
 		Map<String, Object> body = ApiResponses.message("已建立訂單", "total", order.getTotal());
 		body.put("create_at", order.getCreateAt());
 		body.put("orderId", order.getId());

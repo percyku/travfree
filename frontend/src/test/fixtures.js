@@ -82,6 +82,35 @@ export const order = (overrides = {}) => {
 export const ADMIN_TOKEN =
   "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20ifQ.c2lnbmF0dXJl";
 
+export const MEMBER_TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0cmF2ZWxlciJ9.bWVtYmVyc2lnbg";
+
+/** POST /api/user/check 的回應中的帳號，預設的 admin 只有 ADMIN */
+export const adminUser = (overrides = {}) => ({
+  uid: "3f1c2a8e-5b7d-4e2f-9a61-0c8d4b2e7f90",
+  email: "admin@gmail.com",
+  name: "管理者",
+  roles: ["ADMIN"],
+  ...overrides,
+});
+
+export const memberUser = (overrides = {}) => ({
+  uid: "7a2d9c41-0e6b-4f3a-8d15-b6c0e2f4a937",
+  email: "traveler@example.com",
+  name: "王小明",
+  roles: ["USER"],
+  ...overrides,
+});
+
+/** 登入與註冊成功的回應，expired 是毫秒 */
+export const signinSuccess = (token, { uid, message = "登入成功" } = {}) => ({
+  success: true,
+  message,
+  uid: uid ?? "3f1c2a8e-5b7d-4e2f-9a61-0c8d4b2e7f90",
+  token,
+  expired: Date.now() + 7 * 24 * 60 * 60 * 1000,
+});
+
 export const pagination = (overrides = {}) => ({
   total_pages: 1,
   current_page: 1,

@@ -6,7 +6,13 @@ import ProductedRoute from "../components/ProductedRoute";
 import { api, failure } from "../test/contract";
 import { server } from "../test/server";
 import { Landing, renderRoutes } from "../test/render";
-import { ADMIN_TOKEN as TOKEN } from "../test/fixtures";
+import {
+  ADMIN_TOKEN as TOKEN,
+  MEMBER_TOKEN,
+  adminUser,
+  memberUser,
+  signinSuccess,
+} from "../test/fixtures";
 const COOKIE = import.meta.env.VITE_APP_TOKEN_NAME;
 
 const tokenInCookie = () =>
@@ -27,14 +33,17 @@ const routes = [
   },
 ];
 
-/** 記錄 /api/user/check 收到的 Authorization，valid 為 false 時回 401 */
-const useUserCheck = (valid = true) => {
+/**
+ * 記錄 /api/user/check 收到的 Authorization。
+ * @param {object|false} user 回應的帳號，預設是 admin；false 時回 401
+ */
+const useUserCheck = (user = adminUser()) => {
   const authorizations = [];
   server.use(
     api.post("/api/user/check", ({ request }) => {
       authorizations.push(request.headers.get("authorization"));
-      return valid
-        ? { json: { success: true, uid: "admin@gmail.com" } }
+      return user
+        ? { json: { success: true, ...user } }
         : failure(401, "驗證錯誤, 請重新登入");
     }),
   );
@@ -53,15 +62,7 @@ describe("登入頁", () => {
     server.use(
       api.post("/admin/signin", ({ body }) => {
         signinBody = body;
-        return {
-          json: {
-            success: true,
-            message: "登入成功",
-            uid: "admin@gmail.com",
-            token: TOKEN,
-            expired: Date.now() + 7 * 24 * 60 * 60 * 1000, // 毫秒
-          },
-        };
+        return { json: signinSuccess(TOKEN) };
       }),
     );
     const authorizations = useUserCheck();
@@ -77,6 +78,7 @@ describe("登入頁", () => {
 
   it.each([
     [400, "登入失敗"],
+    [403, "此帳號沒有後台權限"],
     [429, "登入失敗次數過多，請 15 分鐘後再試"],
   ])("登入失敗（%i）時顯示後端原因", async (status, message) => {
     server.use(
@@ -121,6 +123,20 @@ describe("登入頁", () => {
     await expect.poll(tokenInCookie).toBeUndefined();
     expect(screen.getByRole("heading", { name: "請先登入" })).toBeInTheDocument();
   });
+
+  it("一般會員的 token 不會自動進入後台，也不會被清除", async () => {
+    document.cookie = `${COOKIE}=${MEMBER_TOKEN}; path=/`;
+    useUserCheck(memberUser());
+    renderRoutes(routes, { route: "/login" });
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "目前登入的帳號沒有後台權限，請改用管理者帳號登入",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("landing")).not.toBeInTheDocument();
+    expect(tokenInCookie()).toBe(MEMBER_TOKEN);
+  });
 });
 
 describe("後台路由保護", () => {
@@ -138,6 +154,24 @@ describe("後台路由保護", () => {
 
     expect(await screen.findByTestId("landing")).toHaveTextContent("後台產品頁");
     expect(authorizations).toEqual([TOKEN]);
+  });
+
+  it("一般會員的 token 導向登入頁，但保留 cookie（前台仍是登入狀態）", async () => {
+    document.cookie = `${COOKIE}=${MEMBER_TOKEN}; path=/`;
+    useUserCheck(memberUser());
+    renderRoutes(routes, { route: "/admin/products" });
+
+    expect(await screen.findByRole("heading", { name: "請先登入" })).toBeInTheDocument();
+    expect(screen.queryByTestId("landing")).not.toBeInTheDocument();
+    expect(tokenInCookie()).toBe(MEMBER_TOKEN);
+  });
+
+  it("升級為管理者的會員（同時有 USER 與 ADMIN）可以進入後台", async () => {
+    document.cookie = `${COOKIE}=${MEMBER_TOKEN}; path=/`;
+    useUserCheck(memberUser({ roles: ["USER", "ADMIN"] }));
+    renderRoutes(routes, { route: "/admin/products" });
+
+    expect(await screen.findByTestId("landing")).toHaveTextContent("後台產品頁");
   });
 
   it("token 失效時清除 cookie 並導向登入頁", async () => {

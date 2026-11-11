@@ -17,8 +17,8 @@ import com.percyku.backend.entity.CartItem;
 import com.percyku.backend.entity.Order;
 import com.percyku.backend.entity.OrderItem;
 import com.percyku.backend.exception.ApiException;
-import com.percyku.backend.repository.CartItemRepository;
 import com.percyku.backend.repository.OrderRepository;
+import com.percyku.backend.repository.UserRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,11 +27,13 @@ public class OrderService {
 	private static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("createAt"), Sort.Order.desc("id"));
 
 	private final OrderRepository orderRepository;
-	private final CartItemRepository cartItemRepository;
+	private final CartService cartService;
+	private final UserRepository userRepository;
 
-	public OrderService(OrderRepository orderRepository, CartItemRepository cartItemRepository) {
+	public OrderService(OrderRepository orderRepository, CartService cartService, UserRepository userRepository) {
 		this.orderRepository = orderRepository;
-		this.cartItemRepository = cartItemRepository;
+		this.cartService = cartService;
+		this.userRepository = userRepository;
 	}
 
 	public PagedResult<OrderResponse> page(String page) {
@@ -43,9 +45,10 @@ public class OrderService {
 		return orderRepository.findById(id).map(order -> OrderResponse.from(order, null)).orElse(null);
 	}
 
+	/** 結帳帳號（userId）的購物車，訂單記錄這個帳號。權限（需要 USER）由 SecurityConfig 檢查。 */
 	@Transactional
-	public Order create(OrderCreateRequest request) {
-		List<CartItem> items = cartItemRepository.findAllWithDetails();
+	public Order create(String userId, OrderCreateRequest request) {
+		List<CartItem> items = cartService.memberItems(userId);
 		if (items.isEmpty()) {
 			throw ApiException.badRequest("購物車無資料");
 		}
@@ -60,13 +63,13 @@ public class OrderService {
 			throw new ApiException(HttpStatus.CONFLICT, "訂單金額已變動，請重新確認");
 		}
 
-		Order order = new Order(request.user(), request.message(), now());
+		Order order = new Order(userRepository.getReferenceById(userId), request.user(), request.message(), now());
 		int sortOrder = 0;
 		for (LineItemResponse line : lines) {
 			order.addItem(new OrderItem(order, line, sortOrder++));
 		}
 		orderRepository.save(order);
-		cartItemRepository.deleteAllInBatch();
+		cartService.clearMember(userId);
 		return order;
 	}
 

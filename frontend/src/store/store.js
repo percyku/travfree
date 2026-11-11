@@ -4,6 +4,7 @@ import productReducer from "../slice/productSlice";
 import articleReducer from "../slice/articleSlice";
 import cartReducer from "../slice/cartSlice";
 import orderReducer from "../slice/orderSlice";
+import authReducer from "../slice/authSlice";
 
 const rootReducer = combineReducers({
   message: messageReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   article: articleReducer,
   cart: cartReducer,
   order: orderReducer,
+  auth: authReducer,
 });
 
 /** 建立新的 store。測試每次都用新的 store，避免狀態互相影響 */

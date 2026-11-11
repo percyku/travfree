@@ -12,13 +12,18 @@ import com.percyku.backend.entity.CartItem;
 
 public interface CartItemRepository extends JpaRepository<CartItem, String> {
 
-	@Query("select c from CartItem c join fetch c.product left join fetch c.coupon order by c.createdAt")
-	List<CartItem> findAllWithDetails();
+	@Query("select c from CartItem c join fetch c.product left join fetch c.coupon where c.cart.id = :cartId order by c.createdAt, c.id")
+	List<CartItem> findAllWithDetailsByCartId(@Param("cartId") String cartId);
 
-	@Query("select c from CartItem c join fetch c.product left join fetch c.coupon where c.id = :id")
-	Optional<CartItem> findWithDetailsById(@Param("id") String id);
+	/** 只找呼叫者購物車內的品項，別台購物車的品項視為不存在。 */
+	@Query("select c from CartItem c join fetch c.product left join fetch c.coupon where c.id = :id and c.cart.id = :cartId")
+	Optional<CartItem> findWithDetailsByIdAndCartId(@Param("id") String id, @Param("cartId") String cartId);
 
-	Optional<CartItem> findByProductId(String productId);
+	Optional<CartItem> findByCartIdAndProductId(String cartId, String productId);
+
+	@Modifying
+	@Query("delete from CartItem c where c.cart.id = :cartId")
+	void deleteByCartId(@Param("cartId") String cartId);
 
 	@Modifying
 	@Query("delete from CartItem c where c.product.id = :productId")

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import axios from "axios";
 import { api, API_BASE, violations } from "./contract";
 import { server } from "./server";
-import { cartResponse } from "./fixtures";
+import { adminUser, cartResponse } from "./fixtures";
 
 const API = API_BASE;
 
@@ -53,16 +53,14 @@ describe("契約檢查", () => {
     ]);
   });
 
-  it("需要 admin token 的端點沒帶 Authorization 時記錄違規", async () => {
+  it("需要 token 的端點沒帶 Authorization 時記錄違規", async () => {
     server.use(
       api.post("/api/user/check", () => ({
-        json: { success: true, uid: "admin@gmail.com" },
+        json: { success: true, ...adminUser() },
       })),
     );
     await axios.post(`${API}/api/user/check`);
-    expect(violations).toEqual([
-      expect.stringContaining("需要 admin token"),
-    ]);
+    expect(violations).toEqual([expect.stringContaining("需要 token")]);
   });
 
   it("multipart 缺少 spec 要求的欄位時記錄違規", async () => {

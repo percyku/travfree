@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 // 對已啟動的 docker compose 環境執行。平常用根目錄的 npm run e2e，會自動啟動獨立的環境。
 export default defineConfig({
   testDir: "./tests",
-  // 購物車全站共用一台，測試同時執行會互相干擾
+  // 依序執行，失敗時比較容易看出原因；後台測試也共用同一批種子資料
   workers: 1,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,

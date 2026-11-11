@@ -22,21 +22,26 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.percyku.backend.cart.CartOwner;
 import com.percyku.backend.repository.ArticleRepository;
 import com.percyku.backend.repository.CartItemRepository;
+import com.percyku.backend.repository.CartRepository;
 import com.percyku.backend.repository.CouponRepository;
 import com.percyku.backend.repository.OrderRepository;
 import com.percyku.backend.repository.ProductRepository;
+import com.percyku.backend.repository.UserRepository;
 import com.percyku.backend.security.LoginAttemptLimiter;
 
 /** 走真實的 JWT 流程：先用預設 admin 登入，再以前端相同的裸 token 呼叫 API。 */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(OpenApiContractConfig.class)
+@Import({ OpenApiContractConfig.class, GuestCartTestConfig.class })
 abstract class ApiTestSupport {
 
 	static final String API = "/api";
+	static final String ADMIN_EMAIL = "admin@gmail.com";
+	static final String MEMBER_PASSWORD = "Travel2026";
 
 	@Autowired
 	MockMvc mockMvc;
@@ -46,6 +51,9 @@ abstract class ApiTestSupport {
 
 	@Autowired
 	CartItemRepository cartItemRepository;
+
+	@Autowired
+	CartRepository cartRepository;
 
 	@Autowired
 	OrderRepository orderRepository;
@@ -60,24 +68,42 @@ abstract class ApiTestSupport {
 	ArticleRepository articleRepository;
 
 	@Autowired
+	UserRepository userRepository;
+
+	@Autowired
 	LoginAttemptLimiter loginAttemptLimiter;
 
 	String token;
 
+	/** 購物與結帳的輔助方法以誰的身分呼叫：null 是預設的訪客（GuestCartTestConfig），否則是這個會員 token。 */
+	String shopperToken;
+
 	@BeforeEach
 	void resetData() throws Exception {
 		cartItemRepository.deleteAll();
+		cartRepository.deleteAll();
 		orderRepository.deleteAll();
 		productRepository.deleteAll();
 		couponRepository.deleteAll();
 		articleRepository.deleteAll();
+		// 只留下預設 admin，測試註冊的會員不跨測試保留
+		userRepository.deleteAll(userRepository.findAll().stream()
+				.filter(user -> !user.getEmail().equals(ADMIN_EMAIL)).toList());
 		// 所有 MockMvc 請求都來自 127.0.0.1，不清空的話登入失敗會跨測試累計
 		loginAttemptLimiter.reset();
 		token = signin();
+		shopperToken = null;
 	}
 
 	String signin() throws Exception {
 		return read(postJson("/admin/signin", Map.of("username", "admin@gmail.com", "password", "Test123456"))
+				.andExpect(status().isOk())).get("token").asText();
+	}
+
+	/** 註冊一般會員，回傳 token */
+	String signupMember(String email, String name) throws Exception {
+		return read(postJson(API + "/user/signup",
+				data(Map.of("email", email, "password", MEMBER_PASSWORD, "name", name)))
 				.andExpect(status().isOk())).get("token").asText();
 	}
 
@@ -99,6 +125,19 @@ abstract class ApiTestSupport {
 
 	MockHttpServletRequestBuilder auth(MockHttpServletRequestBuilder request) {
 		return request.header("Authorization", token);
+	}
+
+	MockHttpServletRequestBuilder asShopper(MockHttpServletRequestBuilder request) {
+		return shopperToken == null ? request : request.header("Authorization", shopperToken);
+	}
+
+	ResultActions shopperPost(String path, Object body) throws Exception {
+		return mockMvc.perform(asShopper(post(path)).contentType(MediaType.APPLICATION_JSON).content(json(body)));
+	}
+
+	/** 以 X-Cart-Id 指定另一個訪客 */
+	static MockHttpServletRequestBuilder asGuest(MockHttpServletRequestBuilder request, String cartId) {
+		return request.header(CartOwner.HEADER, cartId);
 	}
 
 	JsonNode read(ResultActions actions) throws Exception {
@@ -155,7 +194,7 @@ abstract class ApiTestSupport {
 	}
 
 	String addToCart(String productId, int qty) throws Exception {
-		return read(postJson(API + "/cart", data(Map.of("product_id", productId, "qty", qty)))
+		return read(shopperPost(API + "/cart", data(Map.of("product_id", productId, "qty", qty)))
 				.andExpect(status().isOk())).at("/data/id").asText();
 	}
 
@@ -165,7 +204,8 @@ abstract class ApiTestSupport {
 		return data(Map.of("user", user, "message", "請小心輕放"));
 	}
 
+	/** 以 shopperToken 結帳，呼叫前要先設定（結帳需要會員） */
 	String checkout() throws Exception {
-		return read(postJson(API + "/order", orderBody()).andExpect(status().isOk())).get("orderId").asText();
+		return read(shopperPost(API + "/order", orderBody()).andExpect(status().isOk())).get("orderId").asText();
 	}
 }

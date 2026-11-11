@@ -6,6 +6,11 @@ import { currency } from "../../utils/filter";
 import CartPriceRows from "./CartPriceRows";
 import { updateOrderId, createAsyncSubmitForm } from "../../slice/orderSlice";
 import { createAsyncGetCart } from "../../slice/cartSlice";
+import { createAsyncMessage } from "../../slice/messageSlice";
+
+/** 結帳需要 USER 角色（見 spec 的 POST /api/order）；只有 ADMIN 的帳號（例如預設 admin）不能結帳 */
+const canCheckout = (user) => user?.roles?.includes("USER") ?? false;
+
 const CartForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -13,6 +18,8 @@ const CartForm = () => {
   const orderId = useSelector((state) => state.order.orderId);
   const carts = useSelector((state) => state.cart.carts);
   const final_total = useSelector((state) => state.cart.final_total);
+  const user = useSelector((state) => state.auth.user);
+  const authChecked = useSelector((state) => state.auth.checked);
 
   // 進入頁面時重新讀取購物車，顯示最新金額（優惠券可能已被停用、刪除，或商品改價）
   useEffect(() => {
@@ -26,9 +33,21 @@ const CartForm = () => {
     }
   }, [orderId, dispatch, navigate]);
 
+  // Header 確認登入狀態後才判斷，否則重新整理本頁時會在確認前被導向登入頁
+  useEffect(() => {
+    if (authChecked && !user) {
+      dispatch(
+        createAsyncMessage({ success: false, message: "請先登入會員再結帳" }),
+      );
+      navigate("/signin", { replace: true, state: { from: "/cartform" } });
+    }
+  }, [authChecked, user, dispatch, navigate]);
+
   const {
     register,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
     // reset,
   } = useForm({
@@ -45,6 +64,15 @@ const CartForm = () => {
       // address: "123",
     },
   });
+
+  // 以帳號的姓名與 email 預先填入收件資料，已經輸入的不覆蓋；收件資料可以與帳號不同
+  useEffect(() => {
+    if (!user) return;
+    if (getValues("name") === "") setValue("name", user.name);
+    if (getValues("email") === "") setValue("email", user.email);
+  }, [user, getValues, setValue]);
+
+  const blocked = !canCheckout(user);
 
   const onSubmit = async (data) => {
     // 帶上畫面顯示的總計；與後端金額不同時回 409，thunk 會顯示原因並重新讀取購物車
@@ -74,6 +102,11 @@ const CartForm = () => {
                       </button>
                     </div>
                   </div>
+                  {user && blocked && (
+                    <div className="alert alert-warning" role="alert">
+                      此帳號不能結帳，請改用會員帳號登入
+                    </div>
+                  )}
                   <div className="card bg-white rounded-4 border-0 mb-7">
                     <div className="my-5 row justify-content-center">
                       <div
@@ -230,7 +263,9 @@ const CartForm = () => {
                       className="btn btn-primary rounded-3 py-5 px-9 border-0"
                       type="submit"
                       disabled={
-                        (carts?.length == 0 ? true : false) || isLoading
+                        (carts?.length == 0 ? true : false) ||
+                        isLoading ||
+                        blocked
                       }
                     >
                       送出訂單
@@ -280,7 +315,9 @@ const CartForm = () => {
                         className="btn btn-primary rounded-3 py-5 px-9 border-0"
                         type="submit"
                         disabled={
-                          (carts?.length == 0 ? true : false) || isLoading
+                          (carts?.length == 0 ? true : false) ||
+                          isLoading ||
+                          blocked
                         }
                       >
                         送出訂單

@@ -33,6 +33,7 @@ afterEach(() => {
     if (name) document.cookie = `${name}=; max-age=0; path=/`;
   });
   delete axios.defaults.headers.common.Authorization;
+  localStorage.clear();
 
   const found = violations.splice(0);
   if (found.length > 0) {

@@ -1,6 +1,6 @@
 // 後台訂單：前台下單後，後台看得到這筆訂單，並修改付款與外送狀態
 import { expect, test } from "@playwright/test";
-import { clearCart, loginAsAdmin, placeOrderByApi, toast, uniqueId } from "./helpers.js";
+import { loginAsAdmin, placeOrderByApi, toast, uniqueId } from "./helpers.js";
 
 test("後台修改訂單的付款與外送狀態", async ({ page, request }) => {
   const id = uniqueId();
@@ -10,7 +10,6 @@ test("後台修改訂單的付款與外送狀態", async ({ page, request }) => 
     tel: "0912345678",
     address: "台北市信義區市府路1號",
   };
-  await clearCart(request);
   const orderId = await placeOrderByApi(request, { productTitle: "東京5日遊", user });
 
   await loginAsAdmin(page);
