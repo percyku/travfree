@@ -81,6 +81,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | `/cartsuccess/:orderId` | `CartSuccess` | 公開 | 訂購完成，可付款 |
 | `/signin` | `MemberSignin` | 公開 | 會員登入，完成後回到來源頁 |
 | `/signup` | `MemberSignup` | 公開 | 會員註冊，完成後是登入狀態 |
+| `/member` | `MemberCenter` | 需登入 | 會員中心：基本資料、變更密碼、登出。未登入導向 `/signin`，登入後回來 |
 | `/login` | `Login` | 公開 | 後台登入，只接受 `ADMIN` |
 | `/admin/products` | `AdminProducts` | `ADMIN` | 產品管理 |
 | `/admin/orders` | `AdminOrders` | `ADMIN` | 訂單管理 |
@@ -100,6 +101,9 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | POST | `~/user/signin` | 公開 | ✓ | 會員登入，任何角色（Hexschool 沒有） |
 | POST | `/v2/logout` | 公開 | ✓ | 登出，帶有效 token 時撤銷 |
 | POST | `/v2/api/user/check` | 需登入 | ✓ | 驗證 token，回傳角色 |
+| GET | `~/user/profile` | 需登入 | ✓ | 會員資料（Hexschool 沒有） |
+| PUT | `~/user/profile` | 需登入 | ✓ | 更新姓名、電話、地址（Hexschool 沒有） |
+| PUT | `~/user/password` | 需登入 | ✓ | 變更密碼，回傳新 token（Hexschool 沒有） |
 | GET | `~/admin/products` | Admin | ✓ | 產品分頁 |
 | GET | `~/admin/products/all` | Admin | | 全部產品，以 id 為 key |
 | POST | `~/admin/product` | Admin | ✓ | 新增產品 |
@@ -154,7 +158,9 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 | `email` | varchar UNIQUE | 登入帳號，小寫保存，不能修改 |
 | `password_hash` | varchar | BCrypt |
 | `name` | varchar(30) | 姓名。DDL 允許 null（`update` 無法對有資料的表加 `NOT NULL` 欄位），程式寫入時一定有值 |
-| `token_version` | int | 簽進 JWT，登出時遞增 |
+| `tel` | varchar(20)，可為 null | 電話，未填時為 null（回應為空字串），結帳時預先帶入 |
+| `address` | varchar(100)，可為 null | 地址，同上 |
+| `token_version` | int | 簽進 JWT，登出與變更密碼時遞增 |
 | `created_at` | timestamp | |
 
 **舊資料庫的轉換。** 會員系統之前的 `users` 有單一的 `role` 欄位（`NOT NULL`）。`LegacySchemaMigration` 每次啟動時檢查，存在時把它複製到 `user_roles` 後移除，並以 email 的 `@` 前面補上沒有的姓名；轉換過就不做事。還原舊備份後重新啟動後端即可（`npm run db:restore` 會自動重新啟動）。
