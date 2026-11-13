@@ -180,7 +180,7 @@ describe("會員中心的基本資料", () => {
     await userEvent.click(screen.getByRole("button", { name: "登出" }));
 
     expect(await findToast("已登出")).toBeInTheDocument();
-    expect(screen.getByTestId("landing")).toHaveTextContent("首頁");
+    expect(await screen.findByTestId("landing")).toHaveTextContent("首頁");
     expect(store.getState().auth.user).toBeNull();
     expect(screen.queryByText("請先登入會員")).not.toBeInTheDocument();
   });

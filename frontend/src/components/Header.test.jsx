@@ -107,6 +107,6 @@ describe("前台 Header 的會員狀態", () => {
     await userEvent.click(await screen.findByRole("button", { name: "登出" }));
 
     expect(await findToast("已登出")).toBeInTheDocument();
-    expect(screen.getByTestId("landing")).toHaveTextContent("首頁");
+    expect(await screen.findByTestId("landing")).toHaveTextContent("首頁");
   });
 });
