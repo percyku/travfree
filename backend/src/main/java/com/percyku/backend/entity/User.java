@@ -29,7 +29,8 @@ public class User extends BaseEntity {
 	@Column(nullable = false, unique = true, updatable = false)
 	private String email;
 
-	@Column(name = "password_hash", nullable = false)
+	/** 只用第三方登入的帳號沒有密碼（null）。舊資料庫的 NOT NULL 由 LegacySchemaMigration 移除。 */
+	@Column(name = "password_hash")
 	private String passwordHash;
 
 	/**
@@ -75,6 +76,13 @@ public class User extends BaseEntity {
 		return email == null ? null : email.strip().toLowerCase(Locale.ROOT);
 	}
 
+	/** 沒有姓名時（舊資料、Google 沒給 name）以 email 的 @ 前面當姓名，超過上限截斷。 */
+	public static String defaultName(String email) {
+		int at = email.indexOf('@');
+		String name = at > 0 ? email.substring(0, at) : email;
+		return name.length() > NAME_MAX_LENGTH ? name.substring(0, NAME_MAX_LENGTH) : name;
+	}
+
 	public void revokeTokens() {
 		tokenVersion++;
 	}
@@ -99,7 +107,7 @@ public class User extends BaseEntity {
 		this.address = emptyToNull(address);
 	}
 
-	/** 換密碼後已發出的 token 全部失效，呼叫端要另外發新的 token 給目前的裝置。 */
+	/** 變更或第一次設定密碼。已發出的 token 全部失效，呼叫端要另外發新的 token 給目前的裝置。 */
 	public void changePassword(String passwordHash) {
 		this.passwordHash = passwordHash;
 		revokeTokens();
@@ -119,6 +127,10 @@ public class User extends BaseEntity {
 
 	public String getPasswordHash() {
 		return passwordHash;
+	}
+
+	public boolean hasPassword() {
+		return passwordHash != null;
 	}
 
 	public String getName() {

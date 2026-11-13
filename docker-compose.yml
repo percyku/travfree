@@ -38,6 +38,9 @@ services:
       - JWT_SECRET
       - ADMIN_EMAIL
       - ADMIN_PASSWORD
+      # Google 登入的 Web client ID；沒有設定時關閉。GOOGLE_TEST_PUBLIC_KEY 只給 E2E（scripts/e2e.sh）使用
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_TEST_PUBLIC_KEY
     volumes:
       - uploads:/app/uploads
     healthcheck:

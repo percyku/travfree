@@ -90,4 +90,22 @@ class LegacySchemaMigrationTest extends ApiTestSupport {
 		assertThat(hasRoleColumn()).isFalse();
 		assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM user_roles", Long.class)).isEqualTo(rolesBefore);
 	}
+
+	/** 階段 5 之前 password_hash 是 NOT NULL，ddl-auto=update 不會移除，只用 Google 登入的帳號就建不起來 */
+	@Test
+	void dropsNotNullOnPasswordHash() throws Exception {
+		jdbc.execute("ALTER TABLE users ALTER COLUMN password_hash SET NOT NULL");
+
+		migration.run(new DefaultApplicationArguments());
+		migration.run(new DefaultApplicationArguments());
+
+		assertThat(jdbc.queryForObject("""
+				SELECT is_nullable FROM information_schema.columns
+				WHERE LOWER(table_name) = 'users' AND LOWER(column_name) = 'password_hash'
+				""", String.class)).isEqualTo("YES");
+		// 只用 Google 登入的帳號建得起來
+		postJson(API + "/user/google", data(Map.of("credential",
+				GoogleTestTokens.token("google-legacy", "legacy.google@gmail.com", "舊庫"))))
+				.andExpect(status().isOk());
+	}
 }

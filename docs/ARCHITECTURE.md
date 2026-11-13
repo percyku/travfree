@@ -104,7 +104,11 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | POST | `/v2/api/user/check` | 需登入 | ✓ | 驗證 token，回傳角色 |
 | GET | `~/user/profile` | 需登入 | ✓ | 會員資料（Hexschool 沒有） |
 | PUT | `~/user/profile` | 需登入 | ✓ | 更新姓名、電話、地址（Hexschool 沒有） |
-| PUT | `~/user/password` | 需登入 | ✓ | 變更密碼，回傳新 token（Hexschool 沒有） |
+| PUT | `~/user/password` | 需登入 | ✓ | 變更密碼或第一次設定密碼（帶 Google credential），回傳新 token（Hexschool 沒有） |
+| GET | `~/user/google/config` | 公開 | ✓ | Google 登入是否啟用與 client ID（Hexschool 沒有） |
+| POST | `~/user/google` | 公開 | ✓ | Google 登入或註冊，email 已有帳號時 409（Hexschool 沒有） |
+| POST | `~/user/google/link` | 需登入 | ✓ | 連結 Google（Hexschool 沒有） |
+| DELETE | `~/user/google/link` | 需登入 | ✓ | 解除連結 Google，至少保留一種登入方式（Hexschool 沒有） |
 | GET | `~/admin/products` | Admin | ✓ | 產品分頁 |
 | GET | `~/admin/products/all` | Admin | | 全部產品，以 id 為 key |
 | POST | `~/admin/product` | Admin | ✓ | 新增產品 |
@@ -159,11 +163,24 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 |---|---|---|
 | `id` | varchar(36) PK | JWT 的 subject、回應中的 `uid` |
 | `email` | varchar UNIQUE | 登入帳號，小寫保存，不能修改 |
-| `password_hash` | varchar | BCrypt |
+| `password_hash` | varchar，可為 null | BCrypt。只用 Google 登入的帳號沒有密碼。舊資料庫的 `NOT NULL` 由 `LegacySchemaMigration` 移除 |
 | `name` | varchar(30) | 姓名。DDL 允許 null（`update` 無法對有資料的表加 `NOT NULL` 欄位），程式寫入時一定有值 |
 | `tel` | varchar(20)，可為 null | 電話，未填時為 null（回應為空字串），結帳時預先帶入 |
 | `address` | varchar(100)，可為 null | 地址，同上 |
-| `token_version` | int | 簽進 JWT，登出與變更密碼時遞增 |
+| `token_version` | int | 簽進 JWT，登出與變更、設定密碼時遞增 |
+| `created_at` | timestamp | |
+
+### `user_identities`
+
+帳號連結的第三方登入。`(provider, subject)` 唯一（一個 Google 帳號只能屬於一個會員），`(user_id, provider)` 唯一（一個會員只連結一個 Google 帳號）。之後的 GitHub、Facebook 也存在這裡。
+
+| 欄位 | 型別 | 說明 |
+|---|---|---|
+| `id` | varchar(36) PK | |
+| `user_id` | FK → users | |
+| `provider` | varchar(20) | 目前只有 `google` |
+| `subject` | varchar | 平台的帳號 ID（Google 的 `sub`），以它辨識，不用 email |
+| `email` | varchar，可為 null | 連結當時平台的 email，只用來顯示，可以與帳號的 email 不同 |
 | `created_at` | timestamp | |
 
 **舊資料庫的轉換。** 會員系統之前的 `users` 有單一的 `role` 欄位（`NOT NULL`）。`LegacySchemaMigration` 每次啟動時檢查，存在時把它複製到 `user_roles` 後移除，並以 email 的 `@` 前面補上沒有的姓名；轉換過就不做事。還原舊備份後重新啟動後端即可（`npm run db:restore` 會自動重新啟動）。
@@ -274,6 +291,7 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 ### 登入與驗證
 
 1. 前台 `MemberSignin`（`POST ~/user/signin`）、`MemberSignup`（`POST ~/user/signup`）或後台 `Login`（`POST /v2/admin/signin`）取得 token，由 `utils/auth.js` 把 `token` 與 `expired`（毫秒）寫入 cookie `freetrav-token`（名稱由 `VITE_APP_TOKEN_NAME` 設定）。**會員與管理者共用這個 cookie**，同一個瀏覽器一次只有一個帳號登入。
+   Google 登入（`POST ~/user/google`）也一樣：前端以 GIS 取得 Google 的 ID token，後端以 `GoogleTokenVerifier` 驗證（Google 的 JWKS，依 Cache-Control 快取）後發我們自己的 JWT，之後與一般登入相同。
 2. 前端把 cookie 的值設為 `axios.defaults.headers.common.Authorization`，所以 header 是**裸 token，沒有 `Bearer`**。Filter 兩種格式都接受。
 3. `authSlice` 的 `checkAuth` 呼叫 `POST /v2/api/user/check`，把 `{ uid, email, name, roles }` 存進 Redux：前台 `Header` 在載入時呼叫，`ProductedRoute` 在進入 `/admin/*` 時呼叫並要求 `ADMIN`。
 4. `JwtAuthenticationFilter` 驗證簽章，讀取 user 與角色，比對 `token_version`，通過後以 `ROLE_USER`、`ROLE_ADMIN` 設定身分。

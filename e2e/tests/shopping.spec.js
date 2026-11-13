@@ -44,7 +44,7 @@ test("前台購物：訪客套用優惠碼，結帳時登入後付款", async ({
     await expect(page).toHaveURL(/#\/signin$/);
     await page.getByLabel("Email").fill(member.email);
     await page.getByLabel("密碼").fill(MEMBER_PASSWORD);
-    await page.getByRole("button", { name: "登入" }).click();
+    await page.getByRole("button", { name: "登入", exact: true }).click();
     await expect(page).toHaveURL(/#\/cartform$/);
   });
 

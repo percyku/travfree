@@ -14,6 +14,10 @@ export APP_PORT="${E2E_PORT:-8100}"
 export DB_PORT="${E2E_DB_PORT:-5433}"
 export DB_VOLUME=travfree-e2e-db
 export PUBLIC_BASE_URL="http://localhost:${APP_PORT}/v2"
+# Google 登入：以臨時產生的測試金鑰取代 Google，見 scripts/google-test-key.sh 與 e2e/tests/google.spec.js
+export GOOGLE_CLIENT_ID=e2e-client.apps.googleusercontent.com
+GOOGLE_TEST_PUBLIC_KEY=$(scripts/google-test-key.sh)
+export GOOGLE_TEST_PUBLIC_KEY
 # 不讀根目錄的 .env（部署設定），固定使用開發設定
 compose() { docker compose --env-file /dev/null "$@"; }
 

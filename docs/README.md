@@ -85,6 +85,8 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 | `PUBLIC_BASE_URL` | `http://localhost:8080/v2` | 上傳圖片網址的開頭 |
 | `UPLOAD_DIR` | `./uploads` | 圖片存放目錄 |
 | `SPRING_PROFILES_ACTIVE` | 無 | 部署時設為 `prod` |
+| `GOOGLE_CLIENT_ID` | 無 | Google 登入的 Web client ID，沒有設定時關閉。設定方式見下方「Google 登入設定」 |
+| `GOOGLE_TEST_PUBLIC_KEY` | 無 | **只給 E2E 使用**：以這把公鑰驗證 ID token，不連 Google（`scripts/google-test-key.sh` 產生）。正式環境不要設定 |
 
 ## 部署
 
@@ -147,6 +149,7 @@ cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRI
 | `DB_VOLUME` | `backend_postgres-data` | 資料庫的 volume 名稱。E2E 用它建立獨立的資料庫 |
 | `PUBLIC_BASE_URL` | `http://localhost:8000/v2` | 上傳圖片網址的開頭，要與實際網址一致 |
 | `SPRING_PROFILES_ACTIVE`、`DB_PASSWORD`、`JWT_SECRET`、`ADMIN_EMAIL`、`ADMIN_PASSWORD` | 開發預設值 | 同上方的環境變數；`.env` 沒有設定時不傳入，由後端使用預設值 |
+| `GOOGLE_CLIENT_ID`、`GOOGLE_TEST_PUBLIC_KEY` | 無 | 同上方的環境變數。只改 `GOOGLE_CLIENT_ID` 不需要重新建置，`docker compose up -d` 重建後端容器即可 |
 
 **資料。** 資料庫存在 volume `backend_postgres-data`，沿用原本 `backend/docker-compose.yml` 建立的 volume，所以開發模式與 Docker 用的是同一份資料。上傳的圖片存在 volume `travfree_uploads`。
 
@@ -159,6 +162,74 @@ cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRI
 - `backend/Dockerfile`：JDK 映像打包 jar（略過測試，測試由 CI 另外跑），JRE 映像以非 root 使用者執行。
 - `frontend/Dockerfile`：Node 映像建置，nginx 映像提供靜態檔。`VITE_` 變數在建置時寫進 JS，預設 `VITE_APP_API_BASE=/v2`（相對路徑），要改用 `--build-arg`。nginx 設定在 `frontend/nginx.conf`，`client_max_body_size` 放寬為 10m，讓超過 3MB 的上傳由後端回 JSON 錯誤。
 - 資料庫的連接埠只開給本機（`127.0.0.1:5432`），不對外開放。
+
+## Google 登入設定
+
+前台的「以 Google 登入」用 Google Identity Services（GIS）：前端取得 ID token，後端以 Google 的公鑰驗證後發我們自己的 JWT。
+只需要一個 **Web client ID**，不需要 client secret，也不需要 redirect URI。client ID 只在後端設定，前端執行時向 `GET /v2/api/user/google/config` 讀取。
+
+### 1. 建立 Google Cloud 專案
+
+1. 開啟 [Google Cloud Console](https://console.cloud.google.com/)，以要管理這個應用程式的 Google 帳號登入。
+2. 點上方的專案選單 →「新增專案」，名稱例如 `FreeTrav`，建立後切換到這個專案。
+
+### 2. 設定 OAuth 同意畫面（Google Auth Platform）
+
+1. 開啟 [Google Auth Platform](https://console.cloud.google.com/auth/overview)，按「開始」。
+2. **應用程式資訊**：應用程式名稱填 `FreeTrav`（使用者登入時會看到），使用者支援電子郵件選你的 email。
+3. **目標對象**：選「外部」（任何 Google 帳號都能登入）。
+4. **聯絡資訊**：填你的 email，同意政策後建立。
+5. **資料存取**：不用新增範圍。預設的 `openid`、`email`、`profile` 就夠了，不要加其他敏感範圍。
+6. **目標對象 → 發布狀態**：剛建立時是「測試中」，只有加入「測試使用者」的 Google 帳號可以登入。
+   - 本機開發：在「測試使用者」加入你要用來測試的 Google 帳號即可。
+   - 正式上線：按「發布應用程式」。只用預設範圍不需要 Google 審查；若上傳了 logo，Google 可能要求驗證品牌。
+7. **品牌宣傳**（正式上線時）：填首頁與隱私權政策的網址，並在「授權網域」加入網站的網域。本機開發可以先略過。
+
+### 3. 建立用戶端（Client ID）
+
+1. 開啟 [用戶端](https://console.cloud.google.com/auth/clients) →「建立用戶端」。
+2. 應用程式類型選「**網頁應用程式**」，名稱例如 `FreeTrav Web`。
+3. **已授權的 JavaScript 來源**加入會開啟網站的每一個來源（協定 + 網域 + 連接埠，不含路徑）：
+
+   | 來源 | 用途 |
+   |---|---|
+   | `http://localhost` | Google 要求以 localhost 測試時也加上不含連接埠的這一筆 |
+   | `http://localhost:8000` | `docker compose up` 的網站 |
+   | `http://localhost:5173` | `npm run dev` 的前端 |
+   | `https://你的網域` | 正式環境（必須是 HTTPS） |
+
+   用 `127.0.0.1` 開啟時也要另外加入 `http://127.0.0.1:8000` 等，Google 會把它當成不同的來源。
+4. **已授權的重新導向 URI**：留空。我們用 JavaScript callback 取得 token，不經過重新導向。
+5. 按「建立」，複製「用戶端 ID」（`xxxxxxxx.apps.googleusercontent.com`）。用戶端密鑰用不到，不要放進專案。
+6. 新增或修改來源後，Google 可能要幾分鐘才生效。
+
+### 4. 設定到專案
+
+- **Docker（`:8000`）**：在根目錄的 `.env` 加入一行（沒有 `.env` 時建立一個，只有這一行即可，其他設定沿用開發預設值），然後 `docker compose up -d`：
+
+  ```bash
+  GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
+  ```
+
+- **開發模式（`:8080` + `:5173`）**：啟動後端時帶上環境變數：
+
+  ```bash
+  GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
+  ```
+
+- 確認：`curl http://localhost:8000/v2/api/user/google/config` 應回 `"enabled":true`，前台的登入頁、註冊頁出現 Google 按鈕。
+
+### 5. 常見問題
+
+| 狀況 | 原因與處理 |
+|---|---|
+| 按鈕下方或 console 出現 `The given origin is not allowed for the given client ID` | 目前的網址沒有加進「已授權的 JavaScript 來源」，或剛加入還沒生效。連接埠要完全相同，`localhost` 與 `127.0.0.1` 要分開加入 |
+| Google 視窗顯示「存取遭封鎖」或沒有權限 | 發布狀態是「測試中」，登入的 Google 帳號不在「測試使用者」裡 |
+| 登入頁沒有 Google 按鈕 | 後端沒有讀到 `GOOGLE_CLIENT_ID`，`/api/user/google/config` 回 `enabled: false`。Docker 改了 `.env` 後要 `docker compose up -d` |
+| 回 `Google 驗證失敗，請再試一次` | token 不是給這個 client ID 的，或伺服器時間誤差太大 |
+| 回 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google` | 預期的行為：同一個 email 已經用密碼註冊，不會自動合併，見 [FEATURES.md](FEATURES.md) 的 Google 登入 |
+
+nginx（`frontend/nginx.conf`）與 Vite 開發伺服器已設定 Google 要求的 `Referrer-Policy: no-referrer-when-downgrade`。
 
 ## 文件索引
 

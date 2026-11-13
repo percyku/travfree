@@ -7,6 +7,7 @@ import MemberCenter from "./MemberCenter";
 import { api, failure } from "../../test/contract";
 import { server } from "../../test/server";
 import { Landing, findToast, renderRoutes } from "../../test/render";
+import { installFakeGoogle, useGoogleEnabled } from "../../test/google";
 import {
   MEMBER_TOKEN,
   memberProfile,
@@ -47,7 +48,12 @@ const useProfile = (profile = memberProfile()) =>
 const profileCard = () =>
   screen.getByRole("heading", { name: "基本資料" }).closest("section");
 const passwordCard = () =>
-  screen.getByRole("heading", { name: "變更密碼" }).closest("section");
+  screen.getByRole("heading", { name: /^(變更|設定)密碼$/ }).closest("section");
+/** 會員資料載入後才有密碼卡片 */
+const findPasswordCard = async () =>
+  (await screen.findByRole("heading", { name: /^(變更|設定)密碼$/ })).closest("section");
+const loginMethodsCard = async () =>
+  (await screen.findByRole("heading", { name: "登入方式" })).closest("section");
 
 const retype = async (label, text) => {
   const input = within(profileCard()).getByLabelText(label);
@@ -156,7 +162,8 @@ describe("會員中心的基本資料", () => {
     server.use(api.get("/api/user/profile", () => failure(500, "伺服器錯誤")));
     renderMemberCenter();
 
-    expect(await within(profileCard()).findByRole("alert")).toHaveTextContent("伺服器錯誤");
+    await screen.findByRole("alert");
+    expect(within(profileCard()).getByRole("alert")).toHaveTextContent("伺服器錯誤");
     expect(screen.queryByRole("button", { name: "儲存基本資料" })).not.toBeInTheDocument();
   });
 
@@ -208,7 +215,7 @@ describe("會員中心的變更密碼", () => {
   });
 
   const fillPassword = async (current, next, confirm = next) => {
-    const card = within(passwordCard());
+    const card = within(await findPasswordCard());
     await userEvent.type(card.getByLabelText("目前的密碼"), current);
     await userEvent.type(card.getByLabelText("新密碼"), next);
     await userEvent.type(card.getByLabelText("確認新密碼"), confirm);
@@ -265,7 +272,7 @@ describe("會員中心的變更密碼", () => {
 
   it("新密碼不符合規則、與目前相同或兩次不同時不送出", async () => {
     renderMemberCenter();
-    const card = within(passwordCard());
+    const card = within(await findPasswordCard());
 
     await fillPassword("Travel2026", "short", "short");
     expect(
@@ -285,3 +292,122 @@ describe("會員中心的變更密碼", () => {
     // 沒有定義 PUT /api/user/password 的 handler，有送出的話契約檢查會失敗
   });
 });
+
+describe("會員中心的登入方式", () => {
+  beforeEach(() => {
+    axios.defaults.headers.common.Authorization = MEMBER_TOKEN;
+    useGoogleEnabled();
+  });
+
+  it("有密碼、未連結：按 Google 連結後顯示已連結", async () => {
+    useProfile();
+    installFakeGoogle("link-credential");
+    let body;
+    server.use(
+      api.post("/api/user/google/link", ({ body: sent }) => {
+        body = sent;
+        return {
+          json: {
+            success: true,
+            message: "已連結 Google",
+            profile: memberProfile({ google_email: "traveler@gmail.com" }),
+          },
+        };
+      }),
+    );
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    expect(card.getByText("已設定")).toBeInTheDocument();
+    await userEvent.click(await card.findByRole("button", { name: /^Google / }));
+
+    expect(await findToast("已連結 Google")).toBeInTheDocument();
+    expect(body).toEqual({ data: { credential: "link-credential" } });
+    expect(card.getByText("已連結（traveler@gmail.com）")).toBeInTheDocument();
+    expect(card.getByRole("button", { name: "解除連結" })).toBeEnabled();
+  });
+
+  it("Google 帳號已連結其他會員時顯示原因", async () => {
+    useProfile();
+    installFakeGoogle();
+    server.use(api.post("/api/user/google/link", () => failure(409, "這個 Google 帳號已連結其他會員")));
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    await userEvent.click(await card.findByRole("button", { name: /^Google / }));
+
+    expect(await card.findByRole("alert")).toHaveTextContent("這個 Google 帳號已連結其他會員");
+  });
+
+  it("有密碼時可以解除連結", async () => {
+    useProfile(memberProfile({ google_email: "traveler@gmail.com" }));
+    server.use(
+      api.delete("/api/user/google/link", () => ({
+        json: { success: true, message: "已解除連結 Google", profile: memberProfile() },
+      })),
+    );
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    await userEvent.click(card.getByRole("button", { name: "解除連結" }));
+
+    expect(await findToast("已解除連結 Google")).toBeInTheDocument();
+    expect(card.getByText("未連結。連結後可以直接用 Google 登入。")).toBeInTheDocument();
+  });
+
+  it("只用 Google 登入的帳號不能解除連結，密碼卡片是設定密碼", async () => {
+    useProfile(memberProfile({ has_password: false, google_email: "traveler@gmail.com" }));
+    installFakeGoogle();
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    expect(card.getByText("未設定")).toBeInTheDocument();
+    expect(card.getByRole("button", { name: "解除連結" })).toBeDisabled();
+    expect(card.getByText("至少要保留一種登入方式，請先設定密碼才能解除連結")).toBeInTheDocument();
+
+    const password = within(await findPasswordCard());
+    expect(password.getByRole("heading", { name: "設定密碼" })).toBeInTheDocument();
+    expect(password.queryByLabelText("目前的密碼")).not.toBeInTheDocument();
+    expect(password.queryByRole("button", { name: "變更密碼" })).not.toBeInTheDocument();
+  });
+
+  it("設定密碼：填好新密碼後以 Google 重新驗證，存下新的 token", async () => {
+    const NEW_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzZXQifQ.c2V0dG9rZW4";
+    useProfile(memberProfile({ has_password: false, google_email: "traveler@gmail.com" }));
+    installFakeGoogle("fresh-credential");
+    let body;
+    server.use(
+      api.put("/api/user/password", ({ body: sent }) => {
+        body = sent;
+        return { json: signinSuccess(NEW_TOKEN, { message: "已設定密碼" }) };
+      }),
+    );
+    renderMemberCenter();
+
+    const card = within(await findPasswordCard());
+    await userEvent.type(card.getByLabelText("新密碼"), "Journey2027");
+    await userEvent.type(card.getByLabelText("確認新密碼"), "Journey2027");
+    await userEvent.click(await card.findByRole("button", { name: /^Google / }));
+
+    expect(await findToast("已設定密碼，現在也可以用 Email 與密碼登入")).toBeInTheDocument();
+    expect(body).toEqual({ data: { credential: "fresh-credential", new_password: "Journey2027" } });
+    expect(tokenInCookie()).toBe(NEW_TOKEN);
+    // 設定後變成一般的變更密碼，也可以解除 Google
+    expect(await screen.findByRole("heading", { name: "變更密碼" })).toBeInTheDocument();
+    expect(within(await loginMethodsCard()).getByRole("button", { name: "解除連結" })).toBeEnabled();
+  });
+
+  it("設定密碼前先檢查欄位，不符合時不送出", async () => {
+    useProfile(memberProfile({ has_password: false, google_email: "traveler@gmail.com" }));
+    installFakeGoogle();
+    renderMemberCenter();
+
+    const card = within(await findPasswordCard());
+    await userEvent.click(await card.findByRole("button", { name: /^Google / }));
+
+    expect(await card.findByText("請輸入新密碼")).toBeInTheDocument();
+    expect(card.getByText("請再輸入一次新密碼")).toBeInTheDocument();
+    // 沒有定義 PUT /api/user/password 的 handler，有送出的話契約檢查會失敗
+  });
+});
+

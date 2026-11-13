@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { signin } from "../../slice/authSlice";
 import { createAsyncMessage } from "../../slice/messageSlice";
 import { EMAIL_PATTERN } from "../../utils/auth";
+import GoogleButton from "../../components/GoogleButton";
+import useGoogleSignin from "../../hooks/useGoogleSignin";
 
 /** 前台會員登入。從其他頁面導過來時（state.from），登入後回到那一頁 */
 const MemberSignin = () => {
@@ -27,6 +29,8 @@ const MemberSignin = () => {
   useEffect(() => {
     if (user) navigate(from, { replace: true });
   }, [user, from, navigate]);
+
+  const onGoogleCredential = useGoogleSignin({ onError: setError, setSubmitting });
 
   const onSubmit = async (form) => {
     setError("");
@@ -113,6 +117,20 @@ const MemberSignin = () => {
                   登入
                 </button>
               </form>
+              <GoogleButton
+                text="signin_with"
+                onCredential={onGoogleCredential}
+                before={
+                  <div className="d-flex align-items-center gap-3 my-4 text-muted">
+                    <hr className="flex-grow-1 my-0" />
+                    或
+                    <hr className="flex-grow-1 my-0" />
+                  </div>
+                }
+              />
+              <p className="form-text text-center mt-3 mb-0">
+                用 Google 註冊的帳號請使用 Google 登入
+              </p>
               <p className="mt-4 mb-0 text-center">
                 還沒有帳號？
                 <Link to="/signup" state={{ from }}>

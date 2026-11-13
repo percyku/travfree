@@ -17,6 +17,14 @@
   - 結帳時未登入會導向會員登入頁，登入後回到填寫資料頁，並以帳號的姓名與 email 預先填入。
   - 訂單加上 `user_id`，記錄下單的帳號。
   - `npm run seed:demo`：透過 API 建立展示會員與 2 筆訂單，只能對本機執行；CI 會確認它可以重複執行並在備份還原後保留。
+- 會員系統（階段 5）：
+  - Google 登入與註冊（Google Identity Services）：`POST /api/user/google`，後端驗證 ID token 後發自己的 JWT；`GET /api/user/google/config` 讓前端取得 client ID（只在後端設定 `GOOGLE_CLIENT_ID`）。
+  - 第三方帳號以 `sub` 辨識，email 相同也**不自動合併**（回 409，請先用原本的方式登入再連結），避免搶先註冊攻擊。註冊撞到既有 email 的訊息改為提示改用原本的方式登入。
+  - 已被其他帳號連結為 Google 登入的 email 視同已被使用，不能再用它註冊或以 Google 建立新帳號。
+  - 會員中心新增「登入方式」：連結或解除 Google（至少保留一種登入方式）；只用 Google 的帳號可以「設定密碼」，設定時要重新以 Google 驗證。`profile` 多回 `has_password`、`google_email`。
+  - 新增 `user_identities` 表；`users.password_hash` 改為可為 null（啟動時自動轉換）。
+  - nginx 與 Vite 開發伺服器加上 Google 要求的 `Referrer-Policy: no-referrer-when-downgrade`。
+  - E2E 以臨時產生的測試金鑰取代 Google（`scripts/google-test-key.sh`、`GOOGLE_TEST_PUBLIC_KEY`）。
 - 會員系統（階段 4）：
   - 後台「會員列表」（`/admin/users`）：搜尋、分頁、設定或移除管理者。新增 `GET /api/admin/users`、`PUT /api/admin/user/{id}`。
   - 不能移除自己的管理者權限，至少保留一位管理者（同時互相移除時以資料庫鎖防止變成沒有管理者）；只有 `ADMIN` 的帳號被移除時補上 `USER`。

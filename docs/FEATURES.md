@@ -18,7 +18,8 @@
 | 會員中心：變更密碼 | ✅ 完成 | ✓ | 其他裝置的 token 失效，目前的裝置換成新 token |
 | 會員列表、設定與移除管理者 | ✅ 完成 | ✓ | 後台 `/admin/users`，不能移除自己，至少保留一位管理者 |
 | 管理者不能修改自己的訂單 | ✅ 完成 | ✓ | 以訂單的 `user_id` 判斷，後台訂單列表標示「自己的訂單」 |
-| Google 登入 | 🚧 規劃中 | | 階段 5 |
+| Google 登入與註冊 | ✅ 完成 | ✓ | 登入頁、註冊頁；email 已有帳號時不自動合併 |
+| 會員中心：登入方式 | ✅ 完成 | ✓ | 連結或解除 Google；只用 Google 的帳號可以設定密碼 |
 | 產品管理（Admin） | ✅ 完成 | ✓ | |
 | 圖片上傳 | ✅ 完成 | ✓ | 存本機磁碟 |
 | 文章管理（Admin） | ✅ 完成 | ✓ | |
@@ -163,7 +164,7 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 
 需要登入，**任何角色都可以**（預設 admin 也可以）。身分由 token 決定，網址不帶 id。Hexschool 沒有這組。
 
-讀取回 `{ success, profile: { email, name, tel, address } }`，`tel`、`address` 未填時是空字串。
+讀取回 `{ success, profile: { email, name, tel, address, has_password, google_email } }`，`tel`、`address` 未填時是空字串；`has_password` 是否已設定密碼；`google_email` 是已連結的 Google 帳號的 email，未連結時是 null。
 
 更新的 Body 為 `{ "data": { "name", "tel", "address" } }`，**整筆取代**：`tel` 或 `address` 沒帶或空字串時清除。`email` 不能修改，body 帶了也忽略。成功回 `已更新會員資料` 與更新後的 `profile`；`name` 改了之後 `/user/check` 也是新的姓名。
 
@@ -195,6 +196,59 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 目前的密碼錯誤與登入共用同一組計數（IP + 帳號 email、IP 總量），否則拿到 token 的人可以用這支猜密碼。鎖定時連登入也被擋，反之亦然。
 
 前台會員中心的「變更密碼」卡片要求輸入兩次新密碼（只在前端比對），成功後以新的 token 取代 cookie 中的舊 token，並提示 `已變更密碼，其他裝置需要重新登入`。
+
+
+**沒有密碼的帳號是「設定密碼」。** 只用 Google 註冊的帳號沒有目前的密碼可以驗證，所以不帶 `password`，改帶 `credential`（重新以 Google 取得的 ID token），
+它的 `sub` 必須是已連結的 Google 帳號（否則 400 `Google 驗證失敗，請以已連結的 Google 帳號驗證`），避免拿到 token 的人偷設密碼。成功時 `message` 為 `已設定密碼`，其餘與變更密碼相同。
+前台會員中心的卡片標題改為「設定密碼」，填好新密碼後按 Google 按鈕送出。
+
+### Google 登入 `POST ~/user/google`
+
+公開。Body 為 `{ "data": { "credential" } }`，`credential` 是 Google Identity Services（GIS）回傳的 ID token。Hexschool 沒有這支。設定方式見 [README.md](README.md#google-登入設定)。
+
+後端依 Google 文件驗證 token：簽章（Google 的公鑰）、`aud` 是我們的 client ID、`iss` 是 `accounts.google.com`、未過期。之後：
+
+1. 這個 Google 帳號（`sub`）已連結會員 → 登入，`message` 為 `登入成功`。
+2. Google 的 email 已有帳號 → **409，不自動合併**。
+3. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`。email 要經 Google 驗證；姓名取 Google 的名稱（超過 30 個字截斷，沒有時取 email 的 `@` 前面）；**沒有密碼**。
+
+以 `sub` 辨識，不用 email：使用者在 Google 改了 email 仍登入同一個帳號。回應與一般登入相同。
+
+| 情境 | 回應 |
+|---|---|
+| `credential` 空白 | 400 `credential 屬性不得為空` |
+| token 簽章錯誤、過期、`aud` 或 `iss` 不符 | 400 `Google 驗證失敗，請再試一次` |
+| 要建立帳號但 email 未經 Google 驗證 | 400 `Google 帳號的 Email 尚未驗證` |
+| email 已有帳號 | 409 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google` |
+| 後端沒有設定 `GOOGLE_CLIENT_ID` | 503 `未設定 Google 登入` |
+
+`GET ~/user/google/config` 回 `{ enabled, client_id }`，前端以它決定是否顯示 Google 按鈕；client ID 只在後端設定一處。
+
+**為什麼不以 email 自動合併。** 註冊不寄驗證信，帳號上的 email 只代表「有人輸入了它」。若 Google 登入遇到相同 email 就合併，
+先用別人的 email 註冊的人，在本人以 Google 登入、填了地址並下單後，仍能用自己設的密碼登入看到這些資料（搶先註冊攻擊）。
+所以第三方登入遇到既有 email 一律回 409，請使用者先用原本的方式登入，再到會員中心連結；之後加 GitHub、Facebook 也用同一條規則（它們的 email 可能未驗證或沒有）。
+代價是被搶先註冊的本人無法使用自己的 email，要等「忘記密碼（寄信）」才能根治，目前由管理者處理。
+
+| 情境 | 結果 |
+|---|---|
+| 先註冊，後用 Google 登入，同一個 email | 409，用密碼登入後在會員中心連結 |
+| 先用 Google 登入，後註冊，同一個 email | 註冊回 400 `此 Email 已註冊，請改用原本的方式登入（例如 Google）`；想用密碼時在會員中心設定 |
+| A 帳號連結了 Gmail X，之後有人用 X 註冊 | 同上回 400。連結的人已證明擁有 X；若允許註冊，X 用 Google 登入與用密碼登入會進到不同帳號。解除連結後 X 才能註冊 |
+| 有人先用 X 註冊（未驗證），A 帳號之後連結 Gmail X | 可以連結，之後用 Google 登入 X 進的是 A。註冊不驗證 email，不能讓它擋住信箱的主人 |
+| 只用 Google 的帳號以密碼登入 | `登入失敗`，計入失敗次數，不透露帳號沒有密碼。登入頁提示用 Google 註冊的帳號改用 Google 登入 |
+
+前台的登入頁與註冊頁有 Google 按鈕（後端沒有設定時不顯示），登入後與一般登入相同：合併訪客購物車並回到來源頁。
+
+### 連結與解除 Google `POST`、`DELETE ~/user/google/link`
+
+需要登入。Hexschool 沒有這組。成功時回 `已連結 Google` 或 `已解除連結 Google` 與更新後的 `profile`。
+
+- 連結：Body 同 Google 登入。Google 的 email 可以與帳號的 email 不同（使用者已登入又通過 Google 驗證）。已連結同一個 Google 帳號時不做事。
+  連結後，這個 Google email 視同已被使用：不能再用它註冊，也不能用帶著同一個 email 的其他 Google 帳號建立新帳號。
+  這個 Google 帳號已連結其他會員回 409 `這個 Google 帳號已連結其他會員`；目前的帳號已連結另一個 Google 帳號回 409 `已連結其他 Google 帳號，請先解除連結`。
+- 解除：**至少保留一種登入方式**，沒有密碼的帳號回 400 `至少要保留一種登入方式，請先設定密碼`。沒有連結時不做事。
+
+前台會員中心的「登入方式」卡片顯示密碼是否已設定、Google 是否已連結，並提供連結（Google 按鈕）與解除連結。
 
 ### 預設 admin
 
