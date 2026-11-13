@@ -130,7 +130,7 @@ npm run db:backup              # 備份到 backups/（不進 git）
 
 **種子資料。** `scripts/seed.mjs` 以 admin 登入，透過 API 匯入 `scripts/seed/data.json` 的產品、文章與優惠券，所以資料一定符合 API 規格，資料表結構改變也不受影響。產品與文章依標題、優惠券依優惠碼判斷是否已存在。新增的 id 由後端產生；文章保留 `create_at`，排序與原本相同。不含 admin 帳號（後端啟動時自動建立，放進種子會讓 `ADMIN_PASSWORD` 失效）與訂單（個資）。`API_BASE`、`ADMIN_EMAIL`、`ADMIN_PASSWORD` 可用環境變數指定。
 
-**展示會員。** `scripts/seed-demo.mjs`（`npm run seed:demo`）透過註冊、購物車、結帳與付款的 API 建立展示會員與 2 筆訂單，訂單的 `user_id` 會對應到這個帳號，與真實使用者下的訂單相同。帳號與密碼可用 `DEMO_EMAIL`、`DEMO_PASSWORD` 指定；密碼是公開的，所以 `API_BASE` 不是 `localhost` 或 `127.0.0.1` 時拒絕執行，**不要在部署環境使用**。以後台訂單列表判斷是否已建立過（收件 email 為展示帳號），已有時略過。CI 會執行兩次確認會略過，並在備份還原後再確認一次。
+**展示會員。** `scripts/seed-demo.mjs`（`npm run seed:demo`）透過註冊、購物車、結帳與付款的 API 建立展示會員與 2 筆訂單，訂單的 `user_id` 會對應到這個帳號，與真實使用者下的訂單相同。帳號與密碼可用 `DEMO_EMAIL`、`DEMO_PASSWORD` 指定；密碼是公開的，所以 `API_BASE` 不是 `localhost` 或 `127.0.0.1` 時拒絕執行，**不要在部署環境使用**。以後台訂單列表判斷是否已建立過（收件 email 為展示帳號），已有時略過。展示會員的會員資料沒有電話與地址時會補上，已經填過的不覆蓋。CI 會執行兩次確認會略過，並在備份還原後再確認一次。
 
 **備份與還原。** `scripts/db-backup.sh` 以 `pg_dump` 備份整個資料庫；後端容器在執行時，一併備份 uploads volume。`scripts/db-restore.sh` 先要求輸入 `yes`（`--yes` 略過），還原期間停止後端容器，`pg_restore --clean` 之後再啟動。開發模式下要自己重新啟動 `./mvnw spring-boot:run`。
 

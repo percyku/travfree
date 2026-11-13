@@ -11,6 +11,7 @@ import SearchProduct from "../pages/front/SearchProduct";
 import SingleArticle from "../pages/front/SingleArticle";
 import MemberSignin from "../pages/front/MemberSignin";
 import MemberSignup from "../pages/front/MemberSignup";
+import MemberCenter from "../pages/front/MemberCenter";
 
 import Login from "../pages/Login";
 import ProductedRoute from "../components/ProductedRoute";
@@ -69,6 +70,10 @@ const routes = [
       {
         path: "signup",
         element: <MemberSignup />,
+      },
+      {
+        path: "member",
+        element: <MemberCenter />,
       },
     ],
   },

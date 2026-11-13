@@ -3,12 +3,17 @@ package com.percyku.backend.controller;
 import java.util.Map;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.percyku.backend.dto.ApiResponses;
 import com.percyku.backend.dto.DataRequest;
+import com.percyku.backend.dto.PasswordChangeRequest;
+import com.percyku.backend.dto.ProfileRequest;
+import com.percyku.backend.dto.ProfileResponse;
 import com.percyku.backend.dto.SigninRequest;
 import com.percyku.backend.dto.SignupRequest;
 import com.percyku.backend.entity.User;
@@ -60,6 +65,26 @@ public class AuthController {
 		body.put("name", user.getName());
 		body.put("roles", user.getRoles());
 		return body;
+	}
+
+	/** 會員中心與結帳的填寫資料頁使用；身分由 token 決定，網址不帶 id。 */
+	@GetMapping("/api/user/profile")
+	public Map<String, Object> profile(Authentication authentication) {
+		return ApiResponses.of("profile", ProfileResponse.from(authService.currentUser(authentication.getName())));
+	}
+
+	@PutMapping("/api/user/profile")
+	public Map<String, Object> updateProfile(Authentication authentication,
+			@Valid @RequestBody DataRequest<ProfileRequest> request) {
+		User user = authService.updateProfile(authentication.getName(), request.data());
+		return ApiResponses.message("已更新會員資料", "profile", ProfileResponse.from(user));
+	}
+
+	@PutMapping("/api/user/password")
+	public Map<String, Object> changePassword(Authentication authentication,
+			@Valid @RequestBody DataRequest<PasswordChangeRequest> request, HttpServletRequest httpRequest) {
+		return tokenResponse("已變更密碼",
+				authService.changePassword(authentication.getName(), request.data(), httpRequest.getRemoteAddr()));
 	}
 
 	private static Map<String, Object> tokenResponse(String message, AuthService.SigninResult result) {

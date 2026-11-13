@@ -31,3 +31,8 @@ export const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)[\x21-\x7E]{8,64}$/;
 export const PASSWORD_RULE =
   "密碼需為 8–64 個英數或半形符號，且至少包含一個英文字母與一個數字";
 export const NAME_MAX_LENGTH = 30;
+
+// 與 docs/openapi.yaml 的 ProfileInput 規則相同；電話與地址選填
+export const TEL_PATTERN = /^\d{8,20}$/;
+export const TEL_RULE = "電話需為 8–20 個數字";
+export const ADDRESS_MAX_LENGTH = 100;

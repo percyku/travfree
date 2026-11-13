@@ -17,6 +17,12 @@
   - 結帳時未登入會導向會員登入頁，登入後回到填寫資料頁，並以帳號的姓名與 email 預先填入。
   - 訂單加上 `user_id`，記錄下單的帳號。
   - `npm run seed:demo`：透過 API 建立展示會員與 2 筆訂單，只能對本機執行；CI 會確認它可以重複執行並在備份還原後保留。
+- 會員系統（階段 3）：
+  - 會員中心 `/member`：基本資料（姓名、電話、地址；email 不能改）與變更密碼。新增 `GET`/`PUT /api/user/profile`、`PUT /api/user/password`，`users` 加上 `tel`、`address`。
+  - 變更密碼後其他裝置的 token 全部失效，目前的裝置換成回應的新 token；目前的密碼錯誤計入登入失敗次數。
+  - 結帳的填寫資料頁以會員資料的電話與地址預先填入。
+  - Header 的姓名連到會員中心；手機寬度登入後只顯示會員中心圖示，登出改在會員中心頁。在會員中心或填寫資料頁登出時回到首頁。
+  - `npm run seed:demo` 為展示會員補上電話與地址。
 
 - E2E 測試（`npm run e2e`）：Playwright 在獨立的 docker compose 環境（`:8100`、全新資料庫）走完前台購物（搜尋 → 購物車 → 優惠碼 → 結帳 → 付款）、後台產品（新增 → 前台可見 → 刪除）與後台訂單（修改付款與外送狀態）。CI 的 Docker compose job 也會執行，失敗時上傳報告。取代 `docs/TESTING.md` 中大部分的手動端到端驗證。
 - `docker-compose.yml` 的資料庫連接埠與 volume 名稱可用 `DB_PORT`、`DB_VOLUME` 指定，預設值不變。

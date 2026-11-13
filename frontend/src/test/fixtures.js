@@ -102,6 +102,15 @@ export const memberUser = (overrides = {}) => ({
   ...overrides,
 });
 
+/** GET /api/user/profile 的會員資料；未填的電話與地址是空字串 */
+export const memberProfile = (overrides = {}) => ({
+  email: "traveler@example.com",
+  name: "王小明",
+  tel: "",
+  address: "",
+  ...overrides,
+});
+
 /** 登入與註冊成功的回應，expired 是毫秒 */
 export const signinSuccess = (token, { uid, message = "登入成功" } = {}) => ({
   success: true,

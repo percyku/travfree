@@ -250,7 +250,8 @@ describe("後台優惠券", () => {
     );
     renderPage();
 
+    // 提示先出現、導向在之後，要等導向完成（CI 較慢時同步檢查會失敗）
     expect(await findToast("取得資料失敗，請重新登入")).toBeInTheDocument();
-    expect(screen.getByTestId("landing")).toHaveTextContent("登入頁");
+    expect(await screen.findByTestId("landing")).toHaveTextContent("登入頁");
   });
 });

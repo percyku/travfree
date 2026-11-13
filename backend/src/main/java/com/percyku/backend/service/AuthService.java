@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.percyku.backend.dto.PasswordChangeRequest;
+import com.percyku.backend.dto.ProfileRequest;
 import com.percyku.backend.dto.SigninRequest;
 import com.percyku.backend.dto.SignupRequest;
 import com.percyku.backend.entity.Role;
@@ -79,6 +81,33 @@ public class AuthService {
 	public User currentUser(String uid) {
 		return userRepository.findById(uid)
 				.orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "驗證錯誤, 請重新登入"));
+	}
+
+	@Transactional
+	public User updateProfile(String uid, ProfileRequest request) {
+		User user = currentUser(uid);
+		user.updateProfile(request.name(), request.tel(), request.address());
+		return user;
+	}
+
+	/**
+	 * 目前的密碼錯誤計入登入失敗次數（與登入共用），否則拿到 token 的人可以用這支猜密碼。
+	 * 成功後既有 token 全部失效，回傳新的 token 讓目前的裝置維持登入。
+	 */
+	@Transactional
+	public SigninResult changePassword(String uid, PasswordChangeRequest request, String clientIp) {
+		User user = currentUser(uid);
+		loginAttemptLimiter.checkAllowed(clientIp, user.getEmail());
+		if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+			loginAttemptLimiter.recordFailure(clientIp, user.getEmail());
+			throw ApiException.badRequest("目前的密碼不正確");
+		}
+		loginAttemptLimiter.recordSuccess(clientIp, user.getEmail());
+		if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+			throw ApiException.badRequest("新密碼不能與目前的密碼相同");
+		}
+		user.changePassword(passwordEncoder.encode(request.newPassword()));
+		return new SigninResult(user.getId(), jwtService.issue(user));
 	}
 
 	private static ApiException emailTaken() {

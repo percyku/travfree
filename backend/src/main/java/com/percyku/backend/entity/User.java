@@ -23,6 +23,8 @@ import jakarta.persistence.Table;
 public class User extends BaseEntity {
 
 	public static final int NAME_MAX_LENGTH = 30;
+	public static final int TEL_MAX_LENGTH = 20;
+	public static final int ADDRESS_MAX_LENGTH = 100;
 
 	@Column(nullable = false, unique = true, updatable = false)
 	private String email;
@@ -36,6 +38,13 @@ public class User extends BaseEntity {
 	 */
 	@Column(length = NAME_MAX_LENGTH)
 	private String name;
+
+	/** 會員中心填寫，結帳時預先帶入。未填時為 null，回應時轉成空字串。 */
+	@Column(length = TEL_MAX_LENGTH)
+	private String tel;
+
+	@Column(length = ADDRESS_MAX_LENGTH)
+	private String address;
 
 	/** 每次驗證 token 都會讀取角色，所以直接載入。 */
 	@ElementCollection(fetch = FetchType.EAGER)
@@ -70,6 +79,23 @@ public class User extends BaseEntity {
 		tokenVersion++;
 	}
 
+	/** 空字串的 tel、address 存成 null（未填）。 */
+	public void updateProfile(String name, String tel, String address) {
+		this.name = name;
+		this.tel = emptyToNull(tel);
+		this.address = emptyToNull(address);
+	}
+
+	/** 換密碼後已發出的 token 全部失效，呼叫端要另外發新的 token 給目前的裝置。 */
+	public void changePassword(String passwordHash) {
+		this.passwordHash = passwordHash;
+		revokeTokens();
+	}
+
+	private static String emptyToNull(String value) {
+		return value == null || value.isEmpty() ? null : value;
+	}
+
 	public boolean hasRole(Role role) {
 		return roles.contains(role);
 	}
@@ -84,6 +110,14 @@ public class User extends BaseEntity {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getTel() {
+		return tel == null ? "" : tel;
+	}
+
+	public String getAddress() {
+		return address == null ? "" : address;
 	}
 
 	/** 依 Role 的宣告順序排列，讓回應的順序固定。 */
