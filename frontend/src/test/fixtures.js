@@ -102,6 +102,16 @@ export const memberUser = (overrides = {}) => ({
   ...overrides,
 });
 
+/** GET /api/admin/users 的一筆，create_at 是秒 */
+export const userRow = (overrides = {}) => ({
+  id: "7a2d9c41-0e6b-4f3a-8d15-b6c0e2f4a937",
+  email: "traveler@example.com",
+  name: "王小明",
+  roles: ["USER"],
+  create_at: 1793799389,
+  ...overrides,
+});
+
 /** GET /api/user/profile 的會員資料；未填的電話與地址是空字串 */
 export const memberProfile = (overrides = {}) => ({
   email: "traveler@example.com",

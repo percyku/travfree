@@ -1,6 +1,6 @@
 import { summarizeCoupons } from "../../utils/coupon";
 
-const AdminOrderTable = ({ orders, openModal }) => {
+const AdminOrderTable = ({ orders, openModal, isOwn }) => {
   return (
     <>
       <table className="table">
@@ -24,6 +24,9 @@ const AdminOrderTable = ({ orders, openModal }) => {
                 <td>
                   {order.user?.name}
                   {order.user?.email}
+                  {isOwn(order) && (
+                    <span className="badge text-bg-warning ms-2">自己的訂單</span>
+                  )}
                 </td>
                 <td>${order.total}</td>
                 <td>

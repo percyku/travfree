@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Header from "./Header";
+import MemberCenter from "../pages/front/MemberCenter";
+import CartForm from "../pages/front/CartForm";
 import { api } from "../test/contract";
 import { server } from "../test/server";
 import { Landing, findToast, renderRoutes } from "../test/render";
@@ -9,6 +11,7 @@ import {
   MEMBER_TOKEN,
   adminUser,
   cartResponse,
+  memberProfile,
   memberUser,
   pagination,
 } from "../test/fixtures";
@@ -93,20 +96,31 @@ describe("前台 Header 的會員狀態", () => {
     expect(screen.queryByRole("link", { name: "會員中心" })).not.toBeInTheDocument();
   });
 
-  it("在需要登入的頁面登出時回到首頁，不被導向登入頁", async () => {
+  // 用真正的會員中心與填寫資料頁：它們在未登入時會導向登入頁，主動登出不能被當成未登入
+  it.each([
+    ["/member", <MemberCenter key="member" />],
+    ["/cartform", <CartForm key="cartform" />],
+  ])("在 %s 登出時回到首頁，不被導向登入頁", async (path, page) => {
     signedInAs(memberUser());
-    server.use(api.post("/logout", () => ({ json: { success: true, message: "已登出" } })));
+    server.use(
+      api.post("/logout", () => ({ json: { success: true, message: "已登出" } })),
+      api.get("/api/user/profile", () => ({ json: { success: true, profile: memberProfile() } })),
+    );
     renderRoutes(
       [
         { path: "/", element: <><Header /><Landing name="首頁" /></> },
-        { path: "/member", element: <><Header /><Landing name="會員中心" /></> },
+        { path, element: <><Header />{page}</> },
+        { path: "/signin", element: <Landing name="登入頁" /> },
       ],
-      { route: "/member" },
+      { route: path },
     );
 
-    await userEvent.click(await screen.findByRole("button", { name: "登出" }));
+    // 會員中心頁本身也有登出，這裡按 Header 的
+    const header = (await screen.findAllByRole("navigation"))[0];
+    await userEvent.click(await within(header).findByRole("button", { name: "登出" }));
 
     expect(await findToast("已登出")).toBeInTheDocument();
     expect(await screen.findByTestId("landing")).toHaveTextContent("首頁");
+    expect(screen.queryByText(/請先登入會員/)).not.toBeInTheDocument();
   });
 });

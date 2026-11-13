@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { createModal } from "../../utils/modal";
@@ -13,6 +14,9 @@ const { VITE_APP_API_BASE } = import.meta.env;
 const AdminOrders = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useMessage();
+  // 自己下的訂單不能修改（spec 的 PUT /api/admin/order/{id}），以訂單的 user_id 比對登入的帳號
+  const myUid = useSelector((state) => state.auth.user?.uid);
+  const isOwn = (order) => !!myUid && order.user_id === myUid;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isAuth, setIsAuth] = useState(true);
@@ -145,12 +149,13 @@ const AdminOrders = () => {
       <AdminOrderModal
         modalRef={modalRef}
         tempOrder={tempOrder}
+        readOnly={isOwn(tempOrder)}
         handleModalInputChange={handleModalInputChange}
         updateOrderInfo={updateOrderInfo}
         closeModal={closeModal}
       />
       <div className="mb-5">
-        <AdminOrderTable orders={orders} openModal={openModal} />
+        <AdminOrderTable orders={orders} openModal={openModal} isOwn={isOwn} />
       </div>
       <div className="d-flex justify-content-center">
         <Pagination

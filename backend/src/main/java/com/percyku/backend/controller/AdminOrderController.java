@@ -2,6 +2,7 @@ package com.percyku.backend.controller;
 
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,20 +36,20 @@ public class AdminOrderController {
 
 	@PutMapping("/order/{id}")
 	public Map<String, Object> update(@PathVariable String id,
-			@Valid @RequestBody DataRequest<OrderUpdateRequest> request) {
-		orderService.update(id, request.data());
+			@Valid @RequestBody DataRequest<OrderUpdateRequest> request, Authentication authentication) {
+		orderService.update(id, request.data(), authentication.getName());
 		return ApiResponses.message("已更新訂單資訊");
 	}
 
 	@DeleteMapping("/order/{id}")
-	public Map<String, Object> delete(@PathVariable String id) {
-		orderService.delete(id);
+	public Map<String, Object> delete(@PathVariable String id, Authentication authentication) {
+		orderService.delete(id, authentication.getName());
 		return ApiResponses.message("已刪除");
 	}
 
 	@DeleteMapping("/orders/all")
-	public Map<String, Object> deleteAll() {
-		orderService.deleteAll();
+	public Map<String, Object> deleteAll(Authentication authentication) {
+		orderService.deleteAll(authentication.getName());
 		return ApiResponses.message("已刪除");
 	}
 }

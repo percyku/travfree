@@ -38,6 +38,8 @@ tags:
     description: 後台產品管理，需要 admin token
   - name: '管理控制台 - 訂單 (Orders)'
     description: 後台訂單管理，需要 admin token
+  - name: '管理控制台 - 會員 (Users)'
+    description: 後台會員列表與管理者權限，需要 admin token（Hexschool 沒有）
   - name: '管理控制台 - 優惠券 (Coupon)'
     description: 後台優惠券管理，需要 admin token
   - name: '管理控制台 - 上傳圖片 (Upload)'
@@ -682,6 +684,7 @@ paths:
     get:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 訂單分頁
+      description: 每筆訂單含 `user_id`（下單的帳號），前端以它判斷是不是自己的訂單（不能修改）。
       operationId: adminListOrders
       security: [{ Token: [] }]
       parameters:
@@ -707,6 +710,9 @@ paths:
         |---|---|
         | 訂單不存在 | 404 `找不到訂單` |
         | `status` 超出範圍 | 400 `status 必須介於 0 到 3` |
+        | 訂單的 `user_id` 是呼叫者（自己下的訂單） | 403 `不能修改自己的訂單` |
+
+        「自己的訂單」以訂單的 `user_id` 判斷，不看收件 email；`user_id` 是 null 的舊訂單任何管理者都可以修改。
       operationId: adminUpdateOrder
       security: [{ Token: [] }]
       requestBody:
@@ -732,6 +738,12 @@ paths:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: 'status 必須介於 0 到 3' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: 訂單是呼叫者自己下的
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '不能修改自己的訂單' }
         '404':
           description: 資源不存在
           content:
@@ -742,6 +754,7 @@ paths:
     delete:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 刪除訂單
+      description: 自己下的訂單（`user_id` 是呼叫者）回 403 `不能修改自己的訂單`。
       operationId: adminDeleteOrder
       security: [{ Token: [] }]
       responses:
@@ -752,6 +765,12 @@ paths:
               schema: { $ref: '#/components/schemas/Message' }
               example: { success: true, message: '已刪除' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: 訂單是呼叫者自己下的
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '不能修改自己的訂單' }
         '404':
           description: 資源不存在
           content:
@@ -764,6 +783,7 @@ paths:
     delete:
       tags: ['管理控制台 - 訂單 (Orders)']
       summary: 刪除全部訂單
+      description: 只要有一筆是自己下的訂單就回 403 `不能修改自己的訂單`，不刪除任何訂單。
       operationId: adminDeleteAllOrders
       security: [{ Token: [] }]
       responses:
@@ -774,6 +794,109 @@ paths:
               schema: { $ref: '#/components/schemas/Message' }
               example: { success: true, message: '已刪除' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: 訂單是呼叫者自己下的
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '不能修改自己的訂單' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  # ───────────────────────── Admin 會員 ─────────────────────────
+  /api/admin/users:
+    get:
+      tags: ['管理控制台 - 會員 (Users)']
+      summary: 會員分頁
+      description: |
+        Hexschool 沒有這支。所有帳號（含管理者），每頁 10 筆，依註冊時間新到舊。分頁規則與其他列表相同。
+
+        `q` 以 email 或姓名搜尋，部分符合、不分大小寫，前後空白會去掉；空白或未帶時列出全部。
+      operationId: adminListUsers
+      security: [{ Token: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - name: q
+          in: query
+          required: false
+          description: 搜尋 email 或姓名（部分符合、不分大小寫）
+          schema: { type: string, example: traveler }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, users, pagination]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  users:
+                    type: array
+                    items: { $ref: '#/components/schemas/AdminUser' }
+                  pagination: { $ref: '#/components/schemas/Pagination' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/admin/user/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: ['管理控制台 - 會員 (Users)']
+      summary: 設定或移除管理者
+      description: |
+        Hexschool 沒有這支。`is_admin: true` 加上 `ADMIN`（不移除 `USER`，升級後仍可結帳）；已經是管理者時不做事。
+        `is_admin: false` 移除 `ADMIN`；帳號因此沒有任何角色時（例如只有 `ADMIN` 的預設 admin）補上 `USER`。
+
+        角色每次請求都從資料庫讀取，變更立即生效，該帳號不需要重新登入。
+
+        | 情境 | 回應 |
+        |---|---|
+        | 帳號不存在 | 404 `找不到會員` |
+        | 缺少 `is_admin` | 400 `is_admin 屬性不得為空` |
+        | 移除自己的 `ADMIN` | 400 `不能移除自己的管理者權限` |
+        | 移除後沒有任何管理者（兩位管理者同時互相移除時） | 400 `至少要保留一位管理者` |
+      operationId: adminUpdateUser
+      security: [{ Token: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: object
+                  required: [is_admin]
+                  properties:
+                    is_admin: { type: boolean, description: true 設為管理者，false 移除管理者, example: true }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, message, user]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  message: { type: string, example: 已更新會員權限 }
+                  user: { $ref: '#/components/schemas/AdminUser' }
+        '400':
+          description: 請求內容錯誤
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '不能移除自己的管理者權限' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: 帳號不存在
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '找不到會員' }
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 優惠券 ─────────────────────────
@@ -1395,7 +1518,7 @@ paths:
     get:
       tags: ['客戶購物 - 結帳 (Order)']
       summary: 訂單分頁（需要 admin）
-      description: '**與 Hexschool 不同**：需要 admin token，因為回應含全部訂單的個資。'
+      description: '**與 Hexschool 不同**：需要 admin token，因為回應含全部訂單的個資。每筆訂單含 `user_id`。'
       operationId: listOrders
       security: [{ Token: [] }]
       parameters:
@@ -1675,6 +1798,22 @@ components:
       type: string
       enum: [USER, ADMIN]
       description: '`USER` 一般會員；`ADMIN` 管理者'
+    AdminUser:
+      type: object
+      additionalProperties: false
+      required: [id, email, name, roles, create_at]
+      properties:
+        id: { type: string, description: 帳號 id（UUID）, example: 7a2d9c41-0e6b-4f3a-8d15-b6c0e2f4a937 }
+        email: { type: string, example: traveler@example.com }
+        name: { type: string, example: 王小明 }
+        roles:
+          type: array
+          description: 不重複，依 `USER`、`ADMIN` 排列
+          minItems: 1
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/Role' }
+          example: [USER, ADMIN]
+        create_at: { type: integer, format: int64, description: 註冊時間，Unix **秒**, example: 1793799389 }
     Profile:
       type: object
       additionalProperties: false
@@ -1910,6 +2049,12 @@ components:
         status: { type: integer, enum: [0, 1, 2, 3], example: 0 }
         total: { type: integer, format: int64, description: 折扣後總額, example: 96000 }
         user: { $ref: '#/components/schemas/OrderUser' }
+        user_id:
+          type: string
+          description: |
+            下單的帳號 id（UUID），Hexschool 沒有。**只在需要 admin 的訂單列表出現**（`GET /api/admin/orders`、`GET /api/orders`），
+            前台的訂單 API 不回；會員系統之前的訂單沒有下單帳號，也不出現
+          example: 7a2d9c41-0e6b-4f3a-8d15-b6c0e2f4a937
         products:
           type: object
           description: '**以品項 id 為 key 的物件**，不是陣列，前端用 `Object.values` 讀取'

@@ -1,20 +1,16 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { createAsyncGetCart } from "../slice/cartSlice";
 import { createAsyncGetArticles } from "../slice/articleSlice";
 import { checkAuth, memberSignout } from "../slice/authSlice";
 import { createAsyncMessage } from "../slice/messageSlice";
 import { isAdmin } from "../utils/auth";
 
-/** 需要登入的頁面。在這些頁面登出時先回首頁，否則頁面會把主動登出當成未登入，帶到登入頁 */
-const MEMBER_ONLY_PATHS = ["/member", "/cartform"];
-
 const Header = () => {
   const carts = useSelector((state) => state.cart.carts);
   const user = useSelector((state) => state.auth.user);
   const location = useLocation();
-  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -24,11 +20,9 @@ const Header = () => {
     dispatch(checkAuth());
   }, [dispatch]);
 
+  // 在需要登入的頁面登出時，由該頁看到 auth.signedOutFrom 是自己後回首頁
   const handleSignout = async () => {
-    if (MEMBER_ONLY_PATHS.includes(location.pathname)) {
-      navigate("/", { replace: true });
-    }
-    await dispatch(memberSignout());
+    await dispatch(memberSignout({ from: location.pathname }));
     dispatch(createAsyncMessage({ success: true, message: "已登出" }));
   };
 
