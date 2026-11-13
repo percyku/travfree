@@ -4,6 +4,7 @@ import { currency } from "../../utils/filter";
 const AdminOrderModal = ({
   modalRef,
   tempOrder,
+  readOnly,
   handleModalInputChange,
   updateOrderInfo,
   closeModal,
@@ -148,6 +149,11 @@ const AdminOrderModal = ({
 
             <div>
               <h5 className="mt-4">修改訂單狀態</h5>
+              {readOnly && (
+                <p className="alert alert-warning" role="alert">
+                  這是你自己下的訂單，不能修改付款與外送狀態，請由其他管理者處理。
+                </p>
+              )}
               <div className="form-check mb-4">
                 <label className="form-check-label" htmlFor="is_paid">
                   <input
@@ -157,6 +163,7 @@ const AdminOrderModal = ({
                     id="is_paid"
                     checked={!!tempOrder.is_paid}
                     onChange={handleModalInputChange}
+                    disabled={readOnly}
                   />
                   付款狀態 ({tempOrder.is_paid ? "已付款" : "未付款"})
                 </label>
@@ -170,6 +177,7 @@ const AdminOrderModal = ({
                   name="status"
                   value={tempOrder.status}
                   onChange={handleModalInputChange}
+                  disabled={readOnly}
                 >
                   <option value={0}>未確認</option>
                   <option value={1}>已確認</option>
@@ -187,13 +195,15 @@ const AdminOrderModal = ({
             >
               關閉
             </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={updateOrderInfo}
-            >
-              儲存
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={updateOrderInfo}
+              >
+                儲存
+              </button>
+            )}
           </div>
         </div>
       </div>

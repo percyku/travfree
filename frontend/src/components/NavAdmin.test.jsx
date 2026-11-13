@@ -55,12 +55,13 @@ describe("後台導覽列", () => {
     expect(document.cookie).not.toContain(`${COOKIE}=`);
   });
 
-  it("列出四個後台頁面的連結", () => {
+  it("列出五個後台頁面的連結", () => {
     renderNav();
 
     expect(screen.getByRole("link", { name: "後台產品列表" })).toHaveAttribute("href", "/admin/products");
     expect(screen.getByRole("link", { name: "後台訂單列表" })).toHaveAttribute("href", "/admin/orders");
     expect(screen.getByRole("link", { name: "文章列表" })).toHaveAttribute("href", "/admin/articles");
     expect(screen.getByRole("link", { name: "優惠券列表" })).toHaveAttribute("href", "/admin/coupons");
+    expect(screen.getByRole("link", { name: "會員列表" })).toHaveAttribute("href", "/admin/users");
   });
 });

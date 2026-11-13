@@ -79,6 +79,19 @@ public class User extends BaseEntity {
 		tokenVersion++;
 	}
 
+	/** 升級只加上 ADMIN，保留 USER，升級後仍可結帳。 */
+	public void grantAdmin() {
+		roles.add(Role.ADMIN);
+	}
+
+	/** 移除 ADMIN；帳號因此沒有角色時（例如只有 ADMIN 的預設 admin）補上 USER，帳號不會沒有角色。 */
+	public void revokeAdmin() {
+		roles.remove(Role.ADMIN);
+		if (roles.isEmpty()) {
+			roles.add(Role.USER);
+		}
+	}
+
 	/** 空字串的 tel、address 存成 null（未填）。 */
 	public void updateProfile(String name, String tel, String address) {
 		this.name = name;
@@ -123,6 +136,10 @@ public class User extends BaseEntity {
 	/** 依 Role 的宣告順序排列，讓回應的順序固定。 */
 	public Set<Role> getRoles() {
 		return roles.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(EnumSet.copyOf(roles));
+	}
+
+	public Instant getCreatedAt() {
+		return createdAt;
 	}
 
 	public int getTokenVersion() {

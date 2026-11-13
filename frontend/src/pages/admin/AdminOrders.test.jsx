@@ -13,7 +13,15 @@ import {
   signInAsAdmin,
   waitForDialogClosed,
 } from "../../test/render";
-import { coupon, lineItem, order, pagination, product, tokyo } from "../../test/fixtures";
+import {
+  adminUser,
+  coupon,
+  lineItem,
+  order,
+  pagination,
+  product,
+  tokyo,
+} from "../../test/fixtures";
 
 const PAID_AT = 1793800000; // Unix 秒
 
@@ -67,13 +75,14 @@ const useOrderBackend = (options = {}) => {
   return requests;
 };
 
-const renderPage = () =>
+/** @param {object} [user] ProductedRoute 確認過的帳號（auth.user） */
+const renderPage = (user = adminUser()) =>
   renderRoutes(
     [
       { path: "/admin/orders", element: <AdminOrders /> },
       { path: "/login", element: <Landing name="登入頁" /> },
     ],
-    { route: "/admin/orders" },
+    { route: "/admin/orders", preloadedState: { auth: { user, checked: true } } },
   );
 
 const rowOf = async (text) => (await screen.findByText(text)).closest("tr");
@@ -169,6 +178,53 @@ describe("後台訂單", () => {
     await userEvent.click(dialog.getByRole("button", { name: "儲存" }));
 
     expect(await findToast("更新失敗! 找不到訂單")).toBeInTheDocument();
+    await closeDialog(userEvent, "關閉");
+  });
+
+  it("自己下的訂單標示出來，不能修改付款與外送狀態", async () => {
+    // 會員升級的管理者：withCoupon 是自己下的，paidNoCoupon 是別人的
+    const staff = adminUser({ uid: "7a2d9c41-0e6b-4f3a-8d15-b6c0e2f4a937", roles: ["USER", "ADMIN"] });
+    server.use(
+      api.get("/api/admin/orders", () => ({
+        json: {
+          success: true,
+          orders: [
+            { ...withCoupon, user_id: staff.uid },
+            { ...paidNoCoupon, user_id: "3f1c2a8e-5b7d-4e2f-9a61-0c8d4b2e7f90" },
+          ],
+          pagination: pagination(),
+          messages: [],
+        },
+      })),
+    );
+    renderPage(staff);
+
+    expect(within(await rowOf(withCoupon.id)).getByText("自己的訂單")).toBeInTheDocument();
+    expect(within(await rowOf(paidNoCoupon.id)).queryByText("自己的訂單")).not.toBeInTheDocument();
+
+    const own = await openOrder(withCoupon.id);
+    expect(own.getByRole("alert")).toHaveTextContent("這是你自己下的訂單，不能修改付款與外送狀態");
+    expect(own.getByLabelText(/付款狀態/)).toBeDisabled();
+    expect(own.getByRole("combobox")).toBeDisabled();
+    expect(own.queryByRole("button", { name: "儲存" })).not.toBeInTheDocument();
+    await closeDialog(userEvent, "關閉");
+
+    const others = await openOrder(paidNoCoupon.id);
+    expect(others.queryByRole("alert")).not.toBeInTheDocument();
+    expect(others.getByLabelText(/付款狀態/)).toBeEnabled();
+    expect(others.getByRole("button", { name: "儲存" })).toBeInTheDocument();
+    await closeDialog(userEvent, "關閉");
+  });
+
+  it("後端拒絕修改自己的訂單時顯示原因", async () => {
+    useOrderBackend();
+    server.use(api.put("/api/admin/order/{id}", () => failure(403, "不能修改自己的訂單")));
+    renderPage();
+
+    const dialog = await openOrder(withCoupon.id);
+    await userEvent.click(dialog.getByRole("button", { name: "儲存" }));
+
+    expect(await findToast("更新失敗! 不能修改自己的訂單")).toBeInTheDocument();
     await closeDialog(userEvent, "關閉");
   });
 

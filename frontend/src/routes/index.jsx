@@ -20,6 +20,7 @@ import AdminProducts from "../pages/admin/AdminProducts";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminArticle from "../pages/admin/AdminArticle";
 import AdminCoupons from "../pages/admin/AdminCoupons";
+import AdminUsers from "../pages/admin/AdminUsers";
 import NotFound from "../pages/NotFound";
 
 const routes = [
@@ -105,6 +106,10 @@ const routes = [
       {
         path: "coupons",
         element: <AdminCoupons />,
+      },
+      {
+        path: "users",
+        element: <AdminUsers />,
       },
     ],
   },
