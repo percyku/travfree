@@ -87,6 +87,58 @@ export const signout = createAsyncThunk("auth/signout", async () => {
   }
 });
 
+/** 前台登出：之後重新讀取購物車，變回這個瀏覽器的訪客購物車（登入時已併入帳號，所以是空的） */
+export const memberSignout = createAsyncThunk(
+  "auth/memberSignout",
+  async (_, { dispatch }) => {
+    await dispatch(signout());
+    dispatch(createAsyncGetCart());
+  },
+);
+
+/** 會員中心與填寫資料頁使用；tel、address 未填時是空字串 */
+export const fetchProfile = createAsyncThunk(
+  "auth/fetchProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${VITE_APP_API_BASE}/api/user/profile`);
+      return res.data.profile;
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "讀取會員資料失敗，請再試一次"));
+    }
+  },
+);
+
+/** 更新後 Header 的姓名跟著改（見 reducer） */
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async ({ name, tel, address }, { rejectWithValue }) => {
+    try {
+      const res = await axios.put(`${VITE_APP_API_BASE}/api/user/profile`, {
+        data: { name, tel, address },
+      });
+      return res.data.profile;
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "儲存失敗，請再試一次"));
+    }
+  },
+);
+
+/** 成功後舊 token 全部失效，改存回應的新 token，目前的裝置才能維持登入 */
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async ({ password, newPassword }, { rejectWithValue }) => {
+    try {
+      const res = await axios.put(`${VITE_APP_API_BASE}/api/user/password`, {
+        data: { password, new_password: newPassword },
+      });
+      saveToken(res.data.token, res.data.expired);
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "變更密碼失敗，請再試一次"));
+    }
+  },
+);
+
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -104,6 +156,9 @@ export const authSlice = createSlice({
       })
       .addCase(signout.fulfilled, (state) => {
         state.user = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        if (state.user) state.user.name = action.payload.name;
       });
   },
 });

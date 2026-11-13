@@ -80,6 +80,19 @@ const checkPrerequisites = async () => {
   return byTitle;
 };
 
+/** 會員中心沒填電話與地址時補上，結帳頁會自動帶入；已經填過的（例如在會員中心改過）不覆蓋 */
+const fillProfile = async (as) => {
+  const { profile } = await request("GET", "/api/user/profile", undefined, as);
+  if (profile.tel !== "" || profile.address !== "") return false;
+  await request(
+    "PUT",
+    "/api/user/profile",
+    { data: { name: profile.name, tel: RECIPIENT.tel, address: RECIPIENT.address } },
+    as,
+  );
+  return true;
+};
+
 const placeOrder = async (as, products, { items, coupon, paid, message }) => {
   // 只結帳這筆訂單的品項：展示會員的購物車裡可能有之前放的東西
   await request("DELETE", "/api/carts", undefined, as);
@@ -104,6 +117,7 @@ try {
 
   const byTitle = existing === 0 ? await checkPrerequisites() : null;
   const token = await memberToken();
+  const profileFilled = await fillProfile({ token });
   let created = 0;
   if (existing === 0) {
     for (const order of ORDERS) {
@@ -112,7 +126,8 @@ try {
     }
   }
   console.log(
-    `展示會員 ${DEMO.email} / ${DEMO.password}（前台 /#/signin 登入）：新增訂單 ${created}（略過 ${existing}）`,
+    `展示會員 ${DEMO.email} / ${DEMO.password}（前台 /#/signin 登入）：新增訂單 ${created}（略過 ${existing}）` +
+      (profileFilled ? "，已填入電話與地址" : ""),
   );
 } catch (error) {
   console.error(error.message);

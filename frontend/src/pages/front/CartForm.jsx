@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
@@ -7,6 +7,7 @@ import CartPriceRows from "./CartPriceRows";
 import { updateOrderId, createAsyncSubmitForm } from "../../slice/orderSlice";
 import { createAsyncGetCart } from "../../slice/cartSlice";
 import { createAsyncMessage } from "../../slice/messageSlice";
+import { fetchProfile } from "../../slice/authSlice";
 
 /** 結帳需要 USER 角色（見 spec 的 POST /api/order）；只有 ADMIN 的帳號（例如預設 admin）不能結帳 */
 const canCheckout = (user) => user?.roles?.includes("USER") ?? false;
@@ -65,12 +66,37 @@ const CartForm = () => {
     },
   });
 
-  // 以帳號的姓名與 email 預先填入收件資料，已經輸入的不覆蓋；收件資料可以與帳號不同
+  // 以帳號的姓名、email 與會員中心的電話、地址預先填入收件資料，已經輸入的不覆蓋；收件資料可以與帳號不同
+  const fill = useCallback(
+    (field, value) => {
+      if (value && getValues(field) === "") setValue(field, value);
+    },
+    [getValues, setValue],
+  );
+
   useEffect(() => {
     if (!user) return;
-    if (getValues("name") === "") setValue("name", user.name);
-    if (getValues("email") === "") setValue("email", user.email);
-  }, [user, getValues, setValue]);
+    fill("name", user.name);
+    fill("email", user.email);
+  }, [user, fill]);
+
+  // 會員資料讀不到時（例如網路錯誤）只帶入姓名與 email，不影響結帳
+  const uid = user?.uid;
+  useEffect(() => {
+    if (!uid) return;
+    let active = true;
+    dispatch(fetchProfile())
+      .unwrap()
+      .then((profile) => {
+        if (!active) return;
+        fill("tel", profile.tel);
+        fill("address", profile.address);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [uid, dispatch, fill]);
 
   const blocked = !canCheckout(user);
 

@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import Header from "./Header";
 import { api } from "../test/contract";
 import { server } from "../test/server";
-import { findToast, renderRoutes } from "../test/render";
+import { Landing, findToast, renderRoutes } from "../test/render";
 import {
   MEMBER_TOKEN,
   adminUser,
@@ -55,6 +55,8 @@ describe("前台 Header 的會員狀態", () => {
     renderHeader();
 
     expect(await screen.findByText("王小明")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "會員中心" })).toHaveAttribute("href", "/member");
+    expect(screen.getByRole("link", { name: "會員中心" })).toHaveTextContent("王小明");
     expect(screen.getByRole("button", { name: "登出" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "登入" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "後台" })).not.toBeInTheDocument();
@@ -88,5 +90,23 @@ describe("前台 Header 的會員狀態", () => {
     expect(document.cookie).not.toContain(`${COOKIE}=`);
     expect(screen.getByRole("link", { name: "登入" })).toBeInTheDocument();
     expect(screen.queryByText("王小明")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "會員中心" })).not.toBeInTheDocument();
+  });
+
+  it("在需要登入的頁面登出時回到首頁，不被導向登入頁", async () => {
+    signedInAs(memberUser());
+    server.use(api.post("/logout", () => ({ json: { success: true, message: "已登出" } })));
+    renderRoutes(
+      [
+        { path: "/", element: <><Header /><Landing name="首頁" /></> },
+        { path: "/member", element: <><Header /><Landing name="會員中心" /></> },
+      ],
+      { route: "/member" },
+    );
+
+    await userEvent.click(await screen.findByRole("button", { name: "登出" }));
+
+    expect(await findToast("已登出")).toBeInTheDocument();
+    expect(screen.getByTestId("landing")).toHaveTextContent("首頁");
   });
 });

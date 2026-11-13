@@ -13,6 +13,7 @@ import {
   cartResponse,
   coupon,
   lineItem,
+  memberProfile,
   memberUser,
   product,
 } from "../../test/fixtures";
@@ -67,6 +68,8 @@ describe("填寫資料頁", () => {
   beforeEach(() => {
     // 結帳需要會員 token（spec 的 POST /api/order）
     axios.defaults.headers.common.Authorization = MEMBER_TOKEN;
+    // 登入後會讀取會員資料，預設沒有填電話與地址
+    server.use(api.get("/api/user/profile", () => ({ json: { success: true, profile: memberProfile() } })));
   });
 
   it("以帳號的姓名與 email 預先填入收件資料", async () => {
@@ -75,6 +78,59 @@ describe("填寫資料頁", () => {
 
     expect(await screen.findByLabelText("收件人姓名")).toHaveValue("王小明");
     expect(screen.getByLabelText("Email")).toHaveValue("traveler@example.com");
+  });
+
+  it("以會員中心的電話與地址預先填入", async () => {
+    server.use(
+      api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])),
+      api.get("/api/user/profile", () => ({
+        json: {
+          success: true,
+          profile: memberProfile({ tel: "0912345678", address: "台北市信義區市府路1號" }),
+        },
+      })),
+    );
+    renderCartForm();
+
+    await waitFor(() => expect(screen.getByLabelText("收件人電話")).toHaveValue("0912345678"));
+    expect(screen.getByLabelText("收件人地址")).toHaveValue("台北市信義區市府路1號");
+    expect(screen.getByLabelText("收件人姓名")).toHaveValue("王小明");
+    expect(screen.getByLabelText("Email")).toHaveValue("traveler@example.com");
+  });
+
+  it("會員資料回來前已經輸入的不覆蓋", async () => {
+    let respond;
+    const responded = new Promise((resolve) => {
+      respond = resolve;
+    });
+    server.use(
+      api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])),
+      api.get("/api/user/profile", async () => {
+        await responded;
+        return {
+          json: { success: true, profile: memberProfile({ tel: "0912345678", address: "高雄市" }) },
+        };
+      }),
+    );
+    renderCartForm();
+
+    await userEvent.type(await screen.findByLabelText("收件人電話"), "0987654321");
+    respond();
+    await waitFor(() => expect(screen.getByLabelText("收件人地址")).toHaveValue("高雄市"));
+    expect(screen.getByLabelText("收件人電話")).toHaveValue("0987654321");
+  });
+
+  it("讀不到會員資料時仍以帳號的姓名與 email 填入，可以結帳", async () => {
+    server.use(
+      api.get("/api/cart", () => cartResponse([lineItem(product(), 1)])),
+      api.get("/api/user/profile", () => failure(500, "伺服器錯誤")),
+    );
+    renderCartForm();
+
+    await within(summaryCard()).findByText("NT$ 40,000");
+    expect(screen.getByLabelText("收件人姓名")).toHaveValue("王小明");
+    expect(screen.getByLabelText("收件人電話")).toHaveValue("");
+    expect(submitButton()).toBeEnabled();
   });
 
   it("未登入時導向登入頁，登入後回到本頁", async () => {
