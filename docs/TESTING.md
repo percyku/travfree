@@ -70,6 +70,7 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 | `AuthApiTest` | 後台登入、token 格式、`/user/check` 的角色、登出撤銷、無效 token 不影響公開 API、Admin 路由權限 |
 | `MemberAuthApiTest` | 註冊（email 正規化、重複、各欄位驗證與邊界）、前台登入、後台登入拒絕會員且不計入失敗、前後台共用次數限制、會員 token 呼叫 Admin API 回 403、超過 bcrypt 72 bytes 的密碼 |
 | `MemberProfileApiTest` | 會員資料的讀取、更新（去空白、忽略 email、清除電話與地址、各欄位驗證與邊界）、只看得到自己的、管理者也能用、未登入 401；變更密碼（舊 token 全部失效、新 token 可用、新密碼可登入、目前的密碼錯誤、與目前相同、密碼規則、欄位空白、與登入共用失敗次數） |
+| `MemberAdminApiTest` | 會員列表（新到舊、角色、`create_at` 秒、分頁、搜尋 email 或姓名、萬用字元）、一般會員 403；設定管理者（保留 `USER`、立即生效、重複設定）、移除（立即失去權限、只有 `ADMIN` 的帳號補上 `USER`）、不能移除自己、至少保留一位管理者（直接呼叫 service）、404 與欄位驗證；修改或刪除自己的訂單 403、別人的與舊訂單可以、全部刪除含自己的訂單 403；`user_id` 只出現在後台訂單列表 |
 | `LegacySchemaMigrationTest` | 舊的 `users.role` 欄位轉換為 `user_roles`、補上姓名、移除共用購物車的 `cart_items`、重複執行不變 |
 | `CartOwnershipApiTest` | 訪客之間、訪客與會員的購物車互不影響、會員忽略 `X-Cart-Id`、沒有或格式錯誤的 `X-Cart-Id`、別人的品項 404、優惠券只套用自己的、刪除產品從所有購物車移除；合併的數量相加與上限、優惠券、建立會員購物車、重複合併、權限，合併後結帳 |
 | `LoginRateLimitApiTest` | 登入次數限制：帳號鎖定、密碼正確也擋、換 IP 不受影響、IP 總量、成功歸零、429 與 `Retry-After` |
@@ -130,9 +131,10 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 | `components/Header.test.jsx` | 未登入不呼叫 `/user/check`、會員顯示姓名（連到會員中心）與登出、管理者的後台連結、登出、在需要登入的頁面登出回首頁 |
 | `pages/admin/AdminProducts.test.jsx` | 列表、新增（價格轉整數、空白副圖不送出）、編輯、刪除提示、圖片上傳成功與失敗、分頁、取得失敗導向登入頁 |
 | `pages/admin/AdminArticle.test.jsx` | 列表（`create_at` 毫秒）、新增（分類、內文換行、`create_at`）、未選分類、編輯保留 `create_at`、連續編輯兩篇的圖片網址、刪除、分頁 |
-| `pages/admin/AdminOrders.test.jsx` | 列表（付款時間秒）、明細的品項與優惠券快照、沒有優惠券的訂單、修改付款與外送狀態（`status` 字串）、更新失敗、分頁 |
+| `pages/admin/AdminOrders.test.jsx` | 列表（付款時間秒）、明細的品項與優惠券快照、沒有優惠券的訂單、修改付款與外送狀態（`status` 字串）、更新失敗、自己的訂單標示並不能修改、後端拒絕修改自己的訂單、分頁 |
+| `pages/admin/AdminUsers.test.jsx` | 列表（角色、註冊時間秒）、自己不能移除、確認後設定與移除管理者、只有 `ADMIN` 的帳號的說明、取消不送出、後端拒絕的原因、搜尋與換頁保留關鍵字、搜尋不到、401 |
 | `pages/admin/AdminCoupons.test.jsx` | 列表（折數、已過期、停用）、新增（到期日換算、去除空白）、未選到期日、`code` 重複、編輯、刪除提示、分頁、401 |
-| `components/NavAdmin.test.jsx` | 登出撤銷 token、網路錯誤仍清除本機 token、後台連結 |
+| `components/NavAdmin.test.jsx` | 登出撤銷 token、網路錯誤仍清除本機 token、五個後台連結 |
 | `test/contract.test.js` | 契約檢查本身 |
 
 ### 撰寫原則
@@ -175,6 +177,7 @@ cd e2e && npm run report                  # 查看上一次的 HTML 報告（失
 | `shopping.spec.js` | 訪客從首頁搜尋 → 行程頁加入購物車 → 套用優惠碼 `Test50` → 前往結賬時導向登入頁 → 登入後回到填寫資料頁，購物車與優惠帶到帳號、收件資料預先填入 → 送出訂單 → 成功頁付款 → 購物車已清空 |
 | `admin-products.spec.js` | 後台登入、新增並上架產品 → 前台行程列表看得到 → 後台刪除 → 前台看不到 |
 | `admin-orders.spec.js` | 以 API 註冊會員並下單 → 後台訂單列表看得到 → 改為已付款、外送中 → 重新開啟確認 → API 查詢確認 |
+| `admin-users.spec.js` | 會員先下單 → 管理者在會員列表搜尋並設為管理者 → 會員不用重新登入就進得了後台，自己的訂單標示並不能修改、自己的管理者權限不能移除 → 管理者移除後會員被導向後台登入頁 |
 | `member.spec.js` | 首頁註冊 → Header 顯示姓名 → 重新整理仍登入 → 登出 → 以大小寫不同的 email 再登入；會員開啟後台被導向後台登入頁 → 會員帳號被拒 → 改用管理者登入；360px 寬時訪客、管理者與會員的 Header 都不換行（jsdom 不套用 CSS，只能在這裡測）；會員中心填寫電話與地址 → 填寫資料頁已帶入 → 變更密碼後仍登入、舊 token 401 → 在會員中心登出回首頁 → 以新密碼登入 |
 
 ### 查看報告

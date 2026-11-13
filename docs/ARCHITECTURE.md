@@ -87,6 +87,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | `/admin/orders` | `AdminOrders` | `ADMIN` | 訂單管理 |
 | `/admin/articles` | `AdminArticle` | `ADMIN` | 文章管理 |
 | `/admin/coupons` | `AdminCoupons` | `ADMIN` | 優惠券管理 |
+| `/admin/users` | `AdminUsers` | `ADMIN` | 會員列表、設定與移除管理者 |
 
 ### REST API
 
@@ -110,10 +111,12 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | PUT | `~/admin/product/{id}` | Admin | ✓ | 更新產品 |
 | DELETE | `~/admin/product/{id}` | Admin | ✓ | 刪除產品 |
 | POST | `~/admin/upload` | Admin | ✓ | 上傳圖片 |
-| GET | `~/admin/orders` | Admin | ✓ | 訂單分頁 |
-| PUT | `~/admin/order/{id}` | Admin | ✓ | 更新付款與外送狀態 |
-| DELETE | `~/admin/order/{id}` | Admin | | 刪除訂單 |
-| DELETE | `~/admin/orders/all` | Admin | | 刪除全部訂單 |
+| GET | `~/admin/orders` | Admin | ✓ | 訂單分頁，含 `user_id` |
+| PUT | `~/admin/order/{id}` | Admin | ✓ | 更新付款與外送狀態，自己的訂單 403 |
+| DELETE | `~/admin/order/{id}` | Admin | | 刪除訂單，自己的訂單 403 |
+| DELETE | `~/admin/orders/all` | Admin | | 刪除全部訂單，含自己的訂單時 403 |
+| GET | `~/admin/users` | Admin | ✓ | 會員分頁，`q` 搜尋（Hexschool 沒有） |
+| PUT | `~/admin/user/{id}` | Admin | ✓ | 設定或移除管理者（Hexschool 沒有） |
 | GET | `~/admin/coupons` | Admin | ✓ | 優惠券分頁 |
 | POST | `~/admin/coupon` | Admin | ✓ | 新增優惠券 |
 | PUT | `~/admin/coupon/{id}` | Admin | ✓ | 更新優惠券 |
@@ -135,7 +138,7 @@ Swagger 有數處與實際不符，修改回應格式前請先確認前端怎麼
 | POST | `~/coupon` | 公開 | ✓ | 套用優惠券 |
 | DELETE | `~/coupon` | 公開 | ✓ | 移除已套用的優惠券（Hexschool 沒有） |
 | POST | `~/order` | **USER** | ✓ | 建立訂單（與 Hexschool 不同） |
-| GET | `~/orders` | **Admin** | | 訂單分頁（與 Hexschool 不同） |
+| GET | `~/orders` | **Admin** | | 訂單分頁，含 `user_id`（與 Hexschool 不同） |
 | GET | `~/order/{id}` | 公開 | ✓ | 單筆訂單 |
 | POST | `~/pay/{id}` | 公開 | ✓ | 付款 |
 | GET | `~/articles` | 公開 | ✓ | 公開文章分頁 |
