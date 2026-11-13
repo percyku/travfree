@@ -18,7 +18,7 @@
 | 2 | 每個訪客各自的購物車、登入時合併、結帳需要 `USER`、訂單加上 `user_id`、`npm run seed:demo` | ✅ 完成（PR #1） |
 | 3 | 會員中心：基本資料（姓名、電話、地址，結帳時預先填入）與變更密碼 | ✅ 完成（PR #2） |
 | 4 | dashboard 的會員列表與升級／降級、禁止管理者修改自己的訂單 | ✅ 完成（PR #3） |
-| 5 | Google 登入、會員中心連結 Google 與設定密碼 | 進行中（`feature/google-signin`） |
+| 5 | Google 登入、會員中心連結 Google 與設定密碼 | ✅ 完成（PR #4） |
 
 ## 決定（2026-11-11 與使用者確認）
 
@@ -301,3 +301,4 @@
   接著用已被 Ku Chao 連結的 jod963852 以密碼註冊也成功了（Ku Chao Chun），造成同一個 Gmail 用 Google 登入與用密碼登入進到不同帳號。
   經使用者同意：先 `db:backup`，刪除 Ku Chao Chun（只有 users 與 user_roles 各一筆，沒有購物車、訂單、連結）；並追加規則：已被連結的 Google email 不能註冊或以 Google 建立新帳號。
   反向驗證：拿掉 `identityRepository.existsByEmail` 時新測試失敗。
+- 2026-11-13：PR #4 merge，會員系統五個階段全部完成，計畫移到 `docs/plans/archive/`。之後加 GitHub、Facebook 登入時沿用 `user_identities` 與「email 相同不自動合併」的規則。

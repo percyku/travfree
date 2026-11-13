@@ -4,7 +4,7 @@
 
 ### Added
 
-- 會員系統（階段 1，計畫見 `docs/plans/2026-11-11-member-system.md`）：
+- 會員系統（階段 1，計畫見 `docs/plans/archive/2026-11-11-member-system.md`）：
   - `POST /api/user/signup` 會員註冊，成功時直接登入；`POST /api/user/signin` 前台登入，任何角色都可以，與後台登入共用次數限制。
   - 角色 `USER`、`ADMIN` 可同時擁有，存在新的 `user_roles` 表；註冊的帳號是 `USER`，預設 admin 只有 `ADMIN`。`users` 加上 `name`。
   - email 去掉前後空白並以小寫保存，註冊與兩支登入 API 都不分大小寫。
