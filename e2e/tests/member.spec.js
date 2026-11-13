@@ -23,7 +23,7 @@ test("會員註冊後是登入狀態，登出後可以再登入", async ({ page 
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("密碼", { exact: true }).fill(MEMBER_PASSWORD);
     await page.getByLabel("確認密碼").fill(MEMBER_PASSWORD);
-    await page.getByRole("button", { name: "註冊" }).click();
+    await page.getByRole("button", { name: "註冊", exact: true }).click();
   });
 
   await test.step("回到首頁，Header 顯示姓名", async () => {
@@ -48,7 +48,7 @@ test("會員註冊後是登入狀態，登出後可以再登入", async ({ page 
     await header.getByRole("link", { name: "登入" }).click();
     await page.getByLabel("Email").fill(email.toUpperCase());
     await page.getByLabel("密碼").fill(MEMBER_PASSWORD);
-    await page.getByRole("button", { name: "登入" }).click();
+    await page.getByRole("button", { name: "登入", exact: true }).click();
     await expect(toast(page, `歡迎回來，${name}`)).toBeVisible();
     await expect(header.getByText(name, { exact: true })).toBeVisible();
   });
@@ -69,7 +69,7 @@ test("一般會員進不了後台，在後台登入頁改用管理者登入", as
   await test.step("會員帳號在後台登入頁被拒絕", async () => {
     await page.getByLabel("Email address").fill(member.email);
     await page.getByLabel("Password").fill(MEMBER_PASSWORD);
-    await page.getByRole("button", { name: "登入" }).click();
+    await page.getByRole("button", { name: "登入", exact: true }).click();
     await expect(page.getByText("此帳號沒有後台權限")).toBeVisible();
     await expect(page).toHaveURL(/#\/login$/);
   });
@@ -77,7 +77,7 @@ test("一般會員進不了後台，在後台登入頁改用管理者登入", as
   await test.step("改用管理者登入後進入後台", async () => {
     await page.getByLabel("Email address").fill(ADMIN_EMAIL);
     await page.getByLabel("Password").fill(ADMIN_PASSWORD);
-    await page.getByRole("button", { name: "登入" }).click();
+    await page.getByRole("button", { name: "登入", exact: true }).click();
     await expect(page).toHaveURL(/#\/admin\/products$/);
   });
 });
@@ -190,7 +190,7 @@ test("會員中心：填寫電話與地址後結帳自動帶入，變更密碼�
     await header.getByRole("link", { name: "登入" }).click();
     await page.getByLabel("Email").fill(member.email);
     await page.getByLabel("密碼").fill(newPassword);
-    await page.getByRole("button", { name: "登入" }).click();
+    await page.getByRole("button", { name: "登入", exact: true }).click();
     await expect(toast(page, `歡迎回來，${member.name}`)).toBeVisible();
     await expect(header.getByText(member.name, { exact: true })).toBeVisible();
   });

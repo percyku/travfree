@@ -44,7 +44,8 @@ public class SecurityConfig {
 						.accessDeniedHandler(errorHandler))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-						.requestMatchers("/api/user/check", "/api/user/profile", "/api/user/password", "/api/cart/merge")
+						.requestMatchers("/api/user/check", "/api/user/profile", "/api/user/password", "/api/user/google/link",
+								"/api/cart/merge")
 						.authenticated()
 						// 結帳需要一般會員；只有 ADMIN 的帳號（例如預設 admin）不能結帳
 						.requestMatchers(HttpMethod.POST, "/api/order").hasRole("USER")

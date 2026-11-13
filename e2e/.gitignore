@@ -1,3 +1,5 @@
 node_modules/
 playwright-report/
 test-results/
+# scripts/google-test-key.sh 產生的測試私鑰
+.google-test-key.pem

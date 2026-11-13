@@ -239,12 +239,16 @@ class MemberProfileApiTest extends ApiTestSupport {
 	void changePasswordReportsBlankFields() throws Exception {
 		String member = signupMember("traveler@example.com", "王小明");
 
+		// 新密碼先檢查；目前的密碼依帳號判斷（沒有密碼的帳號改帶 credential），所以在之後檢查
 		putPassword(member, "", "")
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("new_password 屬性不得為空、password 屬性不得為空"));
-		putPassword(member, null, null)
+				.andExpect(jsonPath("$.message").value("new_password 屬性不得為空"));
+		putPassword(member, null, "Journey2027")
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("new_password 屬性不得為空、password 屬性不得為空"));
+				.andExpect(jsonPath("$.message").value("password 屬性不得為空"));
+		putPassword(member, "", "Journey2027")
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("password 屬性不得為空"));
 	}
 
 	/** 與登入共用計數：猜錯 5 次後連正確的目前密碼與登入都被擋。 */

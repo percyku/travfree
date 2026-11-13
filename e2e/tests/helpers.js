@@ -15,7 +15,7 @@ export const loginAsAdmin = async (page) => {
   await page.goto("/#/login");
   await page.getByLabel("Email address").fill(ADMIN_EMAIL);
   await page.getByLabel("Password").fill(ADMIN_PASSWORD);
-  await page.getByRole("button", { name: "登入" }).click();
+  await page.getByRole("button", { name: "登入", exact: true }).click();
   await expect(page).toHaveURL(/#\/admin\/products$/);
 };
 

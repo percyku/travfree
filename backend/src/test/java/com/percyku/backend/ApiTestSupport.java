@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -29,6 +31,7 @@ import com.percyku.backend.repository.CartRepository;
 import com.percyku.backend.repository.CouponRepository;
 import com.percyku.backend.repository.OrderRepository;
 import com.percyku.backend.repository.ProductRepository;
+import com.percyku.backend.repository.UserIdentityRepository;
 import com.percyku.backend.repository.UserRepository;
 import com.percyku.backend.security.LoginAttemptLimiter;
 
@@ -73,6 +76,16 @@ abstract class ApiTestSupport {
 	@Autowired
 	LoginAttemptLimiter loginAttemptLimiter;
 
+	@Autowired
+	UserIdentityRepository userIdentityRepository;
+
+	/** Google 登入以測試金鑰驗證，見 GoogleTestTokens。所有測試共用同一組設定，所以只有一個 Spring context */
+	@DynamicPropertySource
+	static void googleSignin(DynamicPropertyRegistry registry) {
+		registry.add("app.google.client-id", () -> GoogleTestTokens.CLIENT_ID);
+		registry.add("app.google.test-public-key", GoogleTestTokens::publicKeyBase64);
+	}
+
 	String token;
 
 	/** 購物與結帳的輔助方法以誰的身分呼叫：null 是預設的訪客（GuestCartTestConfig），否則是這個會員 token。 */
@@ -87,6 +100,7 @@ abstract class ApiTestSupport {
 		couponRepository.deleteAll();
 		articleRepository.deleteAll();
 		// 只留下預設 admin，測試註冊的會員不跨測試保留
+		userIdentityRepository.deleteAll();
 		userRepository.deleteAll(userRepository.findAll().stream()
 				.filter(user -> !user.getEmail().equals(ADMIN_EMAIL)).toList());
 		// 所有 MockMvc 請求都來自 127.0.0.1，不清空的話登入失敗會跨測試累計

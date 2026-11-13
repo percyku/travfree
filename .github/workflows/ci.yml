@@ -88,6 +88,9 @@ jobs:
             echo "DB_PASSWORD=$db_password"
             echo "JWT_SECRET=$jwt_secret"
             echo "ADMIN_PASSWORD=$admin_password"
+            # Google 登入以臨時的測試金鑰取代 Google（私鑰寫到 e2e/.google-test-key.pem 給 Playwright）
+            echo "GOOGLE_CLIENT_ID=e2e-client.apps.googleusercontent.com"
+            echo "GOOGLE_TEST_PUBLIC_KEY=$(scripts/google-test-key.sh)"
           } > .env
       - name: 建置並啟動
         run: docker compose up -d --build --wait

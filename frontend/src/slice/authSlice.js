@@ -76,6 +76,56 @@ export const signup = createAsyncThunk(
   },
 );
 
+/**
+ * Google 登入或註冊（credential 是 GIS 的 ID token）。回傳 { user, created }：created 表示新建立的帳號。
+ * email 已有帳號時後端回 409，reject 後端的說明（請先用原本的方式登入再連結），不會自動合併
+ */
+export const googleSignin = createAsyncThunk(
+  "auth/googleSignin",
+  async (credential, { dispatch, rejectWithValue }) => {
+    let created;
+    try {
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/user/google`, {
+        data: { credential },
+      });
+      saveToken(res.data.token, res.data.expired);
+      created = res.data.message === "註冊成功";
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "Google 登入失敗，請再試一次"));
+    }
+    await mergeGuestCart(dispatch);
+    const user = await dispatch(checkAuth()).unwrap();
+    return { user, created };
+  },
+);
+
+/** 把 Google 帳號連結到目前的帳號，回傳更新後的 profile */
+export const linkGoogle = createAsyncThunk(
+  "auth/linkGoogle",
+  async (credential, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/user/google/link`, {
+        data: { credential },
+      });
+      return res.data.profile;
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "連結 Google 失敗，請再試一次"));
+    }
+  },
+);
+
+export const unlinkGoogle = createAsyncThunk(
+  "auth/unlinkGoogle",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.delete(`${VITE_APP_API_BASE}/api/user/google/link`);
+      return res.data.profile;
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "解除連結失敗，請再試一次"));
+    }
+  },
+);
+
 /** 讓伺服器撤銷 token（否則到期前仍然有效）；網路錯誤時仍清掉本機的 token */
 export const signout = createAsyncThunk("auth/signout", async () => {
   try {
@@ -127,13 +177,19 @@ export const updateProfile = createAsyncThunk(
   },
 );
 
-/** 成功後舊 token 全部失效，改存回應的新 token，目前的裝置才能維持登入 */
+/**
+ * 變更密碼（帶 password），或沒有密碼的帳號第一次設定（帶 credential：重新以 Google 驗證）。
+ * 成功後舊 token 全部失效，改存回應的新 token，目前的裝置才能維持登入
+ */
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
-  async ({ password, newPassword }, { rejectWithValue }) => {
+  async ({ password, credential, newPassword }, { rejectWithValue }) => {
     try {
+      const data = credential
+        ? { credential, new_password: newPassword }
+        : { password, new_password: newPassword };
       const res = await axios.put(`${VITE_APP_API_BASE}/api/user/password`, {
-        data: { password, new_password: newPassword },
+        data,
       });
       saveToken(res.data.token, res.data.expired);
     } catch (error) {

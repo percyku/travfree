@@ -118,6 +118,8 @@ export const memberProfile = (overrides = {}) => ({
   name: "王小明",
   tel: "",
   address: "",
+  has_password: true,
+  google_email: null,
   ...overrides,
 });
 

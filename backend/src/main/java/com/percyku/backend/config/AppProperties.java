@@ -12,7 +12,8 @@ public record AppProperties(
 		Jwt jwt,
 		Admin admin,
 		Cors cors,
-		LoginLimit loginLimit) {
+		LoginLimit loginLimit,
+		Google google) {
 
 	public record Jwt(String secret, Duration ttl) {
 	}
@@ -21,6 +22,14 @@ public record AppProperties(
 	}
 
 	public record Cors(List<String> allowedOrigins) {
+	}
+
+	/**
+	 * Google 登入。clientId 空白時關閉。
+	 *
+	 * @param testPublicKey 只給 E2E 使用：設定時以這把 RSA 公鑰（PEM 或 base64 的 X.509）驗證 ID token，不連 Google
+	 */
+	public record Google(String clientId, String testPublicKey) {
 	}
 
 	/**

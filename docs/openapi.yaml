@@ -126,7 +126,7 @@ paths:
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
-        | 400 | `此 Email 已註冊` | email 已存在（不分大小寫） |
+        | 400 | `此 Email 已註冊，請改用原本的方式登入（例如 Google）` | email 已存在（不分大小寫），包含只用 Google 登入的帳號；或已被其他帳號連結為 Google 登入 |
         | 400 | `email 屬性不得為空`、`email 格式不正確` | |
         | 400 | `password 屬性不得為空`、`密碼需為 8–64 個英數或半形符號，且至少包含一個英文字母與一個數字` | |
         | 400 | `name 屬性不得為空`、`name 不得超過 30 個字` | |
@@ -149,7 +149,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Failure' }
-              example: { success: false, message: '此 Email 已註冊' }
+              example: { success: false, message: '此 Email 已註冊，請改用原本的方式登入（例如 Google）' }
         default: { $ref: '#/components/responses/Failure' }
 
   /api/user/signin:
@@ -159,6 +159,8 @@ paths:
       description: |
         Hexschool 沒有這支。前台登入頁使用，任何角色的帳號都可以登入。Body 與回應和 `POST /admin/signin` 相同，
         也共用同一組登入次數限制。
+
+        只用 Google 登入、沒有設定密碼的帳號，以密碼登入一律回 `登入失敗` 並計入失敗次數，不透露帳號沒有密碼。
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
@@ -295,15 +297,22 @@ paths:
         Hexschool 沒有這支。成功後該帳號**所有**既有 token 失效（其他裝置要重新登入），
         回應與登入相同，帶新的 token 讓目前的裝置維持登入，前端要以它取代舊的 token。
 
+        **沒有密碼的帳號（只用 Google 登入）是「設定密碼」**：不帶 `password`，改帶 `credential`（重新以 Google 取得的 ID token），
+        它的 `sub` 必須是已連結的 Google 帳號，否則拿到 token 的人就能偷設密碼。成功時 `message` 為 `已設定密碼`。
+        Google 驗證不計入登入失敗次數。
+
         - `new_password` 的規則與註冊相同。
         - 目前的密碼錯誤計入登入失敗次數，與 `POST /api/user/signin` 共用同一組計數（IP + 帳號 email、IP 總量）。
           達到上限時回 429，期間登入也一樣被擋。
 
-        檢查順序：欄位格式 → 鎖定（429）→ 目前的密碼 → 新舊是否相同。
+        檢查順序：新密碼的格式 → 目前的密碼是否空白 → 鎖定（429）→ 目前的密碼 → 新舊是否相同。
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
-        | 400 | `password 屬性不得為空`、`new_password 屬性不得為空` | 欄位空白 |
+        | 400 | `new_password 屬性不得為空` | 新密碼空白（先檢查） |
+        | 400 | `password 屬性不得為空` | 有密碼的帳號沒帶目前的密碼 |
+        | 400 | `credential 屬性不得為空` | 沒有密碼的帳號沒帶 `credential` |
+        | 400 | `Google 驗證失敗，請以已連結的 Google 帳號驗證` | `credential` 無效或不是已連結的 Google 帳號 |
         | 400 | `密碼需為 8–64 個英數或半形符號，且至少包含一個英文字母與一個數字` | 新密碼不符合規則 |
         | 400 | `目前的密碼不正確` | |
         | 400 | `新密碼不能與目前的密碼相同` | |
@@ -331,6 +340,145 @@ paths:
               example: { success: false, message: '目前的密碼不正確' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/TooManySigninAttempts' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/google/config:
+    get:
+      tags: ['登入及驗證']
+      summary: Google 登入設定
+      description: |
+        Hexschool 沒有這支。前端以它決定是否顯示 Google 按鈕，並取得 Google Identity Services 需要的 client ID；
+        client ID 只在後端設定（`GOOGLE_CLIENT_ID`）。沒有設定時 `enabled` 為 false、`client_id` 為空字串。
+      operationId: googleConfig
+      security: []  # 公開
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, enabled, client_id]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  enabled: { type: boolean, example: true }
+                  client_id: { type: string, example: 1234567890-abc.apps.googleusercontent.com }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/google:
+    post:
+      tags: ['登入及驗證']
+      summary: Google 登入或註冊
+      description: |
+        Hexschool 沒有這支。`credential` 是 Google Identity Services 回傳的 ID token。
+        後端驗證簽章、`aud`（我們的 client ID）、`iss`、到期時間後：
+
+        1. 這個 Google 帳號（`sub`）已連結會員 → 登入，`message` 為 `登入成功`。
+        2. 否則 Google 的 email 已有帳號，或已是其他帳號連結的 Google email → 409，**不自動合併**：請使用者先用原本的方式登入，再到會員中心連結 Google。
+        3. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`。email 要經 Google 驗證；姓名取 Google 的 `name`
+           （超過 30 個字截斷，沒有時取 email 的 `@` 前面）；沒有密碼，可以之後在會員中心設定。
+
+        以 `sub` 辨識 Google 帳號，email 只在建立帳號時使用，所以使用者在 Google 改 email 後仍登入同一個帳號。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `credential 屬性不得為空`、`data 屬性不得為空` | |
+        | 400 | `Google 驗證失敗，請再試一次` | token 簽章錯誤、過期、`aud` 或 `iss` 不符 |
+        | 400 | `Google 帳號的 Email 尚未驗證` | 要建立帳號但 `email_verified` 不是 true |
+        | 409 | `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google` | email 已有帳號，或已是其他帳號連結的 Google email |
+        | 503 | `未設定 Google 登入` | 後端沒有設定 client ID |
+      operationId: googleSignin
+      security: []  # 公開
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/GoogleCredentialInput' }
+      responses:
+        '200': { $ref: '#/components/responses/SigninSuccess' }
+        '400':
+          description: 請求內容錯誤或 token 無效
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: 'Google 驗證失敗，請再試一次' }
+        '409':
+          description: email 已有帳號
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google' }
+        '503': { $ref: '#/components/responses/GoogleDisabled' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/google/link:
+    post:
+      tags: ['登入及驗證']
+      summary: 連結 Google
+      description: |
+        Hexschool 沒有這支。把 Google 帳號連結到目前登入的帳號，之後可以用 Google 登入。
+        Google 的 email 可以與帳號的 email 不同（使用者已登入，又通過 Google 驗證）；即使另一個帳號以這個 email 註冊也可以連結，
+        因為註冊不驗證 email，不能讓它擋住信箱的主人。已連結同一個 Google 帳號時不做事。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `credential 屬性不得為空`、`Google 驗證失敗，請再試一次` | |
+        | 409 | `這個 Google 帳號已連結其他會員` | |
+        | 409 | `已連結其他 Google 帳號，請先解除連結` | 目前的帳號已連結另一個 Google 帳號 |
+        | 503 | `未設定 Google 登入` | |
+      operationId: linkGoogle
+      security: [{ Token: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/GoogleCredentialInput' }
+      responses:
+        '200': { $ref: '#/components/responses/ProfileSuccess' }
+        '400':
+          description: 請求內容錯誤或 token 無效
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: 'Google 驗證失敗，請再試一次' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Google 帳號已連結其他會員，或目前的帳號已連結另一個 Google 帳號
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '這個 Google 帳號已連結其他會員' }
+        '503': { $ref: '#/components/responses/GoogleDisabled' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: ['登入及驗證']
+      summary: 解除連結 Google
+      description: |
+        Hexschool 沒有這支。至少要保留一種登入方式：沒有密碼的帳號不能解除，要先設定密碼。沒有連結時不做事。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `至少要保留一種登入方式，請先設定密碼` | 帳號沒有密碼 |
+      operationId: unlinkGoogle
+      security: [{ Token: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/ProfileSuccess' }
+        '400':
+          description: 解除後沒有任何登入方式
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '至少要保留一種登入方式，請先設定密碼' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 產品 ─────────────────────────
@@ -1687,7 +1835,7 @@ components:
             required: [success, message, uid, token, expired]
             properties:
               success: { type: boolean, enum: [true] }
-              message: { type: string, description: 登入為 `登入成功`，註冊為 `註冊成功`，變更密碼為 `已變更密碼`, example: 登入成功 }
+              message: { type: string, description: 登入為 `登入成功`，註冊為 `註冊成功`，變更密碼為 `已變更密碼`，設定密碼為 `已設定密碼`, example: 登入成功 }
               uid: { type: string, description: 帳號 id（UUID）, example: 3f1c2a8e-5b7d-4e2f-9a61-0c8d4b2e7f90 }
               token: { type: string, description: JWT，預設 7 天有效, example: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20ifQ.c2lnbmF0dXJl }
               expired:
@@ -1696,7 +1844,7 @@ components:
                 description: 到期時間，Unix **毫秒**，前端直接用來設定 cookie 期限
                 example: 1793799088000
     ProfileSuccess:
-      description: 成功。更新時 `message` 為 `已更新會員資料`
+      description: 成功。更新時 `message` 為 `已更新會員資料`，連結與解除連結 Google 為 `已連結 Google`、`已解除連結 Google`
       content:
         application/json:
           schema:
@@ -1705,8 +1853,14 @@ components:
             required: [success, profile]
             properties:
               success: { type: boolean, enum: [true] }
-              message: { type: string, description: 只有更新時出現, example: 已更新會員資料 }
+              message: { type: string, description: 讀取時不出現, example: 已更新會員資料 }
               profile: { $ref: '#/components/schemas/Profile' }
+    GoogleDisabled:
+      description: 後端沒有設定 Google 登入（`GOOGLE_CLIENT_ID`）
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+          example: { success: false, message: '未設定 Google 登入' }
     TooManySigninAttempts:
       description: 登入失敗次數過多，暫時鎖定
       headers:
@@ -1798,6 +1952,11 @@ components:
       type: string
       enum: [USER, ADMIN]
       description: '`USER` 一般會員；`ADMIN` 管理者'
+    GoogleCredentialInput:
+      type: object
+      required: [credential]
+      properties:
+        credential: { type: string, description: Google Identity Services 回傳的 ID token（JWT） }
     AdminUser:
       type: object
       additionalProperties: false
@@ -1817,9 +1976,15 @@ components:
     Profile:
       type: object
       additionalProperties: false
-      required: [email, name, tel, address]
+      required: [email, name, tel, address, has_password, google_email]
       properties:
         email: { type: string, description: 不能修改, example: traveler@example.com }
+        has_password: { type: boolean, description: 是否已設定密碼。只用 Google 註冊的帳號為 false, example: true }
+        google_email:
+          type: string
+          nullable: true
+          description: 已連結的 Google 帳號的 email（連結當時），可以與帳號的 email 不同；未連結時為 null
+          example: traveler@gmail.com
         name: { type: string, example: 王小明 }
         tel: { type: string, description: 8–20 個數字；未填時為空字串, example: '0912345678' }
         address: { type: string, description: 最多 100 個字；未填時為空字串, example: 台北市信義區市府路1號 }
@@ -1833,9 +1998,11 @@ components:
         address: { type: string, description: 去掉前後空白後最多 100 個字；沒帶或空字串時清除, example: 台北市信義區市府路1號 }
     PasswordChangeInput:
       type: object
-      required: [password, new_password]
+      required: [new_password]
+      description: 有密碼的帳號帶 `password`；沒有密碼的帳號帶 `credential`
       properties:
         password: { type: string, description: 目前的密碼, example: Travel2026 }
+        credential: { type: string, description: 沒有密碼的帳號設定密碼時，重新以 Google 取得的 ID token }
         new_password:
           type: string
           description: 8–64 個英數或半形符號（不含空白），至少一個英文字母與一個數字，且不能與目前的密碼相同

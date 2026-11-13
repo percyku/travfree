@@ -10,6 +10,8 @@ import {
   PASSWORD_PATTERN,
   PASSWORD_RULE,
 } from "../../utils/auth";
+import GoogleButton from "../../components/GoogleButton";
+import useGoogleSignin from "../../hooks/useGoogleSignin";
 
 /** 前台會員註冊。註冊成功就是登入狀態，回到來源頁（預設首頁） */
 const MemberSignup = () => {
@@ -33,6 +35,8 @@ const MemberSignup = () => {
   useEffect(() => {
     if (user) navigate(from, { replace: true });
   }, [user, from, navigate]);
+
+  const onGoogleCredential = useGoogleSignin({ onError: setError, setSubmitting });
 
   const onSubmit = async ({ name, email, password }) => {
     setError("");
@@ -164,6 +168,17 @@ const MemberSignup = () => {
                   註冊
                 </button>
               </form>
+              <GoogleButton
+                text="signup_with"
+                onCredential={onGoogleCredential}
+                before={
+                  <div className="d-flex align-items-center gap-3 my-4 text-muted">
+                    <hr className="flex-grow-1 my-0" />
+                    或
+                    <hr className="flex-grow-1 my-0" />
+                  </div>
+                }
+              />
               <p className="mt-4 mb-0 text-center">
                 已經有帳號？
                 <Link to="/signin" state={{ from }}>

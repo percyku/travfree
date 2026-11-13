@@ -22,6 +22,7 @@ import com.percyku.backend.entity.User;
  * <li>沒有 name 的帳號以 email 的 @ 前面當姓名。</li>
  * <li>移除全站共用購物車的 cart_items 表。裡面的品項沒有擁有者，無法分給任何購物車，直接捨棄；
  * 新的品項存在 cart_lines。</li>
+ * <li>移除 users.password_hash 的 NOT NULL：只用 Google 登入的帳號沒有密碼（階段 5）。</li>
  * </ul>
  *
  * 每次啟動都會檢查，已轉換過就不做事，所以還原舊備份後重新啟動也會轉換。
@@ -58,11 +59,23 @@ public class LegacySchemaMigration implements ApplicationRunner {
 		}
 		List<Map<String, Object>> unnamed = jdbc.queryForList("SELECT id, email FROM users WHERE name IS NULL");
 		for (Map<String, Object> row : unnamed) {
-			jdbc.update("UPDATE users SET name = ? WHERE id = ?", defaultName((String) row.get("email")), row.get("id"));
+			jdbc.update("UPDATE users SET name = ? WHERE id = ?", User.defaultName((String) row.get("email")), row.get("id"));
 		}
 		if (!unnamed.isEmpty()) {
 			log.info("已為 {} 個沒有姓名的帳號補上姓名", unnamed.size());
 		}
+		if (isNotNull("users", "password_hash")) {
+			jdbc.execute("ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL");
+			log.info("已移除 users.password_hash 的 NOT NULL（只用 Google 登入的帳號沒有密碼）");
+		}
+	}
+
+	private boolean isNotNull(String table, String column) {
+		Integer count = jdbc.queryForObject("""
+				SELECT COUNT(*) FROM information_schema.columns
+				WHERE LOWER(table_name) = ? AND LOWER(column_name) = ? AND is_nullable = 'NO'
+				""", Integer.class, table, column);
+		return count != null && count > 0;
 	}
 
 	private boolean hasLegacyRoleColumn() {
@@ -79,9 +92,4 @@ public class LegacySchemaMigration implements ApplicationRunner {
 		return count != null && count > 0;
 	}
 
-	static String defaultName(String email) {
-		int at = email.indexOf('@');
-		String name = at > 0 ? email.substring(0, at) : email;
-		return name.length() > User.NAME_MAX_LENGTH ? name.substring(0, User.NAME_MAX_LENGTH) : name;
-	}
 }

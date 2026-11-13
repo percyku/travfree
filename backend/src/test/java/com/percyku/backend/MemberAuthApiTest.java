@@ -61,7 +61,7 @@ class MemberAuthApiTest extends ApiTestSupport {
 
 		postJson(SIGNUP, signupBody(email, MEMBER_PASSWORD, "冒名者"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("此 Email 已註冊"));
+				.andExpect(jsonPath("$.message").value("此 Email 已註冊，請改用原本的方式登入（例如 Google）"));
 		assertThat(userRepository.count()).isEqualTo(before);
 	}
 
