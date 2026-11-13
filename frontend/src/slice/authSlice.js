@@ -87,7 +87,10 @@ export const signout = createAsyncThunk("auth/signout", async () => {
   }
 });
 
-/** 前台登出：之後重新讀取購物車，變回這個瀏覽器的訪客購物車（登入時已併入帳號，所以是空的） */
+/**
+ * 前台登出：之後重新讀取購物車，變回這個瀏覽器的訪客購物車（登入時已併入帳號，所以是空的）。
+ * @param {{ from: string }} arg 登出時所在的頁面路徑，見 signedOutFrom
+ */
 export const memberSignout = createAsyncThunk(
   "auth/memberSignout",
   async (_, { dispatch }) => {
@@ -146,21 +149,39 @@ export const authSlice = createSlice({
     user: null,
     /** 是否已經確認過登入狀態。確認前 user 是 null 不代表未登入，需要登入的頁面要等它變成 true 再導向 */
     checked: false,
+    /**
+     * 前台主動登出時所在的頁面路徑。需要登入的頁面（會員中心、填寫資料頁）看到是自己時回首頁，
+     * 不當成「未登入」導向登入頁。記錄路徑而不是 true，其他頁面登出後再開啟這些頁面時仍會導向登入頁。
+     * 不能靠「先離開頁面再登出」：React Router 的導向是低優先的 transition，裝置較慢時登出的狀態更新會先到，
+     * 頁面在離開前就看到 user 變成 null。頁面卸載時以 signoutHandled 清除
+     */
+    signedOutFrom: null,
   },
-  reducers: {},
+  reducers: {
+    signoutHandled(state) {
+      state.signedOutFrom = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.user = action.payload;
         state.checked = true;
+        if (action.payload) state.signedOutFrom = null;
       })
       .addCase(signout.fulfilled, (state) => {
         state.user = null;
+      })
+      // 在清除 user 之前記下，頁面看到 user 變成 null 時一定已經看得到這個標記
+      .addCase(memberSignout.pending, (state, action) => {
+        state.signedOutFrom = action.meta.arg?.from ?? null;
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
         if (state.user) state.user.name = action.payload.name;
       });
   },
 });
+
+export const { signoutHandled } = authSlice.actions;
 
 export default authSlice.reducer;

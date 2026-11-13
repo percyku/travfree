@@ -7,7 +7,7 @@ import CartPriceRows from "./CartPriceRows";
 import { updateOrderId, createAsyncSubmitForm } from "../../slice/orderSlice";
 import { createAsyncGetCart } from "../../slice/cartSlice";
 import { createAsyncMessage } from "../../slice/messageSlice";
-import { fetchProfile } from "../../slice/authSlice";
+import { fetchProfile, signoutHandled } from "../../slice/authSlice";
 
 /** 結帳需要 USER 角色（見 spec 的 POST /api/order）；只有 ADMIN 的帳號（例如預設 admin）不能結帳 */
 const canCheckout = (user) => user?.roles?.includes("USER") ?? false;
@@ -21,6 +21,9 @@ const CartForm = () => {
   const final_total = useSelector((state) => state.cart.final_total);
   const user = useSelector((state) => state.auth.user);
   const authChecked = useSelector((state) => state.auth.checked);
+  const signedOutHere = useSelector(
+    (state) => state.auth.signedOutFrom === "/cartform",
+  );
 
   // 進入頁面時重新讀取購物車，顯示最新金額（優惠券可能已被停用、刪除，或商品改價）
   useEffect(() => {
@@ -34,15 +37,23 @@ const CartForm = () => {
     }
   }, [orderId, dispatch, navigate]);
 
-  // Header 確認登入狀態後才判斷，否則重新整理本頁時會在確認前被導向登入頁
+  // Header 確認登入狀態後才判斷，否則重新整理本頁時會在確認前被導向登入頁。
+  // 在本頁按 Header 的登出時回首頁，不導向登入頁
   useEffect(() => {
-    if (authChecked && !user) {
-      dispatch(
-        createAsyncMessage({ success: false, message: "請先登入會員再結帳" }),
-      );
-      navigate("/signin", { replace: true, state: { from: "/cartform" } });
+    if (!authChecked || user) return;
+    if (signedOutHere) {
+      navigate("/", { replace: true });
+      return;
     }
-  }, [authChecked, user, dispatch, navigate]);
+    dispatch(
+      createAsyncMessage({ success: false, message: "請先登入會員再結帳" }),
+    );
+    navigate("/signin", { replace: true, state: { from: "/cartform" } });
+  }, [authChecked, user, signedOutHere, dispatch, navigate]);
+
+  // 離開本頁後才清除登出標記。不能在導向時清除：導向是 transition，完成前本頁會再渲染一次，
+  // 那時標記已清掉、user 是 null，就會被當成未登入導向登入頁
+  useEffect(() => () => dispatch(signoutHandled()), [dispatch]);
 
   const {
     register,

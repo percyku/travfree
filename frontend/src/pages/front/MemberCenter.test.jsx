@@ -185,6 +185,13 @@ describe("會員中心的基本資料", () => {
     expect(screen.queryByText("請先登入會員")).not.toBeInTheDocument();
   });
 
+  it("在其他頁登出後再開啟會員中心，仍導向登入頁", async () => {
+    renderMemberCenter({ user: null, checked: true, signedOutFrom: "/product" });
+
+    expect(await screen.findByTestId("landing")).toHaveTextContent("登入頁 /member");
+    expect(await findToast("請先登入會員")).toBeInTheDocument();
+  });
+
   it("確認登入狀態前不導向，也不讀取會員資料", async () => {
     // 沒有定義 GET /api/user/profile 的 handler，有呼叫的話契約檢查會失敗
     renderMemberCenter({ user: null, checked: false });

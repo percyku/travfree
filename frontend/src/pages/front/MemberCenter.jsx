@@ -6,6 +6,7 @@ import {
   changePassword,
   fetchProfile,
   memberSignout,
+  signoutHandled,
   updateProfile,
 } from "../../slice/authSlice";
 import { createAsyncMessage } from "../../slice/messageSlice";
@@ -268,19 +269,28 @@ const MemberCenter = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const authChecked = useSelector((state) => state.auth.checked);
+  const signedOutHere = useSelector(
+    (state) => state.auth.signedOutFrom === "/member",
+  );
 
-  // Header 確認登入狀態後才判斷，否則重新整理本頁時會在確認前被導向登入頁
+  // Header 確認登入狀態後才判斷，否則重新整理本頁時會在確認前被導向登入頁。
+  // 在本頁主動登出（本頁或 Header 的按鈕）時回首頁，不導向登入頁
   useEffect(() => {
-    if (authChecked && !user) {
-      dispatch(createAsyncMessage({ success: false, message: "請先登入會員" }));
-      navigate("/signin", { replace: true, state: { from: "/member" } });
+    if (!authChecked || user) return;
+    if (signedOutHere) {
+      navigate("/", { replace: true });
+      return;
     }
-  }, [authChecked, user, dispatch, navigate]);
+    dispatch(createAsyncMessage({ success: false, message: "請先登入會員" }));
+    navigate("/signin", { replace: true, state: { from: "/member" } });
+  }, [authChecked, user, signedOutHere, dispatch, navigate]);
 
-  // 先離開本頁再登出，否則上面的導向會把主動登出當成未登入，帶到登入頁
+  // 離開本頁後才清除登出標記。不能在導向時清除：導向是 transition，完成前本頁會再渲染一次，
+  // 那時標記已清掉、user 是 null，就會被當成未登入導向登入頁
+  useEffect(() => () => dispatch(signoutHandled()), [dispatch]);
+
   const handleSignout = async () => {
-    navigate("/", { replace: true });
-    await dispatch(memberSignout());
+    await dispatch(memberSignout({ from: "/member" }));
     dispatch(createAsyncMessage({ success: true, message: "已登出" }));
   };
 
