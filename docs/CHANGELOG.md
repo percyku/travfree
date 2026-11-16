@@ -70,6 +70,7 @@
 
 ### Changed
 
+- 後端改用 Java 25：`pom.xml` 的 `java.version`、`backend/Dockerfile`（`eclipse-temurin:25-jdk`／`25-jre`）與 CI 的 `setup-java` 都改為 25。開發時需要 JDK 25。temurin 25 的映像檔不再附 `curl`，後端映像改為自行安裝，供 compose 的健康檢查使用。
 - `POST /admin/signin`：沒有 `ADMIN` 角色的帳號回 403 `此帳號沒有後台權限`（不計入失敗次數）。
 - `POST /api/user/check`：回應多了 `email`、`name`、`roles`；`uid` 的說明更正為帳號的 UUID（原本範例寫成 email）。
 - 後台路由保護與後台登入頁改為依 `roles` 判斷：只有 `ADMIN` 能進入後台。一般會員的 token 會被導向後台登入頁，但不會被清除。

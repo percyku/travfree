@@ -1,14 +1,14 @@
 # FreeTrav 後端
 
-Spring Boot 3.5 + Java 21 + PostgreSQL。共用規則與 API 契約見根目錄的 `CLAUDE.md`，開發規範見 `../docs/DEVELOPMENT.md`。
+Spring Boot 3.5 + Java 25 + PostgreSQL。共用規則與 API 契約見根目錄的 `CLAUDE.md`，開發規範見 `../docs/DEVELOPMENT.md`。
 
 ## 常用指令
 
 ```bash
-# 需要 JDK 21，系統預設不是 21
+# 需要 JDK 25；系統預設就是 25 時可省略 JAVA_HOME=...
 (cd .. && docker compose up -d db)   # 資料庫在根目錄的 docker-compose.yml
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run   # http://localhost:8080/v2
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw spring-boot:run   # http://localhost:8080/v2
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw test
 ```
 
 ## 開發流程

@@ -9,13 +9,13 @@ Vite + React 前端（`frontend/`）搭配 Spring Boot 後端（`backend/`）。
 | 區塊 | 技術 |
 |---|---|
 | 前端 | Vite 7、React 19、Redux Toolkit、React Router 7、Bootstrap 5、axios |
-| 後端 | Spring Boot 3.5、Java 21、Spring Web、Spring Data JPA、Bean Validation |
+| 後端 | Spring Boot 3.5、Java 25、Spring Web、Spring Data JPA、Bean Validation |
 | 認證 | Spring Security、JJWT 0.13（HS256）、BCrypt |
 | 資料庫 | PostgreSQL 16（執行環境）、H2 PostgreSQL 模式（自動化測試） |
 
 ## 快速開始
 
-需要 JDK 21、Node.js 與 Docker。系統預設若是其他版本的 JDK，請如下指定 `JAVA_HOME`。
+需要 JDK 25、Node.js 與 Docker。系統預設若是其他版本的 JDK，請如下指定 `JAVA_HOME`。
 
 ```bash
 # 1. 只啟動 PostgreSQL（在根目錄）
@@ -23,7 +23,7 @@ docker compose up -d db
 
 # 2. 啟動後端（http://localhost:8080/v2）
 cd backend
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw spring-boot:run
 
 # 3. 另開終端機啟動前端（http://localhost:5173）
 cd frontend
@@ -214,7 +214,7 @@ cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRI
 - **開發模式（`:8080` + `:5173`）**：啟動後端時帶上環境變數：
 
   ```bash
-  GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run
+  GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw spring-boot:run
   ```
 
 - 確認：`curl http://localhost:8000/v2/api/user/google/config` 應回 `"enabled":true`，前台的登入頁、註冊頁出現 Google 按鈕。

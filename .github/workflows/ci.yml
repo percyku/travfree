@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       # 使用 H2，不需要資料庫服務；契約測試會讀 ../docs/openapi.yaml
       - run: ./mvnw -B test
