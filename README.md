@@ -30,7 +30,7 @@ FreeTrav 旅遊電商：以旅遊行程為商品的電商網站，包含 React �
 | 區塊 | 技術 |
 |---|---|
 | 前端 | Vite 7、React 19、Redux Toolkit、React Router 7、Bootstrap 5、axios |
-| 後端 | Spring Boot 3.5、Java 21、Spring Data JPA、Bean Validation |
+| 後端 | Spring Boot 3.5、Java 25、Spring Data JPA、Bean Validation |
 | 認證 | Spring Security、JWT（HS256）、BCrypt |
 | 資料庫 | PostgreSQL 16；自動化測試使用 H2 的 PostgreSQL 模式 |
 | API 契約 | OpenAPI 3.0（手寫）、Redocly、Swagger UI、Prism mock server |
@@ -73,17 +73,17 @@ cd travfree
 
 ### 方式二：開發模式（前後端分別啟動）
 
-需要 JDK 21、Node.js 與 Docker。資料庫用 Docker，前端與後端各開一個終端機執行：
+需要 JDK 25、Node.js 與 Docker。資料庫用 Docker，前端與後端各開一個終端機執行：
 
 | 服務 | 啟動 | 停止 | 網址 |
 |---|---|---|---|
 | 資料庫 | 在根目錄 `docker compose up -d db` | 在根目錄 `docker compose down` | `localhost:5432` |
-| 後端 | `cd backend`<br>`JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw spring-boot:run` | 在該終端機按 Ctrl+C | `http://localhost:8080/v2` |
+| 後端 | `cd backend`<br>`JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw spring-boot:run` | 在該終端機按 Ctrl+C | `http://localhost:8080/v2` |
 | 前端 | `cd frontend`<br>`npm run dev` | 在該終端機按 Ctrl+C | `http://localhost:5173` |
 
 - 依序啟動：資料庫 → 後端 → 前端。停止時順序不拘。
 - 前端第一次執行前，先在 `frontend/` 執行 `cp .env.example .env.local` 與 `npm install`。
-- 系統預設的 JDK 就是 21 時，後端可以省略 `JAVA_HOME=...`，直接執行 `./mvnw spring-boot:run`。
+- 系統預設的 JDK 就是 25 時，後端可以省略 `JAVA_HOME=...`，直接執行 `./mvnw spring-boot:run`。
 - 兩種方式用的是同一份資料庫。從 Docker 切換到開發模式時，先執行 `docker compose down`，再執行 `docker compose up -d db`。
 
 ### 資料：種子與備份
@@ -133,7 +133,7 @@ npm run openapi:mock     # 依規格啟動 mock server：http://localhost:4010
 
 ```bash
 cd backend
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test   # 不需要 Docker
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw test   # 不需要 Docker
 
 cd frontend
 npm test

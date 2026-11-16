@@ -4,7 +4,7 @@
 
 ```bash
 cd backend
-JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw test
 
 cd frontend
 npm test              # 執行一次；npm run test:watch 會持續監看
@@ -21,7 +21,7 @@ npm run e2e           # 在根目錄，E2E（需要 Docker），見下方「E2E 
 | Job | 內容 |
 |---|---|
 | OpenAPI spec | `npm run openapi:lint` |
-| 後端測試 | `./mvnw -B test`（Java 21、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
+| 後端測試 | `./mvnw -B test`（Java 25、H2，不需要資料庫服務）。失敗時可下載 `backend-surefire-reports` 查看細節 |
 | 前端 lint、測試與建置 | `npm run lint`、`npm test`、`npm run build` |
 | Docker compose 與 E2E | 以 prod profile 與隨機產生的密鑰，`docker compose up -d --build --wait` 啟動全新的資料庫與前後端，再跑 `scripts/smoke-test.sh`；接著匯入種子資料與展示會員各兩次（第二次應全部略過），再備份 → `down -v` → 還原，確認資料都還在；最後在 Playwright 官方映像檔（`mcr.microsoft.com/playwright`，版本取自 `e2e/package-lock.json`）裡執行 E2E。失敗時輸出各服務的 log，並上傳 `e2e-report`（Playwright 報告） |
 

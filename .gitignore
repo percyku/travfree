@@ -16,3 +16,6 @@ backend/.github/modernize/
 
 # 資料庫備份（npm run db:backup），含個資與密碼雜湊
 backups/
+
+# 個人 IDE 設定
+.vscode/
