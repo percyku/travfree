@@ -41,6 +41,12 @@ services:
       # Google 登入的 Web client ID；沒有設定時關閉。GOOGLE_TEST_PUBLIC_KEY 只給 E2E（scripts/e2e.sh）使用
       - GOOGLE_CLIENT_ID
       - GOOGLE_TEST_PUBLIC_KEY
+      # GitHub 登入（OAuth App）；ID 與 secret 要一起設定，沒有設定時關閉。三個網址只給 E2E 指向假的服務
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+      - GITHUB_OAUTH_AUTHORIZE_URL
+      - GITHUB_OAUTH_TOKEN_URL
+      - GITHUB_OAUTH_API_URL
     volumes:
       - uploads:/app/uploads
     healthcheck:
@@ -61,6 +67,22 @@ services:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
       interval: 5s
       timeout: 3s
+      retries: 10
+
+  # 只給 E2E：假的 GitHub（換 token 與使用者 API），以 COMPOSE_PROFILES=e2e 啟動，見 scripts/e2e.sh 與 e2e/fake-github.mjs
+  fake-github:
+    image: node:24-alpine
+    profiles: ["e2e"]
+    command: ["node", "/app/fake-github.mjs"]
+    environment:
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+    volumes:
+      - ./e2e/fake-github.mjs:/app/fake-github.mjs:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 2s
       retries: 10
 
 volumes:

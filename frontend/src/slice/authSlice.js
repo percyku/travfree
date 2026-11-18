@@ -99,6 +99,52 @@ export const googleSignin = createAsyncThunk(
   },
 );
 
+/**
+ * GitHub、Facebook 登入或註冊（授權碼流程，見 utils/oauth.js）。回傳 { user, created }，規則同 googleSignin。
+ * @param {{ provider: string, data: object }} arg data 是 OAuthCodeInput（code、redirect_uri、code_verifier）
+ */
+export const oauthSignin = createAsyncThunk(
+  "auth/oauthSignin",
+  async ({ provider, data }, { dispatch, rejectWithValue }) => {
+    let created;
+    try {
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/user/oauth/${provider}`, { data });
+      saveToken(res.data.token, res.data.expired);
+      created = res.data.message === "註冊成功";
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "登入失敗，請再試一次"));
+    }
+    await mergeGuestCart(dispatch);
+    const user = await dispatch(checkAuth()).unwrap();
+    return { user, created };
+  },
+);
+
+/** 把 GitHub、Facebook 帳號連結到目前的帳號，回傳更新後的 profile */
+export const linkOAuth = createAsyncThunk(
+  "auth/linkOAuth",
+  async ({ provider, data }, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(`${VITE_APP_API_BASE}/api/user/oauth/${provider}/link`, { data });
+      return res.data.profile;
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "連結失敗，請再試一次"));
+    }
+  },
+);
+
+export const unlinkOAuth = createAsyncThunk(
+  "auth/unlinkOAuth",
+  async (provider, { rejectWithValue }) => {
+    try {
+      const res = await axios.delete(`${VITE_APP_API_BASE}/api/user/oauth/${provider}/link`);
+      return res.data.profile;
+    } catch (error) {
+      return rejectWithValue(messageOf(error, "解除連結失敗，請再試一次"));
+    }
+  },
+);
+
 /** 把 Google 帳號連結到目前的帳號，回傳更新後的 profile */
 export const linkGoogle = createAsyncThunk(
   "auth/linkGoogle",
@@ -178,16 +224,18 @@ export const updateProfile = createAsyncThunk(
 );
 
 /**
- * 變更密碼（帶 password），或沒有密碼的帳號第一次設定（帶 credential：重新以 Google 驗證）。
+ * 變更密碼（帶 password），或沒有密碼的帳號第一次設定：帶 credential（重新以 Google 驗證），
+ * 或 oauth（重新以 GitHub、Facebook 授權：{ provider, code, redirect_uri, code_verifier }）。
  * 成功後舊 token 全部失效，改存回應的新 token，目前的裝置才能維持登入
  */
 export const changePassword = createAsyncThunk(
   "auth/changePassword",
-  async ({ password, credential, newPassword }, { rejectWithValue }) => {
+  async ({ password, credential, oauth, newPassword }, { rejectWithValue }) => {
     try {
-      const data = credential
-        ? { credential, new_password: newPassword }
-        : { password, new_password: newPassword };
+      let data;
+      if (credential) data = { credential, new_password: newPassword };
+      else if (oauth) data = { oauth, new_password: newPassword };
+      else data = { password, new_password: newPassword };
       const res = await axios.put(`${VITE_APP_API_BASE}/api/user/password`, {
         data,
       });

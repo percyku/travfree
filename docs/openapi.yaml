@@ -126,7 +126,7 @@ paths:
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
-        | 400 | `此 Email 已註冊，請改用原本的方式登入（例如 Google）` | email 已存在（不分大小寫），包含只用 Google 登入的帳號；或已被其他帳號連結為 Google 登入 |
+        | 400 | `此 Email 已註冊，請改用原本的方式登入（例如 Google）` | email 已存在（不分大小寫），包含只用第三方登入的帳號；或已被其他帳號連結為第三方登入（Google、GitHub、Facebook） |
         | 400 | `email 屬性不得為空`、`email 格式不正確` | |
         | 400 | `password 屬性不得為空`、`密碼需為 8–64 個英數或半形符號，且至少包含一個英文字母與一個數字` | |
         | 400 | `name 屬性不得為空`、`name 不得超過 30 個字` | |
@@ -160,7 +160,7 @@ paths:
         Hexschool 沒有這支。前台登入頁使用，任何角色的帳號都可以登入。Body 與回應和 `POST /admin/signin` 相同，
         也共用同一組登入次數限制。
 
-        只用 Google 登入、沒有設定密碼的帳號，以密碼登入一律回 `登入失敗` 並計入失敗次數，不透露帳號沒有密碼。
+        只用第三方登入、沒有設定密碼的帳號，以密碼登入一律回 `登入失敗` 並計入失敗次數，不透露帳號沒有密碼。
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
@@ -297,9 +297,12 @@ paths:
         Hexschool 沒有這支。成功後該帳號**所有**既有 token 失效（其他裝置要重新登入），
         回應與登入相同，帶新的 token 讓目前的裝置維持登入，前端要以它取代舊的 token。
 
-        **沒有密碼的帳號（只用 Google 登入）是「設定密碼」**：不帶 `password`，改帶 `credential`（重新以 Google 取得的 ID token），
-        它的 `sub` 必須是已連結的 Google 帳號，否則拿到 token 的人就能偷設密碼。成功時 `message` 為 `已設定密碼`。
-        Google 驗證不計入登入失敗次數。
+        **沒有密碼的帳號（只用第三方登入）是「設定密碼」**：不帶 `password`，改為重新以已連結的平台驗證，
+        否則拿到 token 的人就能偷設密碼。成功時 `message` 為 `已設定密碼`。第三方驗證不計入登入失敗次數。
+
+        - Google：帶 `credential`（重新取得的 ID token），它的 `sub` 必須是已連結的 Google 帳號。
+        - GitHub、Facebook：帶 `oauth`（重新授權取得的 code，見 `POST /api/user/oauth/{provider}`），平台的帳號 ID 必須是已連結的帳號。
+        - 兩個都帶時只看 `credential`。
 
         - `new_password` 的規則與註冊相同。
         - 目前的密碼錯誤計入登入失敗次數，與 `POST /api/user/signin` 共用同一組計數（IP + 帳號 email、IP 總量）。
@@ -311,8 +314,12 @@ paths:
         |---|---|---|
         | 400 | `new_password 屬性不得為空` | 新密碼空白（先檢查） |
         | 400 | `password 屬性不得為空` | 有密碼的帳號沒帶目前的密碼 |
-        | 400 | `credential 屬性不得為空` | 沒有密碼的帳號沒帶 `credential` |
+        | 400 | `請重新以已連結的登入方式驗證` | 沒有密碼的帳號沒帶 `credential` 也沒帶 `oauth` |
         | 400 | `Google 驗證失敗，請以已連結的 Google 帳號驗證` | `credential` 無效或不是已連結的 Google 帳號 |
+        | 400 | `GitHub 驗證失敗，請以已連結的 GitHub 帳號驗證` | `oauth` 無效或不是已連結的帳號（Facebook 同理，平台名稱不同） |
+        | 400 | `code 屬性不得為空`、`redirect_uri 屬性不得為空`、`找不到這個登入方式` | `oauth` 的內容錯誤 |
+        | 502 | `GitHub 暫時無法連線，請稍後再試` | 平台沒有回應或回 5xx |
+        | 503 | `未設定 GitHub 登入` | |
         | 400 | `密碼需為 8–64 個英數或半形符號，且至少包含一個英文字母與一個數字` | 新密碼不符合規則 |
         | 400 | `目前的密碼不正確` | |
         | 400 | `新密碼不能與目前的密碼相同` | |
@@ -340,6 +347,8 @@ paths:
               example: { success: false, message: '目前的密碼不正確' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '429': { $ref: '#/components/responses/TooManySigninAttempts' }
+        '502': { $ref: '#/components/responses/OAuthUnavailable' }
+        '503': { $ref: '#/components/responses/OAuthDisabled' }
         default: { $ref: '#/components/responses/Failure' }
 
   /api/user/google/config:
@@ -375,7 +384,7 @@ paths:
         後端驗證簽章、`aud`（我們的 client ID）、`iss`、到期時間後：
 
         1. 這個 Google 帳號（`sub`）已連結會員 → 登入，`message` 為 `登入成功`。
-        2. 否則 Google 的 email 已有帳號，或已是其他帳號連結的 Google email → 409，**不自動合併**：請使用者先用原本的方式登入，再到會員中心連結 Google。
+        2. 否則 Google 的 email 已有帳號，或已是其他帳號連結的第三方登入 email → 409，**不自動合併**：請使用者先用原本的方式登入，再到會員中心連結 Google。
         3. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`。email 要經 Google 驗證；姓名取 Google 的 `name`
            （超過 30 個字截斷，沒有時取 email 的 `@` 前面）；沒有密碼，可以之後在會員中心設定。
 
@@ -386,7 +395,7 @@ paths:
         | 400 | `credential 屬性不得為空`、`data 屬性不得為空` | |
         | 400 | `Google 驗證失敗，請再試一次` | token 簽章錯誤、過期、`aud` 或 `iss` 不符 |
         | 400 | `Google 帳號的 Email 尚未驗證` | 要建立帳號但 `email_verified` 不是 true |
-        | 409 | `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google` | email 已有帳號，或已是其他帳號連結的 Google email |
+        | 409 | `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google` | email 已有帳號，或已是其他帳號連結的第三方登入 email |
         | 503 | `未設定 Google 登入` | 後端沒有設定 client ID |
       operationId: googleSignin
       security: []  # 公開
@@ -463,11 +472,11 @@ paths:
       tags: ['登入及驗證']
       summary: 解除連結 Google
       description: |
-        Hexschool 沒有這支。至少要保留一種登入方式：沒有密碼的帳號不能解除，要先設定密碼。沒有連結時不做事。
+        Hexschool 沒有這支。至少要保留一種登入方式：帳號沒有密碼、也沒有連結其他平台時不能解除，要先設定密碼。沒有連結時不做事。
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
-        | 400 | `至少要保留一種登入方式，請先設定密碼` | 帳號沒有密碼 |
+        | 400 | `至少要保留一種登入方式，請先設定密碼` | 帳號沒有密碼，也沒有連結其他平台 |
       operationId: unlinkGoogle
       security: [{ Token: [] }]
       responses:
@@ -479,6 +488,179 @@ paths:
               schema: { $ref: '#/components/schemas/Failure' }
               example: { success: false, message: '至少要保留一種登入方式，請先設定密碼' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/oauth/config:
+    get:
+      tags: ['登入及驗證']
+      summary: GitHub、Facebook 登入設定
+      description: |
+        Hexschool 沒有這支。前端以它決定是否顯示各平台的按鈕，並組出授權網址：
+        `{authorize_url}?client_id=...&redirect_uri=...&scope={scope}&state=...`（GitHub 另外加上 PKCE 的 `code_challenge`、`code_challenge_method=S256`）。
+
+        client ID 與網址都只在後端設定（`GITHUB_CLIENT_ID`、`FACEBOOK_APP_ID`），沒有設定的平台 `enabled` 為 false，其他欄位為空字串。
+        `providers` 固定有 `github`、`facebook` 兩個 key。
+      operationId: oauthConfig
+      security: []  # 公開
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [success, providers]
+                properties:
+                  success: { type: boolean, enum: [true] }
+                  providers:
+                    type: object
+                    additionalProperties: false
+                    required: [github, facebook]
+                    properties:
+                      github: { $ref: '#/components/schemas/OAuthProviderConfig' }
+                      facebook: { $ref: '#/components/schemas/OAuthProviderConfig' }
+              example:
+                success: true
+                providers:
+                  github: { enabled: true, client_id: Ov23liAbCdEf123456, authorize_url: 'https://github.com/login/oauth/authorize', scope: 'user:email' }
+                  facebook: { enabled: false, client_id: '', authorize_url: '', scope: '' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/oauth/{provider}:
+    post:
+      tags: ['登入及驗證']
+      summary: GitHub、Facebook 登入或註冊
+      description: |
+        Hexschool 沒有這支。前端把使用者導到平台的授權頁，平台帶 `code`、`state` 導回 `redirect_uri`，
+        前端比對 `state` 後把 `code` 交給這支。後端用 client secret 換 token、取得平台的帳號資料後：
+
+        1. 這個平台帳號（平台的帳號 ID）已連結會員 → 登入，`message` 為 `登入成功`。
+        2. 否則平台沒有提供 email → 400，請使用者改用其他方式註冊。GitHub 只採用 `primary` 且 `verified` 的 email。
+        3. 否則 email 已有帳號，或已是其他帳號連結的第三方登入 email → 409，**不自動合併**：請使用者先用原本的方式登入，再到會員中心連結。
+        4. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`。姓名：GitHub 取 `name`，沒有時取 `login`；Facebook 取 `name`；
+           超過 30 個字截斷。沒有密碼，可以之後在會員中心設定。
+
+        平台的帳號 ID：GitHub 是數字 `id`（不用 `login`，使用者名稱可以改），Facebook 是這個 app 專用的 `id`。
+
+        訊息中的平台名稱依 `provider` 為 `GitHub` 或 `Facebook`，下表以 GitHub 為例。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `code 屬性不得為空`、`redirect_uri 屬性不得為空`、`data 屬性不得為空` | |
+        | 400 | `GitHub 驗證失敗，請再試一次` | `code` 無效、過期、已使用，或 `redirect_uri`、`code_verifier` 不符 |
+        | 400 | `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` | 要建立帳號但平台沒有提供 email |
+        | 404 | `找不到這個登入方式` | `provider` 不是 `github`、`facebook` |
+        | 409 | `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub` | email 已有帳號，或已是其他帳號連結的第三方登入 email |
+        | 502 | `GitHub 暫時無法連線，請稍後再試` | 平台沒有回應或回 5xx |
+        | 503 | `未設定 GitHub 登入` | 後端沒有設定這個平台 |
+      operationId: oauthSignin
+      security: []  # 公開
+      parameters:
+        - $ref: '#/components/parameters/OAuthProvider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/OAuthCodeInput' }
+      responses:
+        '200': { $ref: '#/components/responses/SigninSuccess' }
+        '400':
+          description: 請求內容錯誤、code 無效，或平台沒有提供 email
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: 'GitHub 驗證失敗，請再試一次' }
+        '404': { $ref: '#/components/responses/OAuthProviderNotFound' }
+        '409':
+          description: email 已有帳號
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub' }
+        '502': { $ref: '#/components/responses/OAuthUnavailable' }
+        '503': { $ref: '#/components/responses/OAuthDisabled' }
+        default: { $ref: '#/components/responses/Failure' }
+
+  /api/user/oauth/{provider}/link:
+    post:
+      tags: ['登入及驗證']
+      summary: 連結 GitHub、Facebook
+      description: |
+        Hexschool 沒有這支。`code` 的取得方式同 `POST /api/user/oauth/{provider}`，把平台帳號連結到目前登入的帳號。
+        平台的 email 可以與帳號的 email 不同，也可以沒有 email（帳號本身已有 email）；
+        即使另一個帳號以這個 email 註冊也可以連結，理由同 `POST /api/user/google/link`。已連結同一個平台帳號時不做事。
+        成功時 `message` 為 `已連結 GitHub`（或 `已連結 Facebook`）。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `code 屬性不得為空`、`redirect_uri 屬性不得為空`、`GitHub 驗證失敗，請再試一次` | |
+        | 404 | `找不到這個登入方式` | |
+        | 409 | `這個 GitHub 帳號已連結其他會員` | |
+        | 409 | `已連結其他 GitHub 帳號，請先解除連結` | 目前的帳號已連結同一平台的另一個帳號 |
+        | 502 | `GitHub 暫時無法連線，請稍後再試` | |
+        | 503 | `未設定 GitHub 登入` | |
+      operationId: linkOAuth
+      security: [{ Token: [] }]
+      parameters:
+        - $ref: '#/components/parameters/OAuthProvider'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/OAuthCodeInput' }
+      responses:
+        '200': { $ref: '#/components/responses/ProfileSuccess' }
+        '400':
+          description: 請求內容錯誤或 code 無效
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: 'GitHub 驗證失敗，請再試一次' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/OAuthProviderNotFound' }
+        '409':
+          description: 平台帳號已連結其他會員，或目前的帳號已連結同一平台的另一個帳號
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '這個 GitHub 帳號已連結其他會員' }
+        '502': { $ref: '#/components/responses/OAuthUnavailable' }
+        '503': { $ref: '#/components/responses/OAuthDisabled' }
+        default: { $ref: '#/components/responses/Failure' }
+    delete:
+      tags: ['登入及驗證']
+      summary: 解除連結 GitHub、Facebook
+      description: |
+        Hexschool 沒有這支。至少要保留一種登入方式：帳號沒有密碼、也沒有連結其他平台時不能解除。沒有連結時不做事。
+        後端沒有設定這個平台時也可以解除。成功時 `message` 為 `已解除連結 GitHub`（或 `已解除連結 Facebook`）。
+
+        | 狀態碼 | message | 情境 |
+        |---|---|---|
+        | 400 | `至少要保留一種登入方式，請先設定密碼` | 帳號沒有密碼，也沒有連結其他平台 |
+        | 404 | `找不到這個登入方式` | |
+      operationId: unlinkOAuth
+      security: [{ Token: [] }]
+      parameters:
+        - $ref: '#/components/parameters/OAuthProvider'
+      responses:
+        '200': { $ref: '#/components/responses/ProfileSuccess' }
+        '400':
+          description: 解除後沒有任何登入方式
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Failure' }
+              example: { success: false, message: '至少要保留一種登入方式，請先設定密碼' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/OAuthProviderNotFound' }
         default: { $ref: '#/components/responses/Failure' }
 
   # ───────────────────────── Admin 產品 ─────────────────────────
@@ -1754,6 +1936,12 @@ components:
         角色不符時回 403 `無此權限`。
 
   parameters:
+    OAuthProvider:
+      name: provider
+      in: path
+      required: true
+      description: 第三方登入平台。Google 用 `/api/user/google` 的端點，不在這裡；其他值回 404 `找不到這個登入方式`。
+      schema: { type: string, enum: [github, facebook], example: github }
     CartId:
       name: X-Cart-Id
       in: header
@@ -1844,7 +2032,7 @@ components:
                 description: 到期時間，Unix **毫秒**，前端直接用來設定 cookie 期限
                 example: 1793799088000
     ProfileSuccess:
-      description: 成功。更新時 `message` 為 `已更新會員資料`，連結與解除連結 Google 為 `已連結 Google`、`已解除連結 Google`
+      description: 成功。更新時 `message` 為 `已更新會員資料`，連結與解除連結為 `已連結 Google`、`已解除連結 GitHub` 等（平台名稱依端點）
       content:
         application/json:
           schema:
@@ -1861,6 +2049,24 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Failure' }
           example: { success: false, message: '未設定 Google 登入' }
+    OAuthDisabled:
+      description: 後端沒有設定這個平台（GitHub：`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`）
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+          example: { success: false, message: '未設定 GitHub 登入' }
+    OAuthUnavailable:
+      description: 平台沒有回應、逾時或回 5xx
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+          example: { success: false, message: 'GitHub 暫時無法連線，請稍後再試' }
+    OAuthProviderNotFound:
+      description: '`provider` 不是 `github`、`facebook`'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Failure' }
+          example: { success: false, message: '找不到這個登入方式' }
     TooManySigninAttempts:
       description: 登入失敗次數過多，暫時鎖定
       headers:
@@ -1957,6 +2163,36 @@ components:
       required: [credential]
       properties:
         credential: { type: string, description: Google Identity Services 回傳的 ID token（JWT） }
+    OAuthCodeInput:
+      type: object
+      required: [code, redirect_uri]
+      properties:
+        code: { type: string, description: 平台導回 `redirect_uri` 時帶的 `code`，只能使用一次, example: 3584d83530557fdd1f46 }
+        redirect_uri:
+          type: string
+          description: 導向授權頁時使用的 `redirect_uri`，必須完全相同，後端原樣交給平台換 token
+          example: 'http://localhost:8000/'
+        code_verifier: { type: string, description: PKCE 的 code verifier（GitHub）；導向授權頁時有帶 `code_challenge` 就必須帶 }
+    OAuthProviderConfig:
+      type: object
+      additionalProperties: false
+      required: [enabled, client_id, authorize_url, scope]
+      properties:
+        enabled: { type: boolean, example: true }
+        client_id: { type: string, description: 沒有設定時為空字串, example: Ov23liAbCdEf123456 }
+        authorize_url: { type: string, description: 授權頁的網址；沒有設定時為空字串, example: 'https://github.com/login/oauth/authorize' }
+        scope: { type: string, description: 授權頁的 `scope` 參數，以空白分隔；沒有設定時為空字串, example: 'user:email' }
+    Identity:
+      type: object
+      additionalProperties: false
+      required: [provider, email]
+      properties:
+        provider: { type: string, enum: [google, github, facebook], example: github }
+        email:
+          type: string
+          nullable: true
+          description: 連結當時平台提供的 email，可以與帳號的 email 不同；平台沒有提供時為 null
+          example: traveler@users.noreply.github.com
     AdminUser:
       type: object
       additionalProperties: false
@@ -1976,15 +2212,17 @@ components:
     Profile:
       type: object
       additionalProperties: false
-      required: [email, name, tel, address, has_password, google_email]
+      required: [email, name, tel, address, has_password, identities]
       properties:
         email: { type: string, description: 不能修改, example: traveler@example.com }
-        has_password: { type: boolean, description: 是否已設定密碼。只用 Google 註冊的帳號為 false, example: true }
-        google_email:
-          type: string
-          nullable: true
-          description: 已連結的 Google 帳號的 email（連結當時），可以與帳號的 email 不同；未連結時為 null
-          example: traveler@gmail.com
+        has_password: { type: boolean, description: 是否已設定密碼。只用第三方登入註冊的帳號為 false, example: true }
+        identities:
+          type: array
+          description: 已連結的第三方登入，每個平台最多一個，依 `google`、`github`、`facebook` 排列；沒有連結時為空陣列
+          uniqueItems: true
+          maxItems: 3
+          items: { $ref: '#/components/schemas/Identity' }
+          example: [{ provider: google, email: traveler@gmail.com }]
         name: { type: string, example: 王小明 }
         tel: { type: string, description: 8–20 個數字；未填時為空字串, example: '0912345678' }
         address: { type: string, description: 最多 100 個字；未填時為空字串, example: 台北市信義區市府路1號 }
@@ -1999,10 +2237,18 @@ components:
     PasswordChangeInput:
       type: object
       required: [new_password]
-      description: 有密碼的帳號帶 `password`；沒有密碼的帳號帶 `credential`
+      description: 有密碼的帳號帶 `password`；沒有密碼的帳號帶 `credential`（Google）或 `oauth`（GitHub、Facebook）
       properties:
         password: { type: string, description: 目前的密碼, example: Travel2026 }
         credential: { type: string, description: 沒有密碼的帳號設定密碼時，重新以 Google 取得的 ID token }
+        oauth:
+          description: 沒有密碼的帳號設定密碼時，重新以已連結的 GitHub 或 Facebook 授權取得的 code
+          allOf:
+            - $ref: '#/components/schemas/OAuthCodeInput'
+            - type: object
+              required: [provider]
+              properties:
+                provider: { type: string, enum: [github, facebook], example: github }
         new_password:
           type: string
           description: 8–64 個英數或半形符號（不含空白），至少一個英文字母與一個數字，且不能與目前的密碼相同

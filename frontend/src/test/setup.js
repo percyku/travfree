@@ -1,10 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import axios from "axios";
 import { violations } from "./contract";
 import { server } from "./server";
 import { resetGoogleCache } from "../utils/google";
+import { resetOAuthCache } from "../utils/oauth";
 import { File as NodeFile } from "node:buffer";
 
 // jsdom 的 FormData、File 與 Node 的 fetch（MSW 用來重建請求）不相容，multipart 會被當成純文字。
@@ -38,6 +39,9 @@ afterEach(() => {
   // Google 的設定與假的 GIS 物件不跨測試保留
   resetGoogleCache();
   delete window.google;
+  resetOAuthCache();
+  // 例如 test/oauth.js 攔截導向授權頁的 spy
+  vi.restoreAllMocks();
 
   const found = violations.splice(0);
   if (found.length > 0) {

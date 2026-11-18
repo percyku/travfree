@@ -111,11 +111,13 @@ describe("Google 登入與註冊", () => {
       expect(screen.queryByTestId("landing")).not.toBeInTheDocument();
     });
 
-    it("登入頁提示用 Google 註冊的帳號改用 Google 登入", async () => {
+    it("登入頁提示用第三方帳號註冊的會員改用同一種方式登入", async () => {
       installFakeGoogle();
       renderPage("/signin");
 
-      expect(await screen.findByText("用 Google 註冊的帳號請使用 Google 登入")).toBeInTheDocument();
+      expect(
+        await screen.findByText("以 Google 等第三方帳號註冊的會員，請用同一種方式登入"),
+      ).toBeInTheDocument();
     });
   });
 });

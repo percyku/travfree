@@ -5,16 +5,19 @@ import { useForm } from "react-hook-form";
 import { signin } from "../../slice/authSlice";
 import { createAsyncMessage } from "../../slice/messageSlice";
 import { EMAIL_PATTERN } from "../../utils/auth";
-import GoogleButton from "../../components/GoogleButton";
+import SocialSignin from "../../components/SocialSignin";
 import useGoogleSignin from "../../hooks/useGoogleSignin";
 
-/** 前台會員登入。從其他頁面導過來時（state.from），登入後回到那一頁 */
+/**
+ * 前台會員登入。從其他頁面導過來時（state.from），登入後回到那一頁。
+ * GitHub 等登入失敗時，回呼頁帶著原因（state.oauthError）導回這裡
+ */
 const MemberSignin = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(location.state?.oauthError ?? "");
   const [submitting, setSubmitting] = useState(false);
   const from = location.state?.from ?? "/";
   const {
@@ -117,19 +120,14 @@ const MemberSignin = () => {
                   登入
                 </button>
               </form>
-              <GoogleButton
-                text="signin_with"
-                onCredential={onGoogleCredential}
-                before={
-                  <div className="d-flex align-items-center gap-3 my-4 text-muted">
-                    <hr className="flex-grow-1 my-0" />
-                    或
-                    <hr className="flex-grow-1 my-0" />
-                  </div>
-                }
+              <SocialSignin
+                mode="signin"
+                onGoogleCredential={onGoogleCredential}
+                returnTo={from}
+                disabled={submitting}
               />
               <p className="form-text text-center mt-3 mb-0">
-                用 Google 註冊的帳號請使用 Google 登入
+                以 Google 等第三方帳號註冊的會員，請用同一種方式登入
               </p>
               <p className="mt-4 mb-0 text-center">
                 還沒有帳號？

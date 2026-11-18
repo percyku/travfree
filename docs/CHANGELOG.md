@@ -4,6 +4,14 @@
 
 ### Added
 
+- GitHub 登入（計畫見 `docs/plans/2026-11-18-github-facebook-signin.md`）：
+  - 授權碼流程：前端導向 GitHub（`state` 與 PKCE），GitHub 導回網站根目錄，前端在路由啟動前把 code 從網址移除並轉到 `#/oauth/callback`，後端以 client secret 換 token。
+  - 通用端點 `POST /api/user/oauth/{provider}`（登入或註冊）、`POST`／`DELETE /api/user/oauth/{provider}/link`、`GET /api/user/oauth/config`。`provider` 為 `github`、`facebook`；Facebook 尚未實作，回 503。
+  - 規則與 Google 相同：以 GitHub 的數字 `id` 辨識、email 已有帳號時 409 不自動合併；GitHub 沒有已驗證的 primary email 時不能建立帳號（已登入的帳號仍可連結）。GitHub 故障時回 502。
+  - 登入頁、註冊頁加上「使用 GitHub 登入／註冊」；會員中心可以連結、解除 GitHub，只用 GitHub 的帳號先以 GitHub 驗證再設定密碼。
+  - 環境變數 `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`（要一起設定），設定步驟見 `docs/README.md`。
+  - E2E 以 Playwright 攔截授權頁、compose 的 `fake-github` 服務（`profiles: ["e2e"]`）取代 GitHub。
+
 - 會員系統（階段 1，計畫見 `docs/plans/archive/2026-11-11-member-system.md`）：
   - `POST /api/user/signup` 會員註冊，成功時直接登入；`POST /api/user/signin` 前台登入，任何角色都可以，與後台登入共用次數限制。
   - 角色 `USER`、`ADMIN` 可同時擁有，存在新的 `user_roles` 表；註冊的帳號是 `USER`，預設 admin 只有 `ADMIN`。`users` 加上 `name`。
@@ -69,6 +77,13 @@
 - 16 個測試：`LoginRateLimitApiTest`、`LoginAttemptLimiterTest`、`ProductionConfigCheckTest`，共 78 個；之後加上文章分類必填的測試，共 79 個；再加上優惠券有效性、移除優惠券、結帳金額比對的測試，共 84 個。
 
 ### Changed
+
+- **`profile` 的 `google_email` 改為 `identities: [{ provider, email }]`**，列出所有已連結的第三方登入。
+- 解除連結（Google 也一樣）：帳號沒有密碼、也沒有連結其他平台時才不能解除，原本是沒有密碼就不能解除。
+- `PUT /api/user/password` 設定密碼時可以帶 `oauth`（GitHub 等重新授權的 code）；兩種驗證都沒帶時訊息改為 `請重新以已連結的登入方式驗證`（原本是 `credential 屬性不得為空`）。
+- 連結 Google 時不再記錄未經 Google 驗證的 email（已連結的 email 會擋住別人用它註冊）。
+- 第三方登入共用的規則集中到後端的 `IdentityService`，Google 也改用它。
+- 登入頁的提示改為「以 Google 等第三方帳號註冊的會員，請用同一種方式登入」。
 
 - 後端改用 Java 25：`pom.xml` 的 `java.version`、`backend/Dockerfile`（`eclipse-temurin:25-jdk`／`25-jre`）與 CI 的 `setup-java` 都改為 25。開發時需要 JDK 25。temurin 25 的映像檔不再附 `curl`，後端映像改為自行安裝，供 compose 的健康檢查使用。
 - `POST /admin/signin`：沒有 `ADMIN` 角色的帳號回 403 `此帳號沒有後台權限`（不計入失敗次數）。

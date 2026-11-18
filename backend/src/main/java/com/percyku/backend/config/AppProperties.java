@@ -13,7 +13,8 @@ public record AppProperties(
 		Admin admin,
 		Cors cors,
 		LoginLimit loginLimit,
-		Google google) {
+		Google google,
+		OAuthProvider github) {
 
 	public record Jwt(String secret, Duration ttl) {
 	}
@@ -30,6 +31,18 @@ public record AppProperties(
 	 * @param testPublicKey 只給 E2E 使用：設定時以這把 RSA 公鑰（PEM 或 base64 的 X.509）驗證 ID token，不連 Google
 	 */
 	public record Google(String clientId, String testPublicKey) {
+	}
+
+	/**
+	 * 以授權碼流程登入的平台（GitHub，之後 Facebook）。clientId 空白時關閉；clientId 與 clientSecret 要一起設定。
+	 * 網址預設為平台的正式網址，E2E 改成假的服務。
+	 *
+	 * @param authorizeUrl 授權頁，交給前端組網址
+	 * @param tokenUrl 用 code 換 access token
+	 * @param apiUrl 取得使用者資料的 API 開頭
+	 */
+	public record OAuthProvider(String clientId, String clientSecret, String authorizeUrl, String tokenUrl,
+			String apiUrl) {
 	}
 
 	/**

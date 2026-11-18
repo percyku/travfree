@@ -87,6 +87,8 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 | `SPRING_PROFILES_ACTIVE` | 無 | 部署時設為 `prod` |
 | `GOOGLE_CLIENT_ID` | 無 | Google 登入的 Web client ID，沒有設定時關閉。設定方式見下方「Google 登入設定」 |
 | `GOOGLE_TEST_PUBLIC_KEY` | 無 | **只給 E2E 使用**：以這把公鑰驗證 ID token，不連 Google（`scripts/google-test-key.sh` 產生）。正式環境不要設定 |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | 無 | GitHub 登入的 OAuth App，要一起設定（只設一個時拒絕啟動），沒有設定時關閉。設定方式見下方「GitHub 登入設定」 |
+| `GITHUB_OAUTH_AUTHORIZE_URL` / `GITHUB_OAUTH_TOKEN_URL` / `GITHUB_OAUTH_API_URL` | GitHub 的網址 | **只給 E2E 使用**：指向假的 GitHub（`e2e/fake-github.mjs`）。正式環境不要設定 |
 
 ## 部署
 
@@ -230,6 +232,61 @@ cp .env.example .env   # 設定 DB_PASSWORD、JWT_SECRET、ADMIN_PASSWORD，SPRI
 | 回 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 Google` | 預期的行為：同一個 email 已經用密碼註冊，不會自動合併，見 [FEATURES.md](FEATURES.md) 的 Google 登入 |
 
 nginx（`frontend/nginx.conf`）與 Vite 開發伺服器已設定 Google 要求的 `Referrer-Policy: no-referrer-when-downgrade`。
+
+## GitHub 登入設定
+
+前台的「使用 GitHub 登入」用 OAuth 的授權碼流程：使用者在 GitHub 授權後帶著 code 回到網站，後端以 **client secret** 換 token、讀取帳號資料，再發我們自己的 JWT。
+client ID 與 secret 都只在後端設定，前端執行時向 `GET /v2/api/user/oauth/config` 讀取 client ID 與授權網址。**secret 不要放進前端或 git。**
+
+### 1. 建立 OAuth App
+
+1. 登入 GitHub，右上角頭像 → **Settings** → 左側最下面的 **Developer settings** → **OAuth Apps** → **New OAuth App**。
+2. 填寫：
+
+   | 欄位 | 值 |
+   |---|---|
+   | Application name | `FreeTrav`（使用者在授權畫面會看到） |
+   | Homepage URL | `http://localhost:8000` |
+   | Authorization callback URL | `http://localhost:8000/`（**網站根目錄**，結尾的 `/` 要有） |
+   | Enable Device Flow | 不勾 |
+
+3. 按 **Register application**。
+4. 要在 Vite 開發模式（`:5173`）測試時，再加上 `http://localhost:5173/`。GitHub 以 callback URL 的 host 與連接埠比對，`:8000` 與 `:5173` 要分開登記；
+   設定頁只能填一個時，另外建一個開發用的 OAuth App。部署到正式網域時加上 `https://你的網域/`。
+5. 複製 **Client ID**，按 **Generate a new client secret** 並立刻複製（只顯示一次）。
+
+不用在 GitHub 設定權限：讀取 email 的 `user:email` 是導向授權頁時要求的。
+
+callback URL 是根目錄，因為前端路由用 `#`（`#` 不能放進 OAuth 的 `redirect_uri`）；回到根目錄後，前端在載入時把 code 從網址移除並轉到 `#/oauth/callback`。
+
+### 2. 設定到專案
+
+- **Docker（`:8000`）**：在根目錄的 `.env` 加入兩行，然後 `docker compose up -d`：
+
+  ```bash
+  GITHUB_CLIENT_ID=Ov23li...
+  GITHUB_CLIENT_SECRET=...
+  ```
+
+- **開發模式（`:8080` + `:5173`）**：啟動後端時帶上環境變數：
+
+  ```bash
+  GITHUB_CLIENT_ID=Ov23li... GITHUB_CLIENT_SECRET=... JAVA_HOME=$(/usr/libexec/java_home -v 25) ./mvnw spring-boot:run
+  ```
+
+- 確認：`curl http://localhost:8000/v2/api/user/oauth/config` 的 `providers.github.enabled` 應為 `true`，前台的登入頁、註冊頁出現「使用 GitHub 登入」。
+
+### 3. 常見問題
+
+| 狀況 | 原因與處理 |
+|---|---|
+| GitHub 顯示 `The redirect_uri is not associated with this application` | 目前的網址（含連接埠）沒有登記為 callback URL，見上方第 4 點 |
+| 登入頁沒有 GitHub 按鈕 | 後端沒有讀到 `GITHUB_CLIENT_ID`，`/api/user/oauth/config` 回 `enabled: false`。Docker 改了 `.env` 後要 `docker compose up -d` |
+| 後端啟動失敗：`GITHUB_CLIENT_ID 與 GITHUB_CLIENT_SECRET 要一起設定` | 只設定了其中一個 |
+| 回 `GitHub 驗證失敗，請再試一次` | secret 錯誤、code 已使用或過期（10 分鐘），重新操作一次 |
+| 回 `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` | GitHub 帳號的 primary email 未驗證。到 GitHub 的 Settings → Emails 驗證，或先用其他方式註冊再到會員中心連結 GitHub |
+| 回 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub` | 預期的行為：同一個 email 已有帳號，不會自動合併，見 [FEATURES.md](FEATURES.md) |
+| 回 `登入流程已失效，請重新操作一次` | 在回呼頁重新整理，或在另一個分頁完成授權（`state` 存在原本分頁的 sessionStorage） |
 
 ## 文件索引
 

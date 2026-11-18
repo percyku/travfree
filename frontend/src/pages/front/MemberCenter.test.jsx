@@ -4,10 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import MemberCenter from "./MemberCenter";
+import OAuthCallback from "./OAuthCallback";
 import { api, failure } from "../../test/contract";
 import { server } from "../../test/server";
 import { Landing, findToast, renderRoutes } from "../../test/render";
 import { installFakeGoogle, useGoogleEnabled } from "../../test/google";
+import { interceptRedirects, returnFromProvider, useGitHubEnabled } from "../../test/oauth";
 import {
   MEMBER_TOKEN,
   memberProfile,
@@ -32,14 +34,15 @@ const SigninLanding = () => {
 };
 
 /** 預設以一般會員進入（Header 已確認過登入狀態） */
-const renderMemberCenter = (auth = { user: memberUser(), checked: true }) =>
+const renderMemberCenter = (auth = { user: memberUser(), checked: true }, route = "/member") =>
   renderRoutes(
     [
       { path: "/", element: <Landing name="首頁" /> },
       { path: "/member", element: <MemberCenter /> },
       { path: "/signin", element: <SigninLanding /> },
+      { path: "/oauth/callback", element: <OAuthCallback /> },
     ],
-    { route: "/member", preloadedState: { auth } },
+    { route, preloadedState: { auth } },
   );
 
 const useProfile = (profile = memberProfile()) =>
@@ -310,7 +313,7 @@ describe("會員中心的登入方式", () => {
           json: {
             success: true,
             message: "已連結 Google",
-            profile: memberProfile({ google_email: "traveler@gmail.com" }),
+            profile: memberProfile({ identities: [{ provider: "google", email: "traveler@gmail.com" }] }),
           },
         };
       }),
@@ -324,7 +327,7 @@ describe("會員中心的登入方式", () => {
     expect(await findToast("已連結 Google")).toBeInTheDocument();
     expect(body).toEqual({ data: { credential: "link-credential" } });
     expect(card.getByText("已連結（traveler@gmail.com）")).toBeInTheDocument();
-    expect(card.getByRole("button", { name: "解除連結" })).toBeEnabled();
+    expect(card.getByRole("button", { name: "解除連結 Google" })).toBeEnabled();
   });
 
   it("Google 帳號已連結其他會員時顯示原因", async () => {
@@ -340,7 +343,7 @@ describe("會員中心的登入方式", () => {
   });
 
   it("有密碼時可以解除連結", async () => {
-    useProfile(memberProfile({ google_email: "traveler@gmail.com" }));
+    useProfile(memberProfile({ identities: [{ provider: "google", email: "traveler@gmail.com" }] }));
     server.use(
       api.delete("/api/user/google/link", () => ({
         json: { success: true, message: "已解除連結 Google", profile: memberProfile() },
@@ -349,20 +352,20 @@ describe("會員中心的登入方式", () => {
     renderMemberCenter();
 
     const card = within(await loginMethodsCard());
-    await userEvent.click(card.getByRole("button", { name: "解除連結" }));
+    await userEvent.click(card.getByRole("button", { name: "解除連結 Google" }));
 
     expect(await findToast("已解除連結 Google")).toBeInTheDocument();
     expect(card.getByText("未連結。連結後可以直接用 Google 登入。")).toBeInTheDocument();
   });
 
   it("只用 Google 登入的帳號不能解除連結，密碼卡片是設定密碼", async () => {
-    useProfile(memberProfile({ has_password: false, google_email: "traveler@gmail.com" }));
+    useProfile(memberProfile({ has_password: false, identities: [{ provider: "google", email: "traveler@gmail.com" }] }));
     installFakeGoogle();
     renderMemberCenter();
 
     const card = within(await loginMethodsCard());
     expect(card.getByText("未設定")).toBeInTheDocument();
-    expect(card.getByRole("button", { name: "解除連結" })).toBeDisabled();
+    expect(card.getByRole("button", { name: "解除連結 Google" })).toBeDisabled();
     expect(card.getByText("至少要保留一種登入方式，請先設定密碼才能解除連結")).toBeInTheDocument();
 
     const password = within(await findPasswordCard());
@@ -373,7 +376,7 @@ describe("會員中心的登入方式", () => {
 
   it("設定密碼：填好新密碼後以 Google 重新驗證，存下新的 token", async () => {
     const NEW_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzZXQifQ.c2V0dG9rZW4";
-    useProfile(memberProfile({ has_password: false, google_email: "traveler@gmail.com" }));
+    useProfile(memberProfile({ has_password: false, identities: [{ provider: "google", email: "traveler@gmail.com" }] }));
     installFakeGoogle("fresh-credential");
     let body;
     server.use(
@@ -394,11 +397,11 @@ describe("會員中心的登入方式", () => {
     expect(tokenInCookie()).toBe(NEW_TOKEN);
     // 設定後變成一般的變更密碼，也可以解除 Google
     expect(await screen.findByRole("heading", { name: "變更密碼" })).toBeInTheDocument();
-    expect(within(await loginMethodsCard()).getByRole("button", { name: "解除連結" })).toBeEnabled();
+    expect(within(await loginMethodsCard()).getByRole("button", { name: "解除連結 Google" })).toBeEnabled();
   });
 
   it("設定密碼前先檢查欄位，不符合時不送出", async () => {
-    useProfile(memberProfile({ has_password: false, google_email: "traveler@gmail.com" }));
+    useProfile(memberProfile({ has_password: false, identities: [{ provider: "google", email: "traveler@gmail.com" }] }));
     installFakeGoogle();
     renderMemberCenter();
 
@@ -411,3 +414,187 @@ describe("會員中心的登入方式", () => {
   });
 });
 
+describe("會員中心的 GitHub", () => {
+  const GITHUB = { provider: "github", email: "traveler@example.com" };
+  const NEW_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnaCJ9.Z2l0aHVidG9rZW4";
+
+  beforeEach(() => {
+    axios.defaults.headers.common.Authorization = MEMBER_TOKEN;
+    useGitHubEnabled();
+  });
+
+  /** 在會員中心按下按鈕導向 GitHub，再模擬授權後回到回呼頁 */
+  const authorizeOnGitHub = async (buttonName, code = "github-code") => {
+    const urls = interceptRedirects();
+    const view = renderMemberCenter();
+    await userEvent.click(await screen.findByRole("button", { name: buttonName }));
+    await waitFor(() => expect(urls).toHaveLength(1));
+    view.unmount();
+    returnFromProvider(urls[0], { code });
+    return renderMemberCenter(undefined, "/oauth/callback");
+  };
+
+  it("後端沒有設定 GitHub 時不顯示", async () => {
+    server.use(
+      api.get("/api/user/oauth/config", () => ({
+        json: {
+          success: true,
+          providers: Object.fromEntries(
+            ["github", "facebook"].map((p) => [
+              p,
+              { enabled: false, client_id: "", authorize_url: "", scope: "" },
+            ]),
+          ),
+        },
+      })),
+    );
+    useProfile();
+    renderMemberCenter();
+
+    await loginMethodsCard();
+    await waitFor(() => expect(screen.queryByText("GitHub")).not.toBeInTheDocument());
+  });
+
+  it("連結 GitHub：授權後送出 code，回到會員中心顯示已連結", async () => {
+    let linked = false;
+    server.use(
+      api.get("/api/user/profile", () => ({
+        json: { success: true, profile: memberProfile({ identities: linked ? [GITHUB] : [] }) },
+      })),
+    );
+    let body;
+    server.use(
+      api.post("/api/user/oauth/{provider}/link", ({ body: sent }) => {
+        body = sent;
+        linked = true;
+        return {
+          json: { success: true, message: "已連結 GitHub", profile: memberProfile({ identities: [GITHUB] }) },
+        };
+      }),
+    );
+
+    await authorizeOnGitHub("連結 GitHub", "link-code");
+
+    expect(await findToast("已連結 GitHub")).toBeInTheDocument();
+    expect(body.data).toMatchObject({ code: "link-code", redirect_uri: `${window.location.origin}/` });
+    const card = within(await loginMethodsCard());
+    expect(await card.findByText("已連結（traveler@example.com）")).toBeInTheDocument();
+  });
+
+  it("連結失敗（已連結其他會員）時回到會員中心顯示原因", async () => {
+    useProfile();
+    server.use(
+      api.post("/api/user/oauth/{provider}/link", () => failure(409, "這個 GitHub 帳號已連結其他會員")),
+    );
+
+    await authorizeOnGitHub("連結 GitHub");
+
+    expect(await findToast("這個 GitHub 帳號已連結其他會員")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "會員中心" })).toBeInTheDocument();
+  });
+
+  it("有密碼時可以解除 GitHub；沒有 email 的連結只顯示已連結", async () => {
+    useProfile(memberProfile({ identities: [{ provider: "github", email: null }] }));
+    let provider;
+    server.use(
+      api.delete("/api/user/oauth/{provider}/link", ({ params }) => {
+        provider = params.provider;
+        return { json: { success: true, message: "已解除連結 GitHub", profile: memberProfile() } };
+      }),
+    );
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    expect(await card.findByText("已連結")).toBeInTheDocument();
+    await userEvent.click(card.getByRole("button", { name: "解除連結 GitHub" }));
+
+    expect(await findToast("已解除連結 GitHub")).toBeInTheDocument();
+    expect(provider).toBe("github");
+    expect(card.getByRole("button", { name: "連結 GitHub" })).toBeInTheDocument();
+  });
+
+  it("沒有密碼但還連結了 Google 時可以解除 GitHub，Google 是最後一種時不行", async () => {
+    useGoogleEnabled();
+    installFakeGoogle();
+    useProfile(
+      memberProfile({
+        has_password: false,
+        identities: [{ provider: "google", email: "g@gmail.com" }, GITHUB],
+      }),
+    );
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    expect(card.getByRole("button", { name: "解除連結 GitHub" })).toBeEnabled();
+    expect(card.getByRole("button", { name: "解除連結 Google" })).toBeEnabled();
+    expect(card.queryByText("至少要保留一種登入方式，請先設定密碼才能解除連結")).not.toBeInTheDocument();
+  });
+
+  it("只用 GitHub 的帳號：不能解除，設定密碼要先以 GitHub 驗證", async () => {
+    useProfile(memberProfile({ has_password: false, identities: [GITHUB] }));
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    expect(card.getByRole("button", { name: "解除連結 GitHub" })).toBeDisabled();
+    const password = within(await findPasswordCard());
+    expect(password.getByRole("heading", { name: "設定密碼" })).toBeInTheDocument();
+    // 驗證前不顯示密碼欄位：離開網站時填好的密碼會消失
+    expect(password.queryByLabelText("新密碼")).not.toBeInTheDocument();
+    expect(await password.findByRole("button", { name: "以 GitHub 驗證身分" })).toBeInTheDocument();
+  });
+
+  it("設定密碼：以 GitHub 驗證後回到會員中心填寫新密碼，送出 code 並存下新的 token", async () => {
+    useProfile(memberProfile({ has_password: false, identities: [GITHUB] }));
+    let body;
+    server.use(
+      api.put("/api/user/password", ({ body: sent }) => {
+        body = sent;
+        return { json: signinSuccess(NEW_TOKEN, { message: "已設定密碼" }) };
+      }),
+    );
+
+    await authorizeOnGitHub("以 GitHub 驗證身分", "password-code");
+
+    const card = within(await findPasswordCard());
+    expect(card.getByText(/已通過 GitHub 驗證/)).toBeInTheDocument();
+    await userEvent.type(card.getByLabelText("新密碼"), "Journey2027");
+    await userEvent.type(card.getByLabelText("確認新密碼"), "Journey2027");
+    await userEvent.click(card.getByRole("button", { name: "設定密碼" }));
+
+    expect(await findToast("已設定密碼，現在也可以用 Email 與密碼登入")).toBeInTheDocument();
+    expect(body).toEqual({
+      data: {
+        oauth: {
+          provider: "github",
+          code: "password-code",
+          redirect_uri: `${window.location.origin}/`,
+          code_verifier: expect.stringMatching(/^[\w-]{43}$/),
+        },
+        new_password: "Journey2027",
+      },
+    });
+    expect(tokenInCookie()).toBe(NEW_TOKEN);
+  });
+
+  it("設定密碼失敗時顯示原因，要重新驗證（code 只能用一次）", async () => {
+    useProfile(memberProfile({ has_password: false, identities: [GITHUB] }));
+    server.use(
+      api.put("/api/user/password", () =>
+        failure(400, "GitHub 驗證失敗，請以已連結的 GitHub 帳號驗證"),
+      ),
+    );
+
+    await authorizeOnGitHub("以 GitHub 驗證身分");
+
+    const card = within(await findPasswordCard());
+    await userEvent.type(card.getByLabelText("新密碼"), "Journey2027");
+    await userEvent.type(card.getByLabelText("確認新密碼"), "Journey2027");
+    await userEvent.click(card.getByRole("button", { name: "設定密碼" }));
+
+    expect(await card.findByRole("alert")).toHaveTextContent(
+      "GitHub 驗證失敗，請以已連結的 GitHub 帳號驗證",
+    );
+    expect(card.getByRole("button", { name: "以 GitHub 驗證身分" })).toBeInTheDocument();
+    expect(tokenInCookie()).toBeUndefined();
+  });
+});

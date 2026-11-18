@@ -18,6 +18,13 @@ export PUBLIC_BASE_URL="http://localhost:${APP_PORT}/v2"
 export GOOGLE_CLIENT_ID=e2e-client.apps.googleusercontent.com
 GOOGLE_TEST_PUBLIC_KEY=$(scripts/google-test-key.sh)
 export GOOGLE_TEST_PUBLIC_KEY
+# GitHub 登入：授權頁由 Playwright 攔截，換 token 與使用者 API 指向假的 GitHub，見 e2e/fake-github.mjs 與 e2e/tests/github.js
+export COMPOSE_PROFILES=e2e
+export GITHUB_CLIENT_ID=e2e-github-client
+export GITHUB_CLIENT_SECRET=e2e-github-secret
+export GITHUB_OAUTH_AUTHORIZE_URL=https://github.e2e.test/login/oauth/authorize
+export GITHUB_OAUTH_TOKEN_URL=http://fake-github:9000/login/oauth/access_token
+export GITHUB_OAUTH_API_URL=http://fake-github:9000
 # 不讀根目錄的 .env（部署設定），固定使用開發設定
 compose() { docker compose --env-file /dev/null "$@"; }
 
