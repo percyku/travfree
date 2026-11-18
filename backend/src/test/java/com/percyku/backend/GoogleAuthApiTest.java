@@ -76,7 +76,7 @@ class GoogleAuthApiTest extends ApiTestSupport {
 	@Test
 	void verifierIsDisabledWithoutClientId() {
 		GoogleTokenVerifier disabled = new GoogleTokenVerifier(new AppProperties(null, null, null, null, null, null,
-				new AppProperties.Google("  ", null)));
+				new AppProperties.Google("  ", null), null));
 
 		assertThat(disabled.isEnabled()).isFalse();
 		assertThat(disabled.clientId()).isEmpty();
@@ -100,7 +100,8 @@ class GoogleAuthApiTest extends ApiTestSupport {
 				.andExpect(jsonPath("$.roles", contains("USER")));
 		profile(token)
 				.andExpect(jsonPath("$.profile.has_password").value(false))
-				.andExpect(jsonPath("$.profile.google_email").value("traveler@gmail.com"));
+				.andExpect(jsonPath("$.profile.identities[0].provider").value("google"))
+				.andExpect(jsonPath("$.profile.identities[0].email").value("traveler@gmail.com"));
 	}
 
 	@Test
@@ -207,7 +208,8 @@ class GoogleAuthApiTest extends ApiTestSupport {
 		link(member, GoogleTestTokens.token("google-1", "Traveler@gmail.com", "王小明"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("已連結 Google"))
-				.andExpect(jsonPath("$.profile.google_email").value("traveler@gmail.com"))
+				.andExpect(jsonPath("$.profile.identities[0].provider").value("google"))
+				.andExpect(jsonPath("$.profile.identities[0].email").value("traveler@gmail.com"))
 				.andExpect(jsonPath("$.profile.has_password").value(true));
 
 		googleSignin(GoogleTestTokens.token("google-1", "traveler@gmail.com", "王小明"))
@@ -227,7 +229,7 @@ class GoogleAuthApiTest extends ApiTestSupport {
 		link(member, GoogleTestTokens.token("google-1", "someone.else@gmail.com", "王小明"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.profile.email").value("traveler@example.com"))
-				.andExpect(jsonPath("$.profile.google_email").value("someone.else@gmail.com"));
+				.andExpect(jsonPath("$.profile.identities[0].email").value("someone.else@gmail.com"));
 	}
 
 	/** 連結的人已證明擁有這個 Gmail，之後不能再用它以密碼註冊另一個帳號（否則 Google 與密碼登入會進到不同帳號） */
@@ -259,7 +261,7 @@ class GoogleAuthApiTest extends ApiTestSupport {
 
 		link(owner, GoogleTestTokens.token("google-1", "owner@gmail.com", "信箱的主人"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.profile.google_email").value("owner@gmail.com"));
+				.andExpect(jsonPath("$.profile.identities[0].email").value("owner@gmail.com"));
 		// 以 Google 登入進的是信箱主人的帳號
 		googleSignin(GoogleTestTokens.token("google-1", "owner@gmail.com", "信箱的主人"))
 				.andExpect(jsonPath("$.message").value("登入成功"))
@@ -298,7 +300,7 @@ class GoogleAuthApiTest extends ApiTestSupport {
 		unlink(member)
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("已解除連結 Google"))
-				.andExpect(jsonPath("$.profile.google_email").doesNotExist());
+				.andExpect(jsonPath("$.profile.identities").isEmpty());
 		googleSignin(GoogleTestTokens.token("google-2", "traveler@gmail.com", "王小明"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.message").value("註冊成功")); // 解除後是另一個新帳號
@@ -341,7 +343,7 @@ class GoogleAuthApiTest extends ApiTestSupport {
 
 		setPassword(token, Map.of("new_password", "Journey2027"))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("credential 屬性不得為空"));
+				.andExpect(jsonPath("$.message").value("請重新以已連結的登入方式驗證"));
 		// 其他 Google 帳號、無效的 token 都不行；帶了 password 也沒用
 		for (String credential : new String[] {
 				GoogleTestTokens.token("google-2", "attacker@gmail.com", "Attacker"),

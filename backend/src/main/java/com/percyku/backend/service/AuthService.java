@@ -22,6 +22,8 @@ import com.percyku.backend.repository.UserRepository;
 import com.percyku.backend.security.GoogleTokenVerifier;
 import com.percyku.backend.security.JwtService;
 import com.percyku.backend.security.LoginAttemptLimiter;
+import com.percyku.backend.security.oauth.OAuthClient;
+import com.percyku.backend.security.oauth.OAuthProviders;
 
 @Service
 public class AuthService {
@@ -32,16 +34,18 @@ public class AuthService {
 	private final LoginAttemptLimiter loginAttemptLimiter;
 	private final UserIdentityRepository identityRepository;
 	private final GoogleTokenVerifier googleTokenVerifier;
+	private final OAuthProviders oauthProviders;
 
 	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
 			LoginAttemptLimiter loginAttemptLimiter, UserIdentityRepository identityRepository,
-			GoogleTokenVerifier googleTokenVerifier) {
+			GoogleTokenVerifier googleTokenVerifier, OAuthProviders oauthProviders) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtService = jwtService;
 		this.loginAttemptLimiter = loginAttemptLimiter;
 		this.identityRepository = identityRepository;
 		this.googleTokenVerifier = googleTokenVerifier;
+		this.oauthProviders = oauthProviders;
 	}
 
 	/**
@@ -51,7 +55,7 @@ public class AuthService {
 	public SigninResult signin(SigninRequest request, String clientIp, boolean requireAdmin) {
 		loginAttemptLimiter.checkAllowed(clientIp, request.username());
 		User user = userRepository.findByEmail(request.username())
-				// 沒有密碼的帳號（只用 Google 登入）與密碼錯誤相同，不透露帳號沒有密碼
+				// 沒有密碼的帳號（只用第三方登入）與密碼錯誤相同，不透露帳號沒有密碼
 				.filter(found -> found.hasPassword() && passwordEncoder.matches(request.password(), found.getPasswordHash()))
 				.orElse(null);
 		if (user == null) {
@@ -107,8 +111,7 @@ public class AuthService {
 	}
 
 	public ProfileResponse profileOf(User user) {
-		return ProfileResponse.from(user,
-				identityRepository.findByUserIdAndProvider(user.getId(), UserIdentity.GOOGLE).orElse(null));
+		return ProfileResponse.from(user, identityRepository.findByUserId(user.getId()));
 	}
 
 	@Transactional
@@ -145,31 +148,60 @@ public class AuthService {
 	}
 
 	/**
-	 * 只用 Google 登入的帳號第一次設定密碼。沒有目前的密碼可以驗證，所以要重新以已連結的 Google 帳號驗證，
-	 * 否則拿到 token 的人就能偷設密碼，之後一直登得進來。
+	 * 只用第三方登入的帳號第一次設定密碼。沒有目前的密碼可以驗證，所以要重新以已連結的平台驗證，
+	 * 否則拿到 token 的人就能偷設密碼，之後一直登得進來。兩種都帶時只看 credential（Google）。
 	 */
 	private SigninResult setFirstPassword(User user, PasswordChangeRequest request) {
-		if (request.credential() == null || request.credential().isBlank()) {
-			throw ApiException.badRequest("credential 屬性不得為空");
-		}
-		String invalid = "Google 驗證失敗，請以已連結的 Google 帳號驗證";
-		GoogleTokenVerifier.GoogleAccount google = googleTokenVerifier.verify(request.credential(), invalid);
-		boolean linked = identityRepository.findByUserIdAndProvider(user.getId(), UserIdentity.GOOGLE)
-				.map(identity -> identity.getSubject().equals(google.subject()))
-				.orElse(false);
-		if (!linked) {
-			throw ApiException.badRequest(invalid);
+		if (request.credential() != null && !request.credential().isBlank()) {
+			String invalid = "Google 驗證失敗，請以已連結的 Google 帳號驗證";
+			GoogleTokenVerifier.GoogleAccount google = googleTokenVerifier.verify(request.credential(), invalid);
+			if (!isLinked(user, UserIdentity.GOOGLE, google.subject())) {
+				throw ApiException.badRequest(invalid);
+			}
+		} else if (request.oauth() != null) {
+			verifyOAuth(user, request.oauth());
+		} else {
+			throw ApiException.badRequest("請重新以已連結的登入方式驗證");
 		}
 		user.changePassword(passwordEncoder.encode(request.newPassword()));
 		return new SigninResult(user.getId(), jwtService.issue(user));
 	}
 
-	/** 包含只用 Google 登入的帳號，所以提示改用原本的方式。 */
+	private void verifyOAuth(User user, PasswordChangeRequest.OAuthReauth oauth) {
+		String name;
+		try {
+			name = OAuthProviders.displayName(oauth.provider());
+		} catch (ApiException e) {
+			// 在 body 裡，屬於請求內容錯誤，不是網址找不到
+			throw ApiException.badRequest(OAuthProviders.NOT_FOUND);
+		}
+		if (oauth.code() == null || oauth.code().isBlank()) {
+			throw ApiException.badRequest("code 屬性不得為空");
+		}
+		if (oauth.redirectUri() == null || oauth.redirectUri().isBlank()) {
+			throw ApiException.badRequest("redirect_uri 屬性不得為空");
+		}
+		OAuthClient client = oauthProviders.require(oauth.provider());
+		String invalid = name + " 驗證失敗，請以已連結的 " + name + " 帳號驗證";
+		OAuthClient.OAuthAccount account = client.exchange(oauth.code(), oauth.redirectUri(), oauth.codeVerifier(),
+				invalid);
+		if (!isLinked(user, client.provider(), account.subject())) {
+			throw ApiException.badRequest(invalid);
+		}
+	}
+
+	private boolean isLinked(User user, String provider, String subject) {
+		return identityRepository.findByUserIdAndProvider(user.getId(), provider)
+				.map(identity -> identity.getSubject().equals(subject))
+				.orElse(false);
+	}
+
+	/** 包含只用第三方登入的帳號，所以提示改用原本的方式。 */
 	private static ApiException emailTaken() {
 		return ApiException.badRequest("此 Email 已註冊，請改用原本的方式登入（例如 Google）");
 	}
 
-	/** 給 Google 登入共用：發 token 給已確認身分的帳號。 */
+	/** 給第三方登入（IdentityService）共用：發 token 給已確認身分的帳號。 */
 	SigninResult issue(User user) {
 		return new SigninResult(user.getId(), jwtService.issue(user));
 	}

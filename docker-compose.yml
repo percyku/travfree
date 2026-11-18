@@ -41,6 +41,12 @@ services:
       # Google 登入的 Web client ID；沒有設定時關閉。GOOGLE_TEST_PUBLIC_KEY 只給 E2E（scripts/e2e.sh）使用
       - GOOGLE_CLIENT_ID
       - GOOGLE_TEST_PUBLIC_KEY
+      # GitHub 登入（OAuth App）；ID 與 secret 要一起設定，沒有設定時關閉。三個網址只給 E2E 指向假的服務
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+      - GITHUB_AUTHORIZE_URL
+      - GITHUB_TOKEN_URL
+      - GITHUB_API_URL
     volumes:
       - uploads:/app/uploads
     healthcheck:

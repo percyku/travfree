@@ -1,5 +1,6 @@
 package com.percyku.backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,10 @@ public interface UserIdentityRepository extends JpaRepository<UserIdentity, Stri
 	Optional<UserIdentity> findByProviderAndSubject(String provider, String subject);
 
 	Optional<UserIdentity> findByUserIdAndProvider(String userId, String provider);
+
+	List<UserIdentity> findByUserId(String userId);
+
+	long countByUserId(String userId);
 
 	/** email 以小寫保存（連結時正規化），呼叫端傳入正規化後的 email。 */
 	boolean existsByEmail(String email);

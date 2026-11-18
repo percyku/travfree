@@ -22,6 +22,7 @@ import com.percyku.backend.entity.User;
 import com.percyku.backend.security.GoogleTokenVerifier;
 import com.percyku.backend.service.AuthService;
 import com.percyku.backend.service.GoogleAuthService;
+import com.percyku.backend.service.IdentityService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -109,7 +110,7 @@ public class AuthController {
 
 	@PostMapping("/api/user/google")
 	public Map<String, Object> googleSignin(@Valid @RequestBody DataRequest<GoogleCredentialRequest> request) {
-		GoogleAuthService.Result result = googleAuthService.signin(request.data().credential());
+		IdentityService.Result result = googleAuthService.signin(request.data().credential());
 		return tokenResponse(result.created() ? "註冊成功" : "登入成功", result.signin());
 	}
 
@@ -125,7 +126,8 @@ public class AuthController {
 		return ApiResponses.message("已解除連結 Google", "profile", googleAuthService.unlink(authentication.getName()));
 	}
 
-	private static Map<String, Object> tokenResponse(String message, AuthService.SigninResult result) {
+	/** 登入、註冊、變更密碼共用的回應；OAuthController 也使用。 */
+	static Map<String, Object> tokenResponse(String message, AuthService.SigninResult result) {
 		Map<String, Object> body = ApiResponses.message(message, "uid", result.uid());
 		body.put("token", result.token().token());
 		body.put("expired", result.token().expiredAtMillis());

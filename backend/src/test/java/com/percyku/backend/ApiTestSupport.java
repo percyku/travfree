@@ -79,11 +79,22 @@ abstract class ApiTestSupport {
 	@Autowired
 	UserIdentityRepository userIdentityRepository;
 
-	/** Google 登入以測試金鑰驗證，見 GoogleTestTokens。所有測試共用同一組設定，所以只有一個 Spring context */
+	/** 所有測試共用，在 Spring context 之前啟動，網址才能放進設定 */
+	static final FakeGitHub GITHUB = FakeGitHub.start();
+
+	/**
+	 * Google 登入以測試金鑰驗證，見 GoogleTestTokens；GitHub 指向 FakeGitHub。
+	 * 所有測試共用同一組設定，所以只有一個 Spring context
+	 */
 	@DynamicPropertySource
-	static void googleSignin(DynamicPropertyRegistry registry) {
+	static void thirdPartySignin(DynamicPropertyRegistry registry) {
 		registry.add("app.google.client-id", () -> GoogleTestTokens.CLIENT_ID);
 		registry.add("app.google.test-public-key", GoogleTestTokens::publicKeyBase64);
+		registry.add("app.github.client-id", () -> FakeGitHub.CLIENT_ID);
+		registry.add("app.github.client-secret", () -> FakeGitHub.CLIENT_SECRET);
+		registry.add("app.github.authorize-url", () -> GITHUB.baseUrl() + "/login/oauth/authorize");
+		registry.add("app.github.token-url", () -> GITHUB.baseUrl() + "/login/oauth/access_token");
+		registry.add("app.github.api-url", GITHUB::baseUrl);
 	}
 
 	String token;
@@ -105,6 +116,7 @@ abstract class ApiTestSupport {
 				.filter(user -> !user.getEmail().equals(ADMIN_EMAIL)).toList());
 		// 所有 MockMvc 請求都來自 127.0.0.1，不清空的話登入失敗會跨測試累計
 		loginAttemptLimiter.reset();
+		GITHUB.reset();
 		token = signin();
 		shopperToken = null;
 	}
