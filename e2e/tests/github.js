@@ -1,4 +1,4 @@
-// E2E 的 GitHub 授權頁：後端設定的 GITHUB_AUTHORIZE_URL 是不存在的 github.e2e.test，
+// E2E 的 GitHub 授權頁：後端設定的 GITHUB_OAUTH_AUTHORIZE_URL 是不存在的 github.e2e.test，
 // 瀏覽器導向時由 Playwright 攔截，回一個立刻導回網站的頁面，就像使用者在 GitHub 按了「Authorize」。
 // code 帶著帳號資料、redirect_uri 與 code_challenge，由 e2e/fake-github.mjs（後端換 token 的對象）解開並檢查。
 export const GITHUB_AUTHORIZE_HOST = "https://github.e2e.test";

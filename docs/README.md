@@ -88,7 +88,7 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 | `GOOGLE_CLIENT_ID` | 無 | Google 登入的 Web client ID，沒有設定時關閉。設定方式見下方「Google 登入設定」 |
 | `GOOGLE_TEST_PUBLIC_KEY` | 無 | **只給 E2E 使用**：以這把公鑰驗證 ID token，不連 Google（`scripts/google-test-key.sh` 產生）。正式環境不要設定 |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | 無 | GitHub 登入的 OAuth App，要一起設定（只設一個時拒絕啟動），沒有設定時關閉。設定方式見下方「GitHub 登入設定」 |
-| `GITHUB_AUTHORIZE_URL` / `GITHUB_TOKEN_URL` / `GITHUB_API_URL` | GitHub 的網址 | **只給 E2E 使用**：指向假的 GitHub（`e2e/fake-github.mjs`）。正式環境不要設定 |
+| `GITHUB_OAUTH_AUTHORIZE_URL` / `GITHUB_OAUTH_TOKEN_URL` / `GITHUB_OAUTH_API_URL` | GitHub 的網址 | **只給 E2E 使用**：指向假的 GitHub（`e2e/fake-github.mjs`）。正式環境不要設定 |
 
 ## 部署
 

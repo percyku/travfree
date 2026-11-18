@@ -1,4 +1,4 @@
-// E2E 的「假 GitHub」：後端換 token 與取得使用者資料的 API（GITHUB_TOKEN_URL、GITHUB_API_URL 指向這裡）。
+// E2E 的「假 GitHub」：後端換 token 與取得使用者資料的 API（GITHUB_OAUTH_TOKEN_URL、GITHUB_OAUTH_API_URL 指向這裡）。
 // 授權頁由 Playwright 在瀏覽器端攔截（tests/github.js），不經過這裡。
 //
 // 不保存狀態：code 是 base64url 的 JSON，含帳號資料、當初的 redirect_uri 與 PKCE 的 code_challenge，

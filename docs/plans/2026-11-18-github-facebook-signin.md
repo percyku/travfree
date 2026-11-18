@@ -75,7 +75,7 @@
 - 後端：用 `FakeGitHub`（JDK 的 `HttpServer`，所有測試共用）模擬 GitHub 的 token 與 user API，涵蓋新帳號、已連結、撞 email、沒有已驗證 email、換 token 失敗、未設定、連結與解除、設定密碼。
 - 前端：Vitest 測試回呼頁（`state` 不符、成功、409）、按鈕的授權網址、會員中心的 `identities`。
 - E2E：compose 加一個假的 OAuth 服務，走完「GitHub 註冊 → 登出 → 再登入」與「會員中心連結 GitHub」。
-  - 授權頁（`GITHUB_AUTHORIZE_URL=https://github.e2e.test/...`）由 Playwright 攔截，回一個導回網站的頁面（`e2e/tests/github.js`）。
+  - 授權頁（`GITHUB_OAUTH_AUTHORIZE_URL=https://github.e2e.test/...`）由 Playwright 攔截，回一個導回網站的頁面（`e2e/tests/github.js`）。
   - 換 token 與使用者 API 是 compose 的 `fake-github` 服務（`profiles: ["e2e"]`，`e2e/fake-github.mjs`，只用 Node 內建模組）。
     不保存狀態：code 是帶著帳號、`redirect_uri`、`code_challenge` 的 base64url JSON，假服務檢查 client 帳密、`redirect_uri` 與 PKCE。
 
@@ -104,3 +104,7 @@
   - 登入頁的第三方按鈕集中在 `SocialSignin`，只啟用 GitHub 時也顯示「或」的分隔線。
 - 2026-11-18：E2E 完成，全部 12 個通過（新增 `github.spec.js` 2 個），這也是第一次在真實 PostgreSQL 上跑。
   故意讓假 GitHub 的 PKCE 檢查失敗時，兩個 GitHub 測試都會失敗。`scripts/e2e.sh` 與 CI 的 `.env` 加上 `COMPOSE_PROFILES=e2e` 與 `GITHUB_*`。
+- 2026-11-18：PR #7 的 CI 中兩個 GitHub E2E 失敗：後端打 `/user` 收到 401。原因是 GitHub Actions 的 runner 預設有環境變數
+  `GITHUB_API_URL=https://api.github.com`，docker compose 的 shell 環境變數優先於 `.env`，後端被導到真的 GitHub。
+  只給 E2E 用的網址變數改名為 `GITHUB_OAUTH_AUTHORIZE_URL`、`GITHUB_OAUTH_TOKEN_URL`、`GITHUB_OAUTH_API_URL`（`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET` 不是 runner 的預設變數，不變）。
+  本機設定 `GITHUB_API_URL` 後以 prod profile 重現了失敗，改名後通過。
