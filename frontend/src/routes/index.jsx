@@ -12,6 +12,7 @@ import SingleArticle from "../pages/front/SingleArticle";
 import MemberSignin from "../pages/front/MemberSignin";
 import MemberSignup from "../pages/front/MemberSignup";
 import MemberCenter from "../pages/front/MemberCenter";
+import OAuthCallback from "../pages/front/OAuthCallback";
 
 import Login from "../pages/Login";
 import ProductedRoute from "../components/ProductedRoute";
@@ -75,6 +76,11 @@ const routes = [
       {
         path: "member",
         element: <MemberCenter />,
+      },
+      {
+        // GitHub 等平台授權後回到這裡，見 utils/oauth.js
+        path: "oauth/callback",
+        element: <OAuthCallback />,
       },
     ],
   },

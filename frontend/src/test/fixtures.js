@@ -119,7 +119,7 @@ export const memberProfile = (overrides = {}) => ({
   tel: "",
   address: "",
   has_password: true,
-  google_email: null,
+  identities: [],
   ...overrides,
 });
 
