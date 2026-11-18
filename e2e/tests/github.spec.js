@@ -1,11 +1,11 @@
 // GitHub 登入（授權碼流程）：新帳號、設定密碼、再登入；email 已有帳號時不自動合併，登入後連結。
-// 授權頁由 Playwright 攔截，後端換 token 的對象是假的 GitHub，見 tests/github.js 與 e2e/fake-github.mjs
+// 授權頁由 Playwright 攔截，後端換 token 的對象是假的 GitHub，見 tests/oauth.js 與 e2e/fake-oauth.mjs
 import { expect, test } from "@playwright/test";
 import { MEMBER_PASSWORD, signupByApi, toast, uniqueId } from "./helpers.js";
-import { fakeGitHubAuthorize, hasFakeGitHub } from "./github.js";
+import { fakeAuthorize, hasFakeOAuth } from "./oauth.js";
 
 test.beforeEach(async ({ request }) => {
-  test.skip(!(await hasFakeGitHub(request)), "後端沒有接上假的 GitHub：以 npm run e2e 執行");
+  test.skip(!(await hasFakeOAuth(request, "github")), "後端沒有接上假的 GitHub：以 npm run e2e 執行");
 });
 
 const methodsCard = (page) =>
@@ -14,7 +14,7 @@ const passwordCard = (page) =>
   page.locator("section").filter({ has: page.getByRole("heading", { name: /密碼$/ }) });
 
 test("用 GitHub 註冊，以 GitHub 驗證後設定密碼，之後兩種方式都能登入", async ({ page }) => {
-  const github = await fakeGitHubAuthorize(page);
+  const github = await fakeAuthorize(page, "github");
   const id = Number(uniqueId());
   const account = { id, login: `e2e-${id}`, name: `GitHub 會員 ${id}`, email: `e2e-github-${id}@example.com` };
   github.as(account);
@@ -71,7 +71,7 @@ test("用 GitHub 註冊，以 GitHub 驗證後設定密碼，之後兩種方式�
 
 test("email 已有帳號時不自動合併，用密碼登入後連結 GitHub，之後可以用 GitHub 登入", async ({ page, request }) => {
   const member = await signupByApi(request);
-  const github = await fakeGitHubAuthorize(page);
+  const github = await fakeAuthorize(page, "github");
   const id = Number(uniqueId());
   github.as({ id, login: `e2e-${id}`, name: "同一個 email", email: member.email });
   const header = page.locator("nav").first();

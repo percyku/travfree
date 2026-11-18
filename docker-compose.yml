@@ -75,16 +75,18 @@ services:
       timeout: 3s
       retries: 10
 
-  # 只給 E2E：假的 GitHub（換 token 與使用者 API），以 COMPOSE_PROFILES=e2e 啟動，見 scripts/e2e.sh 與 e2e/fake-github.mjs
-  fake-github:
+  # 只給 E2E：假的 GitHub 與 Facebook（換 token 與使用者 API），以 COMPOSE_PROFILES=e2e 啟動，見 scripts/e2e.sh 與 e2e/fake-oauth.mjs
+  fake-oauth:
     image: node:24-alpine
     profiles: ["e2e"]
-    command: ["node", "/app/fake-github.mjs"]
+    command: ["node", "/app/fake-oauth.mjs"]
     environment:
       - GITHUB_CLIENT_ID
       - GITHUB_CLIENT_SECRET
+      - FACEBOOK_APP_ID
+      - FACEBOOK_APP_SECRET
     volumes:
-      - ./e2e/fake-github.mjs:/app/fake-github.mjs:ro
+      - ./e2e/fake-oauth.mjs:/app/fake-oauth.mjs:ro
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9000/health"]
       interval: 2s
