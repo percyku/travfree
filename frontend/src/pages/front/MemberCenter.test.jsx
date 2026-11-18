@@ -9,7 +9,12 @@ import { api, failure } from "../../test/contract";
 import { server } from "../../test/server";
 import { Landing, findToast, renderRoutes } from "../../test/render";
 import { installFakeGoogle, useGoogleEnabled } from "../../test/google";
-import { interceptRedirects, returnFromProvider, useGitHubEnabled } from "../../test/oauth";
+import {
+  interceptRedirects,
+  returnFromProvider,
+  useGitHubEnabled,
+  useOAuthEnabled,
+} from "../../test/oauth";
 import {
   MEMBER_TOKEN,
   memberProfile,
@@ -596,5 +601,40 @@ describe("會員中心的 GitHub", () => {
     );
     expect(card.getByRole("button", { name: "以 GitHub 驗證身分" })).toBeInTheDocument();
     expect(tokenInCookie()).toBeUndefined();
+  });
+});
+
+describe("會員中心的 Facebook", () => {
+  beforeEach(() => {
+    axios.defaults.headers.common.Authorization = MEMBER_TOKEN;
+    useOAuthEnabled(["github", "facebook"]);
+  });
+
+  it("GitHub 與 Facebook 各一列：已連結的可以解除，未連結的可以連結", async () => {
+    useProfile(memberProfile({ identities: [{ provider: "facebook", email: null }] }));
+    renderMemberCenter();
+
+    const card = within(await loginMethodsCard());
+    expect(await card.findByRole("button", { name: "連結 GitHub" })).toBeInTheDocument();
+    expect(card.getByRole("button", { name: "解除連結 Facebook" })).toBeEnabled();
+    expect(card.getByText("已連結")).toBeInTheDocument();
+  });
+
+  it("只用 Facebook 的帳號：設定密碼要先以 Facebook 驗證，導向時用途是設定密碼", async () => {
+    useProfile(memberProfile({ has_password: false, identities: [{ provider: "facebook", email: "a@example.com" }] }));
+    const urls = interceptRedirects();
+    renderMemberCenter();
+
+    const password = within(await findPasswordCard());
+    expect(password.queryByRole("button", { name: "以 GitHub 驗證身分" })).not.toBeInTheDocument();
+    await userEvent.click(await password.findByRole("button", { name: "以 Facebook 驗證身分" }));
+
+    await waitFor(() => expect(urls).toHaveLength(1));
+    expect(urls[0].host).toBe("www.facebook.com");
+    expect(JSON.parse(sessionStorage.getItem("freetrav-oauth"))).toMatchObject({
+      provider: "facebook",
+      purpose: "password",
+      returnTo: "/member",
+    });
   });
 });
