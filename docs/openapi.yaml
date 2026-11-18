@@ -497,6 +497,7 @@ paths:
       description: |
         Hexschool 沒有這支。前端以它決定是否顯示各平台的按鈕，並組出授權網址：
         `{authorize_url}?client_id=...&redirect_uri=...&scope={scope}&state=...`（GitHub 另外加上 PKCE 的 `code_challenge`、`code_challenge_method=S256`）。
+        Facebook 的 `client_id` 是 App ID，`scope` 是 `email`（`public_profile` 一定會給）。
 
         client ID 與網址都只在後端設定（`GITHUB_CLIENT_ID`、`FACEBOOK_APP_ID`），沒有設定的平台 `enabled` 為 false，其他欄位為空字串。
         `providers` 固定有 `github`、`facebook` 兩個 key。
@@ -524,7 +525,7 @@ paths:
                 success: true
                 providers:
                   github: { enabled: true, client_id: Ov23liAbCdEf123456, authorize_url: 'https://github.com/login/oauth/authorize', scope: 'user:email' }
-                  facebook: { enabled: false, client_id: '', authorize_url: '', scope: '' }
+                  facebook: { enabled: true, client_id: '1234567890123456', authorize_url: 'https://www.facebook.com/v27.0/dialog/oauth', scope: email }
         default: { $ref: '#/components/responses/Failure' }
 
   /api/user/oauth/{provider}:
@@ -536,20 +537,22 @@ paths:
         前端比對 `state` 後把 `code` 交給這支。後端用 client secret 換 token、取得平台的帳號資料後：
 
         1. 這個平台帳號（平台的帳號 ID）已連結會員 → 登入，`message` 為 `登入成功`。
-        2. 否則平台沒有提供 email → 400，請使用者改用其他方式註冊。GitHub 只採用 `primary` 且 `verified` 的 email。
+        2. 否則平台沒有提供 email → 400，請使用者改用其他方式註冊。GitHub 只採用 `primary` 且 `verified` 的 email；
+           Facebook 只在使用者同意提供 email、而且帳號有可用的 email 時才回傳（用手機註冊的帳號可能沒有）。
         3. 否則 email 已有帳號，或已是其他帳號連結的第三方登入 email → 409，**不自動合併**：請使用者先用原本的方式登入，再到會員中心連結。
         4. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`。姓名：GitHub 取 `name`，沒有時取 `login`；Facebook 取 `name`；
            超過 30 個字截斷。沒有密碼，可以之後在會員中心設定。
 
-        平台的帳號 ID：GitHub 是數字 `id`（不用 `login`，使用者名稱可以改），Facebook 是這個 app 專用的 `id`。
+        平台的帳號 ID：GitHub 是數字 `id`（不用 `login`，使用者名稱可以改），Facebook 是這個 app 專用的 `id`（app-scoped user ID）。
 
-        訊息中的平台名稱依 `provider` 為 `GitHub` 或 `Facebook`，下表以 GitHub 為例。
+        訊息中的平台名稱依 `provider` 為 `GitHub` 或 `Facebook`，下表以 GitHub 為例；沒有 email 的訊息兩個平台不同。
 
         | 狀態碼 | message | 情境 |
         |---|---|---|
         | 400 | `code 屬性不得為空`、`redirect_uri 屬性不得為空`、`data 屬性不得為空` | |
         | 400 | `GitHub 驗證失敗，請再試一次` | `code` 無效、過期、已使用，或 `redirect_uri`、`code_verifier` 不符 |
-        | 400 | `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` | 要建立帳號但平台沒有提供 email |
+        | 400 | `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` | 要建立帳號但 GitHub 沒有已驗證的 email |
+        | 400 | `Facebook 沒有提供 Email，請改用其他方式註冊` | 要建立帳號但 Facebook 沒有回傳 email |
         | 404 | `找不到這個登入方式` | `provider` 不是 `github`、`facebook` |
         | 409 | `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub` | email 已有帳號，或已是其他帳號連結的第三方登入 email |
         | 502 | `GitHub 暫時無法連線，請稍後再試` | 平台沒有回應或回 5xx |
@@ -2050,7 +2053,7 @@ components:
           schema: { $ref: '#/components/schemas/Failure' }
           example: { success: false, message: '未設定 Google 登入' }
     OAuthDisabled:
-      description: 後端沒有設定這個平台（GitHub：`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`）
+      description: 後端沒有設定這個平台（GitHub：`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`；Facebook：`FACEBOOK_APP_ID`、`FACEBOOK_APP_SECRET`）
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Failure' }

@@ -14,7 +14,8 @@ public record AppProperties(
 		Cors cors,
 		LoginLimit loginLimit,
 		Google google,
-		OAuthProvider github) {
+		OAuthProvider github,
+		OAuthProvider facebook) {
 
 	public record Jwt(String secret, Duration ttl) {
 	}
@@ -34,7 +35,7 @@ public record AppProperties(
 	}
 
 	/**
-	 * 以授權碼流程登入的平台（GitHub，之後 Facebook）。clientId 空白時關閉；clientId 與 clientSecret 要一起設定。
+	 * 以授權碼流程登入的平台（GitHub、Facebook；Facebook 的 clientId 是 App ID）。clientId 空白時關閉；clientId 與 clientSecret 要一起設定。
 	 * 網址預設為平台的正式網址，E2E 改成假的服務。
 	 *
 	 * @param authorizeUrl 授權頁，交給前端組網址

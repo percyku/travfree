@@ -47,6 +47,12 @@ services:
       - GITHUB_OAUTH_AUTHORIZE_URL
       - GITHUB_OAUTH_TOKEN_URL
       - GITHUB_OAUTH_API_URL
+      # Facebook 登入（Facebook Login）；App ID 與 App Secret 要一起設定，沒有設定時關閉。三個網址只給 E2E 指向假的服務
+      - FACEBOOK_APP_ID
+      - FACEBOOK_APP_SECRET
+      - FACEBOOK_OAUTH_AUTHORIZE_URL
+      - FACEBOOK_OAUTH_TOKEN_URL
+      - FACEBOOK_OAUTH_API_URL
     volumes:
       - uploads:/app/uploads
     healthcheck:

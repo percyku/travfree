@@ -76,7 +76,7 @@ class GoogleAuthApiTest extends ApiTestSupport {
 	@Test
 	void verifierIsDisabledWithoutClientId() {
 		GoogleTokenVerifier disabled = new GoogleTokenVerifier(new AppProperties(null, null, null, null, null, null,
-				new AppProperties.Google("  ", null), null));
+				new AppProperties.Google("  ", null), null, null));
 
 		assertThat(disabled.isEnabled()).isFalse();
 		assertThat(disabled.clientId()).isEmpty();

@@ -77,10 +77,7 @@ class GitHubAuthApiTest extends ApiTestSupport {
 				.andExpect(jsonPath("$.providers.github.enabled").value(true))
 				.andExpect(jsonPath("$.providers.github.client_id").value(FakeGitHub.CLIENT_ID))
 				.andExpect(jsonPath("$.providers.github.authorize_url").value(GITHUB.baseUrl() + "/login/oauth/authorize"))
-				.andExpect(jsonPath("$.providers.github.scope").value("user:email"))
-				// Facebook 在下一個階段實作
-				.andExpect(jsonPath("$.providers.facebook.enabled").value(false))
-				.andExpect(jsonPath("$.providers.facebook.client_id").value(""));
+				.andExpect(jsonPath("$.providers.github.scope").value("user:email"));
 	}
 
 	/** 整個測試共用一組設定，所以直接建立 client 檢查 */
@@ -100,7 +97,7 @@ class GitHubAuthApiTest extends ApiTestSupport {
 	}
 
 	private static AppProperties properties(AppProperties.OAuthProvider github) {
-		return new AppProperties(null, null, null, null, null, null, null, github);
+		return new AppProperties(null, null, null, null, null, null, null, github, null);
 	}
 
 	// ───────────── 登入與註冊 ─────────────
@@ -198,13 +195,10 @@ class GitHubAuthApiTest extends ApiTestSupport {
 	}
 
 	@Test
-	void unknownAndUnconfiguredProviders() throws Exception {
+	void unknownProvider() throws Exception {
 		postJson(OAUTH + "/twitter", data(codeBody("abc")))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.message").value("找不到這個登入方式"));
-		postJson(OAUTH + "/facebook", data(codeBody("abc")))
-				.andExpect(status().isServiceUnavailable())
-				.andExpect(jsonPath("$.message").value("未設定 Facebook 登入"));
 	}
 
 	@Test
@@ -363,7 +357,7 @@ class GitHubAuthApiTest extends ApiTestSupport {
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("至少要保留一種登入方式，請先設定密碼"));
 
-		// 有密碼的會員可以解除；沒有連結時不做事；未設定的平台也可以呼叫
+		// 有密碼的會員可以解除；沒有連結時不做事（其他平台也一樣）
 		String member = signupMember("member@example.com", "會員");
 		link(member, FakeGitHub.user(2, "other", "Other", "other@example.com")).andExpect(status().isOk());
 		unlink(member, "github").andExpect(status().isOk()).andExpect(jsonPath("$.profile.identities").isEmpty());
@@ -425,9 +419,12 @@ class GitHubAuthApiTest extends ApiTestSupport {
 				"oauth", Map.of("provider", "github", "redirect_uri", FakeGitHub.REDIRECT_URI)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("code 屬性不得為空"));
-		setPassword(token, Map.of("new_password", "Journey2027", "oauth", reauth("facebook", "abc")))
-				.andExpect(status().isServiceUnavailable())
-				.andExpect(jsonPath("$.message").value("未設定 Facebook 登入"));
+		// 沒有連結的平台不行
+		setPassword(token, Map.of("new_password", "Journey2027", "oauth", Map.of("provider", "facebook",
+				"code", FACEBOOK.authorize(FakeFacebook.user("fb-1", "Someone", "someone@example.com")),
+				"redirect_uri", FakeFacebook.REDIRECT_URI)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Facebook 驗證失敗，請以已連結的 Facebook 帳號驗證"));
 		GITHUB.failToken(500);
 		setPassword(token, Map.of("new_password", "Journey2027", "oauth", reauth("github", "abc")))
 				.andExpect(status().isBadGateway());
