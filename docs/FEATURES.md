@@ -20,8 +20,8 @@
 | 管理者不能修改自己的訂單 | ✅ 完成 | ✓ | 以訂單的 `user_id` 判斷，後台訂單列表標示「自己的訂單」 |
 | Google 登入與註冊 | ✅ 完成 | ✓ | 登入頁、註冊頁；email 已有帳號時不自動合併 |
 | GitHub 登入與註冊 | ✅ 完成 | ✓ | 授權碼流程（含 PKCE）；平台沒有已驗證的 email 時不能建立帳號 |
-| Facebook 登入與註冊 | ⏳ 規劃中 | | 端點已在 spec，後端未設定時回 503，計畫見 `docs/plans/2026-11-18-github-facebook-signin.md` |
-| 會員中心：登入方式 | ✅ 完成 | ✓ | 連結或解除 Google、GitHub；只用第三方登入的帳號可以設定密碼 |
+| Facebook 登入與註冊 | ✅ 完成 | ✓ | 授權碼流程；Facebook 沒有提供 email 時不能建立帳號 |
+| 會員中心：登入方式 | ✅ 完成 | ✓ | 連結或解除 Google、GitHub、Facebook；只用第三方登入的帳號可以設定密碼 |
 | 產品管理（Admin） | ✅ 完成 | ✓ | |
 | 圖片上傳 | ✅ 完成 | ✓ | 存本機磁碟 |
 | 文章管理（Admin） | ✅ 完成 | ✓ | |
@@ -266,34 +266,41 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 
 ### GitHub、Facebook 登入 `POST ~/user/oauth/{provider}`
 
-公開。`provider` 為 `github` 或 `facebook`，其他值回 404 `找不到這個登入方式`。Hexschool 沒有這組。Facebook 還沒實作，目前一律回 503 `未設定 Facebook 登入`。GitHub 的設定方式見 [README.md](README.md#github-登入設定)。
+公開。`provider` 為 `github` 或 `facebook`，其他值回 404 `找不到這個登入方式`。Hexschool 沒有這組。設定方式見 [README.md](README.md#github-登入設定) 的 GitHub 與 Facebook。
 
 與 Google 不同，這兩個平台沒有前端可以直接驗證的 ID token，用**授權碼流程**：
 
-1. 前端讀 `GET ~/user/oauth/config` 取得各平台的 `enabled`、`client_id`、`authorize_url`、`scope`（GitHub 是 `user:email`），組出授權網址並導向。
+1. 前端讀 `GET ~/user/oauth/config` 取得各平台的 `enabled`、`client_id`、`authorize_url`、`scope`（GitHub 是 `user:email`，Facebook 是 `email`），組出授權網址並導向。
    帶上隨機的 `state`（存在 sessionStorage）；GitHub 另外帶 PKCE 的 `code_challenge`（`S256`）。`redirect_uri` 是網站根目錄（例如 `http://localhost:8000/`），因為路由用 `#`，`#` 不能放進 `redirect_uri`。
 2. 平台帶 `code`、`state` 導回網站根目錄。前端在路由啟動前把 code 留在記憶體、從網址移除，轉到 `#/oauth/callback`（code 留在網址上會隨 Referer 送出）。
 3. 回呼頁比對 `state`（不符時不送出，防 CSRF），把 `{ "data": { "code", "redirect_uri", "code_verifier" } }` 交給後端。
 4. 後端以 client secret 換 token、取得帳號資料後，規則與 Google 相同：
    1. 這個平台帳號已連結會員 → 登入，`message` 為 `登入成功`。
-   2. 平台沒有提供 email → 400，請使用者改用其他方式註冊。GitHub 只採用 `/user/emails` 中 `primary` 且 `verified` 的 email。
+   2. 平台沒有提供 email → 400，請使用者改用其他方式註冊。GitHub 只採用 `/user/emails` 中 `primary` 且 `verified` 的 email；
+      Facebook 只在使用者同意提供、而且帳號有可用的 email 時才回傳（用手機註冊的帳號可能沒有）。
    3. email 已有帳號，或已是其他帳號連結的第三方登入 email → **409，不自動合併**。
-   4. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`，沒有密碼。姓名：GitHub 取 `name`，沒有時取 `login`；超過 30 個字截斷。
+   4. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`，沒有密碼。姓名：GitHub 取 `name`，沒有時取 `login`；Facebook 取 `name`；超過 30 個字截斷。
 
-平台的帳號 ID：GitHub 用數字 `id`（不用 `login`，使用者名稱可以改）。訊息中的平台名稱依 `provider`，下表以 GitHub 為例。
+平台的帳號 ID：GitHub 用數字 `id`（不用 `login`，使用者名稱可以改）；Facebook 用這個 app 專用的 `id`（app-scoped user ID），同一個人在別的 app 是不同的 id。
+訊息中的平台名稱依 `provider`，下表以 GitHub 為例。
 
 | 情境 | 回應 |
 |---|---|
 | `code`、`redirect_uri` 空白 | 400 `code 屬性不得為空`、`redirect_uri 屬性不得為空` |
 | `code` 無效、過期、已使用，或 `redirect_uri`、`code_verifier` 不符 | 400 `GitHub 驗證失敗，請再試一次` |
 | 要建立帳號但沒有已驗證的 email（或沒有 `user:email` 權限） | 400 `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` |
+| 要建立帳號但 Facebook 沒有回傳 email | 400 `Facebook 沒有提供 Email，請改用其他方式註冊` |
 | email 已有帳號 | 409 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub` |
 | GitHub 沒有回應、逾時（連線 5 秒、回應 10 秒）或回 5xx | 502 `GitHub 暫時無法連線，請稍後再試` |
 | 後端沒有設定 `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET` | 503 `未設定 GitHub 登入` |
 
-`GITHUB_CLIENT_ID` 與 `GITHUB_CLIENT_SECRET` 只設定其中一個時，後端拒絕啟動。
+`GITHUB_CLIENT_ID` 與 `GITHUB_CLIENT_SECRET`（Facebook 是 `FACEBOOK_APP_ID` 與 `FACEBOOK_APP_SECRET`）只設定其中一個時，後端拒絕啟動。
 
-前台：登入頁與註冊頁在 Google 按鈕下方顯示「使用 GitHub 登入／註冊」（後端沒有設定時不顯示）。成功後合併訪客購物車並回到來源頁；失敗（例如 409、取消授權、`state` 不符）時回到登入頁顯示原因。
+**Facebook 的差異。** 換 token 用 Graph API 的 `GET /oauth/access_token`，code 無效時 Facebook 回 400 與 `error` 物件（GitHub 是 200 加 `error` 欄位），兩者都對應到 400 `… 驗證失敗，請再試一次`。
+讀取 `/me?fields=id,name,email` 時帶 `appsecret_proof`（以 App Secret 對 token 做 HMAC-SHA256），所以 Facebook 後台可以開啟「Require App Secret」。
+token 是後端以自己的 App Secret 用 code 換來的，不會是別的 app 的，所以不另外呼叫 `debug_token`。Facebook 不用 PKCE。
+
+前台：登入頁與註冊頁在 Google 按鈕下方顯示「使用 GitHub 登入／註冊」「使用 Facebook 登入／註冊」（後端沒有設定的平台不顯示）。成功後合併訪客購物車並回到來源頁；失敗（例如 409、取消授權、`state` 不符）時回到登入頁顯示原因。
 在回呼頁重新整理時 code 已經不在，顯示 `登入流程已失效，請重新操作一次`。
 
 ### 連結與解除 GitHub、Facebook `POST`、`DELETE ~/user/oauth/{provider}/link`

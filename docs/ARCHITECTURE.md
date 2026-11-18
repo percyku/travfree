@@ -183,8 +183,8 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
 |---|---|---|
 | `id` | varchar(36) PK | |
 | `user_id` | FK → users | |
-| `provider` | varchar(20) | `google`、`github`（之後 `facebook`） |
-| `subject` | varchar | 平台的帳號 ID（Google 的 `sub`、GitHub 的數字 `id`），以它辨識，不用 email |
+| `provider` | varchar(20) | `google`、`github`、`facebook` |
+| `subject` | varchar | 平台的帳號 ID（Google 的 `sub`、GitHub 的數字 `id`、Facebook 的 app 專用 `id`），以它辨識，不用 email |
 | `email` | varchar，可為 null | 連結當時平台的 email（已驗證的），可以與帳號的 email 不同；平台沒有提供或未驗證時為 null。也用來擋住以它註冊 |
 | `created_at` | timestamp | |
 
@@ -300,6 +300,8 @@ Schema 由 `spring.jpa.hibernate.ddl-auto=update` 維護，pom 沒有 Flyway。`
    GitHub 登入（`POST ~/user/oauth/github`）用授權碼流程：`utils/oauth.js` 導向 GitHub（`state` 與 PKCE 存在 sessionStorage），GitHub 導回網站根目錄 `/?code=...&state=...`。
    `src/oauthRedirect.js` 是 `main.jsx` 的第一個匯入（`createHashRouter` 在匯入 App 時就讀網址），把 code 留在記憶體、網址換成 `#/oauth/callback`；`OAuthCallback` 比對 `state` 後交給後端。
    後端的 `GitHubOAuthClient` 以 client secret 換 token、讀 `/user` 與 `/user/emails`，再由 `IdentityService`（與 Google 共用）決定登入、建立帳號或 409。
+   Facebook（`POST ~/user/oauth/facebook`）流程相同，後端是 `FacebookOAuthClient`（Graph API 的 `/oauth/access_token` 與 `/me`，帶 `appsecret_proof`）。
+   兩個 client 繼承 `AbstractOAuthClient`（設定、逾時、4xx → 400、5xx 與連線失敗 → 502），由 `OAuthProviders` 依 `provider` 取用。
 2. 前端把 cookie 的值設為 `axios.defaults.headers.common.Authorization`，所以 header 是**裸 token，沒有 `Bearer`**。Filter 兩種格式都接受。
 3. `authSlice` 的 `checkAuth` 呼叫 `POST /v2/api/user/check`，把 `{ uid, email, name, roles }` 存進 Redux：前台 `Header` 在載入時呼叫，`ProductedRoute` 在進入 `/admin/*` 時呼叫並要求 `ADMIN`。
 4. `JwtAuthenticationFilter` 驗證簽章，讀取 user 與角色，比對 `token_version`，通過後以 `ROLE_USER`、`ROLE_ADMIN` 設定身分。
