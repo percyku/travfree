@@ -69,6 +69,22 @@ services:
       timeout: 3s
       retries: 10
 
+  # 只給 E2E：假的 GitHub（換 token 與使用者 API），以 COMPOSE_PROFILES=e2e 啟動，見 scripts/e2e.sh 與 e2e/fake-github.mjs
+  fake-github:
+    image: node:24-alpine
+    profiles: ["e2e"]
+    command: ["node", "/app/fake-github.mjs"]
+    environment:
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
+    volumes:
+      - ./e2e/fake-github.mjs:/app/fake-github.mjs:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
 volumes:
   # 沿用原本 backend/docker-compose.yml 建立的 volume，既有資料不用搬。
   # DB_VOLUME 讓 E2E 等獨立環境使用自己的資料庫（見 scripts/e2e.sh）
