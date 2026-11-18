@@ -23,8 +23,8 @@ public class OAuthAuthService {
 	}
 
 	public IdentityService.Result signin(String provider, OAuthCodeRequest request) {
-		String name = OAuthProviders.displayName(provider);
-		return identityService.signin(verify(provider, request), name + " 帳號沒有已驗證的 Email，請改用其他方式註冊");
+		OAuthProviders.displayName(provider);
+		return identityService.signin(verify(provider, request), providers.require(provider).noEmailMessage());
 	}
 
 	public ProfileResponse link(String uid, String provider, OAuthCodeRequest request) {

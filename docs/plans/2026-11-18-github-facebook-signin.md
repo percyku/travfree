@@ -12,8 +12,8 @@
 
 | 階段 | 內容 | 狀態 |
 |---|---|---|
-| 1 | GitHub 登入、通用的 OAuth 端點與回呼流程、`profile` 改回 `identities` | 進行中：spec、後端、前端、E2E、文件完成，待使用者以真的 GitHub 測試與 PR |
-| 2 | Facebook 登入（沿用階段 1 的流程） | 未開始 |
+| 1 | GitHub 登入、通用的 OAuth 端點與回呼流程、`profile` 改回 `identities` | ✅ 完成（PR #7） |
+| 2 | Facebook 登入（沿用階段 1 的流程） | 進行中：spec、後端、前端、E2E、文件完成，待使用者以真的 Facebook App 測試與 PR |
 
 ## 決定（2026-11-18 與使用者確認）
 
@@ -75,14 +75,15 @@
 - 後端：用 `FakeGitHub`（JDK 的 `HttpServer`，所有測試共用）模擬 GitHub 的 token 與 user API，涵蓋新帳號、已連結、撞 email、沒有已驗證 email、換 token 失敗、未設定、連結與解除、設定密碼。
 - 前端：Vitest 測試回呼頁（`state` 不符、成功、409）、按鈕的授權網址、會員中心的 `identities`。
 - E2E：compose 加一個假的 OAuth 服務，走完「GitHub 註冊 → 登出 → 再登入」與「會員中心連結 GitHub」。
-  - 授權頁（`GITHUB_OAUTH_AUTHORIZE_URL=https://github.e2e.test/...`）由 Playwright 攔截，回一個導回網站的頁面（`e2e/tests/github.js`）。
-  - 換 token 與使用者 API 是 compose 的 `fake-github` 服務（`profiles: ["e2e"]`，`e2e/fake-github.mjs`，只用 Node 內建模組）。
+  - 授權頁（`GITHUB_OAUTH_AUTHORIZE_URL=https://github.e2e.test/...`）由 Playwright 攔截，回一個導回網站的頁面（`e2e/tests/oauth.js`）。
+  - 換 token 與使用者 API 是 compose 的 `fake-oauth` 服務（原名 `fake-github`）（`profiles: ["e2e"]`，`e2e/fake-oauth.mjs`，只用 Node 內建模組）。
     不保存狀態：code 是帶著帳號、`redirect_uri`、`code_challenge` 的 base64url JSON，假服務檢查 client 帳密、`redirect_uri` 與 PKCE。
 
 ## 階段 2：Facebook
 
 - 端點同階段 1，`provider` 為 `facebook`。
-- 後端用 `GET /oauth/access_token` 換 token，再用 `debug_token` 確認 `app_id` 是我們的 app（避免拿別的 app 的 token 來登入），最後 `GET /me?fields=id,name,email`。Graph API 版本寫在設定裡。
+- 後端用 `GET /oauth/access_token` 換 token，最後 `GET /me?fields=id,name,email`（帶 `appsecret_proof`）。Graph API 版本寫在設定裡。
+  原本打算用 `debug_token` 確認 `app_id`，實作時改為不呼叫：token 是後端以自己的 App Secret 用 code 換來的，不會是別的 app 的（`debug_token` 是給前端直接交 token 的 SDK 流程用的）。
 - `subject` 存 app 專用的使用者 `id`。
 - 環境變數：`FACEBOOK_APP_ID`、`FACEBOOK_APP_SECRET`。
 - 驗證方式同階段 1。
@@ -108,3 +109,9 @@
   `GITHUB_API_URL=https://api.github.com`，docker compose 的 shell 環境變數優先於 `.env`，後端被導到真的 GitHub。
   只給 E2E 用的網址變數改名為 `GITHUB_OAUTH_AUTHORIZE_URL`、`GITHUB_OAUTH_TOKEN_URL`、`GITHUB_OAUTH_API_URL`（`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET` 不是 runner 的預設變數，不變）。
   本機設定 `GITHUB_API_URL` 後以 prod profile 重現了失敗，改名後通過。
+- 2026-11-18：PR #7 的 CI 通過、使用者在本機以真的 GitHub OAuth App 驗證後 merge（`028fd54`），階段 1 完成。
+- 2026-11-18：階段 2（Facebook）在 `feature/facebook-signin` 實作。spec 只補 Facebook 的說明與沒有 email 的訊息（端點在階段 1 已定義）。
+  - 後端：`FacebookOAuthClient`，與 GitHub 共用的設定、逾時與錯誤對應抽到 `AbstractOAuthClient`；沒有 email 的訊息改由各平台提供（`noEmailMessage()`）。
+    不呼叫 `debug_token`（理由見上方階段 2），改為讀資料時帶 `appsecret_proof`。code 以樣板變數展開，`+` 等字元完整編碼。
+  - 測試：`FakeFacebook` 與 `FacebookAuthApiTest`（後端 226 個）；前端 `FacebookSignin.test.jsx` 與會員中心的 Facebook 情境（201 個）；
+    E2E 的假服務改名為 `fake-oauth` 並加上 Facebook，`facebook.spec.js` 2 個（全部 14 個通過）。故意讓 `appsecret_proof` 錯誤時，後端與 E2E 的 Facebook 測試都會失敗。

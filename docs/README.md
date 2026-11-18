@@ -88,7 +88,9 @@ npm run openapi:mock     # 依 spec 啟動 mock server（http://localhost:4010�
 | `GOOGLE_CLIENT_ID` | 無 | Google 登入的 Web client ID，沒有設定時關閉。設定方式見下方「Google 登入設定」 |
 | `GOOGLE_TEST_PUBLIC_KEY` | 無 | **只給 E2E 使用**：以這把公鑰驗證 ID token，不連 Google（`scripts/google-test-key.sh` 產生）。正式環境不要設定 |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | 無 | GitHub 登入的 OAuth App，要一起設定（只設一個時拒絕啟動），沒有設定時關閉。設定方式見下方「GitHub 登入設定」 |
-| `GITHUB_OAUTH_AUTHORIZE_URL` / `GITHUB_OAUTH_TOKEN_URL` / `GITHUB_OAUTH_API_URL` | GitHub 的網址 | **只給 E2E 使用**：指向假的 GitHub（`e2e/fake-github.mjs`）。正式環境不要設定 |
+| `GITHUB_OAUTH_AUTHORIZE_URL` / `GITHUB_OAUTH_TOKEN_URL` / `GITHUB_OAUTH_API_URL` | GitHub 的網址 | **只給 E2E 使用**：指向假的服務（`e2e/fake-oauth.mjs`）。正式環境不要設定 |
+| `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | 無 | Facebook 登入的 App，要一起設定（只設一個時拒絕啟動），沒有設定時關閉。設定方式見下方「Facebook 登入設定」 |
+| `FACEBOOK_OAUTH_AUTHORIZE_URL` / `FACEBOOK_OAUTH_TOKEN_URL` / `FACEBOOK_OAUTH_API_URL` | Facebook 的網址（Graph API v27.0） | **只給 E2E 使用**：指向假的服務。正式環境不要設定 |
 
 ## 部署
 
@@ -287,6 +289,52 @@ callback URL 是根目錄，因為前端路由用 `#`（`#` 不能放進 OAuth �
 | 回 `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` | GitHub 帳號的 primary email 未驗證。到 GitHub 的 Settings → Emails 驗證，或先用其他方式註冊再到會員中心連結 GitHub |
 | 回 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub` | 預期的行為：同一個 email 已有帳號，不會自動合併，見 [FEATURES.md](FEATURES.md) |
 | 回 `登入流程已失效，請重新操作一次` | 在回呼頁重新整理，或在另一個分頁完成授權（`state` 存在原本分頁的 sessionStorage） |
+
+## Facebook 登入設定
+
+與 GitHub 相同的授權碼流程：後端以 **App Secret** 用 code 換 token，再讀 `/me` 取得 id、姓名與 email。App ID 與 App Secret 都只在後端設定。**App Secret 不要放進前端或 git。**
+
+### 1. 建立 App
+
+1. 到 [Meta for Developers](https://developers.facebook.com) 用 Facebook 帳號登入。第一次使用要註冊成開發者（驗證手機或 email）。
+2. **My Apps** → **Create App**：
+   - App 名稱 `FreeTrav`，填聯絡 email。
+   - Use case 選 **Authenticate and request data from users with Facebook Login**（以 Facebook 登入驗證使用者並要求資料）。
+   - Business portfolio 選暫時不連結。
+3. 左側 **Use cases** → **Authentication and account creation** → **Edit**（或 Customize）：確認 `public_profile` 與 `email` 都是 **Ready for testing**，`email` 沒有的話按 **Add**。
+4. **Facebook Login → Settings**：
+   - **Client OAuth login**、**Web OAuth login** 開啟，**Enforce HTTPS** 維持開啟。
+   - **Valid OAuth Redirect URIs**：開發模式下 `http://localhost` 會自動允許，本機不用填；部署到正式網域時填 `https://你的網域/`（網站根目錄，與 GitHub 的理由相同）。
+5. **App settings → Basic**：複製 **App ID**；**App Secret** 按 **Show**（要輸入密碼）後複製。
+6. （選用）**App settings → Advanced → Require App Secret** 可以開啟：後端讀取資料時會帶 `appsecret_proof`。
+
+### 2. 設定到專案
+
+- **Docker（`:8000`）**：在根目錄的 `.env` 加入兩行，然後 `docker compose up -d`：
+
+  ```bash
+  FACEBOOK_APP_ID=1234567890123456
+  FACEBOOK_APP_SECRET=...
+  ```
+
+- **開發模式**：啟動後端時帶上 `FACEBOOK_APP_ID`、`FACEBOOK_APP_SECRET`，與 GitHub 相同。
+- 確認：`curl http://localhost:8000/v2/api/user/oauth/config` 的 `providers.facebook.enabled` 應為 `true`，前台出現「使用 Facebook 登入」。
+
+### 3. 開發模式與上線
+
+- App 剛建立時是**開發模式**：只有在 **App roles → Roles** 裡的人能登入。建立者本身可以直接測試；要給別人測，把對方加成 tester，對方要先接受邀請。其他人會看到「App not active」之類的錯誤。
+- 要讓所有人都能用時切到 **Live** 模式：需要 HTTPS、App 圖示、隱私權政策網址，以及資料刪除說明（Data deletion instructions URL 或 callback）。只要求 `public_profile` 與 `email` 通常不需要詳細審查。
+- Graph API 版本寫在網址裡（預設 v27.0，在 `application.properties`）。Facebook 每個版本支援約兩年，到期前要更新網址。
+
+### 4. 常見問題
+
+| 狀況 | 原因與處理 |
+|---|---|
+| Facebook 顯示「URL 已封鎖」或 redirect_uri 錯誤 | 目前的網址沒有登記在 Valid OAuth Redirect URIs（正式網域），或 App 不在開發模式卻用 `http://localhost` |
+| Facebook 顯示 App 無法使用 | App 在開發模式，登入的 Facebook 帳號不在 Roles 裡 |
+| 回 `Facebook 沒有提供 Email，請改用其他方式註冊` | 使用者在授權畫面取消了 email，或帳號是用手機註冊、沒有 email。可以先用其他方式註冊，再到會員中心連結 Facebook |
+| 回 `Facebook 驗證失敗，請再試一次` | App Secret 錯誤、code 已使用或過期，重新操作一次 |
+| 後端啟動失敗：`FACEBOOK_APP_ID 與 FACEBOOK_APP_SECRET 要一起設定` | 只設定了其中一個 |
 
 ## 文件索引
 

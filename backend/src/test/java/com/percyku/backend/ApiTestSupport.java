@@ -81,9 +81,10 @@ abstract class ApiTestSupport {
 
 	/** 所有測試共用，在 Spring context 之前啟動，網址才能放進設定 */
 	static final FakeGitHub GITHUB = FakeGitHub.start();
+	static final FakeFacebook FACEBOOK = FakeFacebook.start();
 
 	/**
-	 * Google 登入以測試金鑰驗證，見 GoogleTestTokens；GitHub 指向 FakeGitHub。
+	 * Google 登入以測試金鑰驗證，見 GoogleTestTokens；GitHub、Facebook 指向 FakeGitHub、FakeFacebook。
 	 * 所有測試共用同一組設定，所以只有一個 Spring context
 	 */
 	@DynamicPropertySource
@@ -95,6 +96,11 @@ abstract class ApiTestSupport {
 		registry.add("app.github.authorize-url", () -> GITHUB.baseUrl() + "/login/oauth/authorize");
 		registry.add("app.github.token-url", () -> GITHUB.baseUrl() + "/login/oauth/access_token");
 		registry.add("app.github.api-url", GITHUB::baseUrl);
+		registry.add("app.facebook.client-id", () -> FakeFacebook.APP_ID);
+		registry.add("app.facebook.client-secret", () -> FakeFacebook.APP_SECRET);
+		registry.add("app.facebook.authorize-url", () -> FACEBOOK.baseUrl() + "/dialog/oauth");
+		registry.add("app.facebook.token-url", () -> FACEBOOK.baseUrl() + "/oauth/access_token");
+		registry.add("app.facebook.api-url", FACEBOOK::baseUrl);
 	}
 
 	String token;
@@ -117,6 +123,7 @@ abstract class ApiTestSupport {
 		// 所有 MockMvc 請求都來自 127.0.0.1，不清空的話登入失敗會跨測試累計
 		loginAttemptLimiter.reset();
 		GITHUB.reset();
+		FACEBOOK.reset();
 		token = signin();
 		shopperToken = null;
 	}

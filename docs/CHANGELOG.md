@@ -4,13 +4,19 @@
 
 ### Added
 
+- Facebook 登入（第三方登入階段 2）：
+  - 與 GitHub 相同的授權碼流程與規則，`POST /api/user/oauth/facebook` 等端點不變。後端以 Graph API（v27.0）換 token、讀 `/me`，並帶 `appsecret_proof`。
+  - 以 Facebook 的 app 專用 `id` 辨識；Facebook 沒有提供 email（拒絕提供、用手機註冊）時不能建立帳號，回 400 `Facebook 沒有提供 Email，請改用其他方式註冊`，已登入的帳號仍可連結。
+  - 登入頁、註冊頁加上「使用 Facebook 登入／註冊」；會員中心可以連結、解除 Facebook，只用 Facebook 的帳號先以 Facebook 驗證再設定密碼。
+  - 環境變數 `FACEBOOK_APP_ID`、`FACEBOOK_APP_SECRET`（要一起設定），設定步驟見 `docs/README.md`。
+  - E2E 的假服務改名為 `fake-oauth`（`e2e/fake-oauth.mjs`），同時模擬 GitHub 與 Facebook。
 - GitHub 登入（計畫見 `docs/plans/2026-11-18-github-facebook-signin.md`）：
   - 授權碼流程：前端導向 GitHub（`state` 與 PKCE），GitHub 導回網站根目錄，前端在路由啟動前把 code 從網址移除並轉到 `#/oauth/callback`，後端以 client secret 換 token。
-  - 通用端點 `POST /api/user/oauth/{provider}`（登入或註冊）、`POST`／`DELETE /api/user/oauth/{provider}/link`、`GET /api/user/oauth/config`。`provider` 為 `github`、`facebook`；Facebook 尚未實作，回 503。
+  - 通用端點 `POST /api/user/oauth/{provider}`（登入或註冊）、`POST`／`DELETE /api/user/oauth/{provider}/link`、`GET /api/user/oauth/config`。`provider` 為 `github`、`facebook`。
   - 規則與 Google 相同：以 GitHub 的數字 `id` 辨識、email 已有帳號時 409 不自動合併；GitHub 沒有已驗證的 primary email 時不能建立帳號（已登入的帳號仍可連結）。GitHub 故障時回 502。
   - 登入頁、註冊頁加上「使用 GitHub 登入／註冊」；會員中心可以連結、解除 GitHub，只用 GitHub 的帳號先以 GitHub 驗證再設定密碼。
   - 環境變數 `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`（要一起設定），設定步驟見 `docs/README.md`。
-  - E2E 以 Playwright 攔截授權頁、compose 的 `fake-github` 服務（`profiles: ["e2e"]`）取代 GitHub。
+  - E2E 以 Playwright 攔截授權頁、compose 的假服務（`profiles: ["e2e"]`）取代 GitHub。
 
 - 會員系統（階段 1，計畫見 `docs/plans/archive/2026-11-11-member-system.md`）：
   - `POST /api/user/signup` 會員註冊，成功時直接登入；`POST /api/user/signin` 前台登入，任何角色都可以，與後台登入共用次數限制。

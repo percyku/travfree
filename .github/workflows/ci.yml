@@ -91,14 +91,19 @@ jobs:
             # Google 登入以臨時的測試金鑰取代 Google（私鑰寫到 e2e/.google-test-key.pem 給 Playwright）
             echo "GOOGLE_CLIENT_ID=e2e-client.apps.googleusercontent.com"
             echo "GOOGLE_TEST_PUBLIC_KEY=$(scripts/google-test-key.sh)"
-            # GitHub 登入接上假的 GitHub（e2e/fake-github.mjs），授權頁由 Playwright 攔截。
+            # GitHub、Facebook 登入接上假的服務（e2e/fake-oauth.mjs），授權頁由 Playwright 攔截。
             # 網址的變數是 GITHUB_OAUTH_*：runner 預設的 GITHUB_API_URL 會蓋過 .env 的同名變數
             echo "COMPOSE_PROFILES=e2e"
             echo "GITHUB_CLIENT_ID=e2e-github-client"
             echo "GITHUB_CLIENT_SECRET=e2e-github-secret"
             echo "GITHUB_OAUTH_AUTHORIZE_URL=https://github.e2e.test/login/oauth/authorize"
-            echo "GITHUB_OAUTH_TOKEN_URL=http://fake-github:9000/login/oauth/access_token"
-            echo "GITHUB_OAUTH_API_URL=http://fake-github:9000"
+            echo "GITHUB_OAUTH_TOKEN_URL=http://fake-oauth:9000/github/login/oauth/access_token"
+            echo "GITHUB_OAUTH_API_URL=http://fake-oauth:9000/github"
+            echo "FACEBOOK_APP_ID=1234567890123456"
+            echo "FACEBOOK_APP_SECRET=e2e-facebook-secret"
+            echo "FACEBOOK_OAUTH_AUTHORIZE_URL=https://facebook.e2e.test/v27.0/dialog/oauth"
+            echo "FACEBOOK_OAUTH_TOKEN_URL=http://fake-oauth:9000/facebook/oauth/access_token"
+            echo "FACEBOOK_OAUTH_API_URL=http://fake-oauth:9000/facebook"
           } > .env
       - name: 建置並啟動
         run: docker compose up -d --build --wait

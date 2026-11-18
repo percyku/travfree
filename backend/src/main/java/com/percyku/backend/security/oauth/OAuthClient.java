@@ -20,6 +20,9 @@ public interface OAuthClient {
 	/** 授權頁的 scope，以空白分隔。 */
 	String scope();
 
+	/** 要建立帳號，但平台沒有提供 email 時的訊息。 */
+	String noEmailMessage();
+
 	/**
 	 * 用 code 換 token 並取得帳號資料。
 	 *
