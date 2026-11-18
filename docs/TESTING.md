@@ -72,6 +72,7 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 | `MemberProfileApiTest` | 會員資料的讀取、更新（去空白、忽略 email、清除電話與地址、各欄位驗證與邊界）、只看得到自己的、管理者也能用、未登入 401；變更密碼（舊 token 全部失效、新 token 可用、新密碼可登入、目前的密碼錯誤、與目前相同、密碼規則、欄位空白、與登入共用失敗次數） |
 | `MemberAdminApiTest` | 會員列表（新到舊、角色、`create_at` 秒、分頁、搜尋 email 或姓名、萬用字元）、一般會員 403；設定管理者（保留 `USER`、立即生效、重複設定）、移除（立即失去權限、只有 `ADMIN` 的帳號補上 `USER`）、不能移除自己、至少保留一位管理者（直接呼叫 service）、404 與欄位驗證；修改或刪除自己的訂單 403、別人的與舊訂單可以、全部刪除含自己的訂單 403；`user_id` 只出現在後台訂單列表 |
 | `GoogleAuthApiTest` | Google 設定、第一次登入建立沒有密碼的帳號、之後以 `sub` 登入（email 改了也一樣）、姓名的預設與截斷、email 已有帳號 409 不合併、先 Google 後註冊被拒、已連結為 Google 的 email 不能註冊（解除後可以）、先註冊的帳號不擋連結、沒有密碼的帳號以密碼登入失敗、email 未驗證、無效的 token（簽章、`aud`、`iss`、過期）、連結與解除連結的各種情況、以 Google 重新驗證設定密碼、未設定 client ID 時關閉 |
+| `GitHubAuthApiTest` | 設定（Facebook 未設定）、只設定 ID 或 secret 時拒絕啟動、第一次登入建立沒有密碼的帳號、送給 GitHub 的內容（client secret、`redirect_uri`）、之後以數字 `id` 登入（login 與 email 改了也一樣）、姓名取 `login` 與截斷、PKCE 轉交與不符、code 無效／重複使用／`redirect_uri` 不符、欄位驗證、未知平台 404 與未設定 503、GitHub 故障 502、沒有已驗證的 primary email（含沒有權限）、email 已有帳號或已被其他平台連結 409、GitHub 的 email 不能再註冊、連結（沒有 email 也可以）與解除的各種情況、`identities` 的順序、以 GitHub 重新授權設定密碼 |
 | `LegacySchemaMigrationTest` | 舊的 `users.role` 欄位轉換為 `user_roles`、補上姓名、移除共用購物車的 `cart_items`、移除 `password_hash` 的 `NOT NULL`、重複執行不變 |
 | `CartOwnershipApiTest` | 訪客之間、訪客與會員的購物車互不影響、會員忽略 `X-Cart-Id`、沒有或格式錯誤的 `X-Cart-Id`、別人的品項 404、優惠券只套用自己的、刪除產品從所有購物車移除；合併的數量相加與上限、優惠券、建立會員購物車、重複合併、權限，合併後結帳 |
 | `LoginRateLimitApiTest` | 登入次數限制：帳號鎖定、密碼正確也擋、換 IP 不受影響、IP 總量、成功歸零、429 與 `Retry-After` |
@@ -88,6 +89,9 @@ Prism 轉送 multipart 時會損壞檔案內容，圖片上傳要直接打後端
 | `GuestCartTestConfig` | 不是測試，讓所有 MockMvc 請求預設帶同一個訪客的 `X-Cart-Id`，與前端相同 |
 
 Google 登入的測試不連 Google：`GoogleTestTokens` 在每次執行時產生 RSA 金鑰，簽出 Google 格式的 ID token，`ApiTestSupport` 以 `@DynamicPropertySource` 把對應的公鑰設為 `app.google.test-public-key`。
+
+GitHub 登入的測試不連 GitHub：`FakeGitHub` 以 JDK 的 `HttpServer` 模擬換 token、`/user` 與 `/user/emails`，所有測試共用一個（在 Spring context 之前啟動），`ApiTestSupport` 把 `app.github.*` 的網址指向它，並在每個測試前 `reset()`。
+走真的 HTTP，所以也測到狀態碼、回應解析，以及 GitHub「code 無效時回 200 與 `error` 欄位」的行為。測試以 `GITHUB.authorize(user)` 取得 code，以 `failToken(500)` 等模擬故障。
 
 `ApiTestSupport` 是共用基底：每個測試前清空業務資料、預設 admin 以外的帳號與登入次數計數並重新登入，也提供註冊會員（`signupMember`）、建立產品、加入購物車、結帳等輔助方法。購物的輔助方法（`addToCart`、`checkout`、`shopperPost`、`asShopper`）預設以訪客身分呼叫，設定 `shopperToken` 後改以該會員呼叫；結帳需要會員，所以 `OrderApiTest` 在 `@BeforeEach` 設定它。要指定另一個訪客時用 `asGuest(request, cartId)`。MockMvc 請求都來自 `127.0.0.1`，要測不同 IP 時用 `.with(request -> { request.setRemoteAddr(...); return request; })`。
 
@@ -130,7 +134,9 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 | `pages/Login.test.jsx` | 後台登入成功寫入 cookie、400/403/429 顯示後端原因、欄位驗證、已登入直接進後台、會員 token 不自動進入、token 失效；後台路由保護（會員導向登入頁但保留 cookie、`USER`+`ADMIN` 可進入） |
 | `pages/front/MemberSignin.test.jsx` | 會員登入寫入 cookie 與歡迎訊息、登入後合併訪客購物車並更新、合併失敗仍完成登入、回到來源頁、400/429 顯示後端原因、欄位驗證、已登入直接離開 |
 | `pages/front/MemberSignup.test.jsx` | 註冊後是登入狀態、送出的內容（去空白、不送確認密碼）、email 已註冊、密碼規則、確認密碼與姓名長度 |
-| `pages/front/MemberCenter.test.jsx` | 顯示會員資料（email 不能改）、儲存後 Header 姓名更新、清空電話與地址、欄位驗證、後端拒絕的原因、讀取失敗、未登入導向、確認登入前不讀取、登出回首頁；變更密碼後改存新 token、目前的密碼錯誤、429、新密碼規則與確認 |
+| `pages/front/MemberCenter.test.jsx` | 顯示會員資料（email 不能改）、儲存後 Header 姓名更新、清空電話與地址、欄位驗證、後端拒絕的原因、讀取失敗、未登入導向、確認登入前不讀取、登出回首頁；變更密碼後改存新 token、目前的密碼錯誤、429、新密碼規則與確認；連結與解除 Google、GitHub（授權後回會員中心、409）、還有其他平台時可以解除、只用 GitHub 的帳號先驗證再設定密碼、設定失敗要重新驗證 |
+| `pages/front/GitHubSignin.test.jsx` | 後端未設定時不顯示、只有 GitHub 時也有分隔線、導向授權頁、授權後登入（送出 code 與 `code_verifier`、存 token、合併購物車、回到來源頁）、新帳號、409 與沒有 email 回登入頁顯示原因、`state` 不符不送出、取消授權、重新整理回呼頁、確認登入狀態前不處理 |
+| `utils/oauth.test.js` | 授權網址的參數、`code_challenge` 是 `code_verifier` 的 SHA-256、每次的 `state` 不同、只在平台導回時換掉網址、code 只能取一次、`state` 不符、取消授權 |
 | `pages/front/GoogleSignin.test.jsx` | 後端未設定時不顯示 Google 按鈕、以後端的 client ID 初始化 GIS、Google 登入（存 token、合併購物車、回首頁）、註冊頁的新帳號、409 顯示原因不存 token、登入頁的提示 |
 | `components/Header.test.jsx` | 未登入不呼叫 `/user/check`、會員顯示姓名（連到會員中心）與登出、管理者的後台連結、登出、在需要登入的頁面登出回首頁 |
 | `pages/admin/AdminProducts.test.jsx` | 列表、新增（價格轉整數、空白副圖不送出）、編輯、刪除提示、圖片上傳成功與失敗、分頁、取得失敗導向登入頁 |
@@ -150,6 +156,8 @@ Prism mock server 不保存狀態、回傳隨機假資料，無法測「套用�
 - `setup.js` 在每個測試後清除 cookie 與 axios 的預設 `Authorization`。後台頁的測試在 `beforeEach` 呼叫 `signInAsAdmin()`，模擬 `ProductedRoute` 驗證通過後的狀態。
 - `/api/user/check` 的回應用 `fixtures.js` 的 `adminUser()`、`memberUser()` 組出來，`/api/user/profile` 用 `memberProfile()`，登入與註冊的回應用 `signinSuccess(token)`。需要「已登入」的 store 時用 `preloadedState: { auth: { user: memberUser(), checked: true } }`。
 - Google 按鈕：`test/server.js` 預設回應 Google 登入關閉；要測時以 `test/google.js` 的 `useGoogleEnabled()` 開啟，並以 `installFakeGoogle(credential)` 安裝假的 GIS，按下按鈕就以這個 credential 呼叫 callback。
+- GitHub：`test/server.js` 預設 `/api/user/oauth/config` 全部關閉，以 `test/oauth.js` 的 `useGitHubEnabled()` 開啟。jsdom 不能真的導向，`interceptRedirects()` 攔截 `utils/oauth.js` 的 `browser.assign` 並回傳授權網址；
+  `returnFromProvider(url, { code })` 模擬平台導回（與 `main.jsx` 相同地交給 `captureOAuthRedirect`），之後以 `/oauth/callback` 渲染回呼頁。`setup.js` 在每個測試後清除暫存與 spy。
 - 會員登入或註冊成功後會呼叫 `/api/cart/merge` 與 `/api/cart`，用 `test/handlers.js` 的 `useCartMerge()` 定義，它會回傳收到的 merge 請求。
 - `setup.js` 在每個測試後也清除 localStorage，所以每個測試的 `X-Cart-Id` 都不同。
 - Bootstrap modal 用 `findDialog()` 等它開啟，開啟後才能用 role 查詢。**開過 modal 的測試要等它完全關閉再結束**（`waitForDialogClosed()`，或用 `closeDialog()` 按取消），動畫進行中就卸載元件的話，Bootstrap 的 callback 會丟錯。
@@ -181,12 +189,18 @@ cd e2e && npm run report                  # 查看上一次的 HTML 報告（失
 `tests/google.js` 以私鑰簽出 Google 格式的 ID token，並攔截 GIS 的 script 換成假的按鈕。後端的驗證流程（簽章、`aud`、`iss`、到期）與正式環境相同，只是公鑰不同。
 其他測試的頁面會載入真的 GIS（client ID 是假的，按鈕仍會出現），所以頁面上的「登入」「註冊」按鈕要以 `exact: true` 查詢，否則會比對到 Google 的按鈕。手動執行 `npx playwright test` 而沒有金鑰時，`google.spec.js` 會略過。
 
+**GitHub 登入以假的 GitHub 取代。** 授權頁設成不存在的 `https://github.e2e.test/...`，由 `tests/github.js` 以 Playwright 攔截，回一個帶著 code 導回網站的頁面（等於使用者按了 Authorize）。
+後端換 token 與讀使用者資料的對象是 compose 的 `fake-github` 服務（`e2e/fake-github.mjs`，`profiles: ["e2e"]`，平常不啟動）。
+它不保存狀態：code 是帶著帳號、`redirect_uri` 與 `code_challenge` 的 base64url JSON，假服務依 GitHub 的行為檢查 client 帳密、`redirect_uri` 與 PKCE，所以後端的檢查與正式環境相同。
+`scripts/e2e.sh` 與 CI 設定 `COMPOSE_PROFILES=e2e` 與 `GITHUB_*`；沒有接上假 GitHub 時 `github.spec.js` 會略過。
+
 | 測試 | 涵蓋範圍 |
 |---|---|
 | `shopping.spec.js` | 訪客從首頁搜尋 → 行程頁加入購物車 → 套用優惠碼 `Test50` → 前往結賬時導向登入頁 → 登入後回到填寫資料頁，購物車與優惠帶到帳號、收件資料預先填入 → 送出訂單 → 成功頁付款 → 購物車已清空 |
 | `admin-products.spec.js` | 後台登入、新增並上架產品 → 前台行程列表看得到 → 後台刪除 → 前台看不到 |
 | `admin-orders.spec.js` | 以 API 註冊會員並下單 → 後台訂單列表看得到 → 改為已付款、外送中 → 重新開啟確認 → API 查詢確認 |
 | `google.spec.js` | 用 Google 註冊 → 會員中心顯示已連結、不能解除 → 以 Google 重新驗證設定密碼 → 登出後用密碼登入；email 已有帳號時 409 → 用密碼登入後連結 → 登出後用 Google 登入是同一個帳號 |
+| `github.spec.js` | 用 GitHub 註冊（送出 PKCE、code 不留在網址上）→ 會員中心顯示已連結、不能解除 → 先以 GitHub 驗證再設定密碼 → 登出後用 GitHub 登入 → 再用密碼登入；email 已有帳號時回登入頁顯示 409 → 用密碼登入後連結 GitHub → 登出後用 GitHub 登入是同一個帳號 |
 | `admin-users.spec.js` | 會員先下單 → 管理者在會員列表搜尋並設為管理者 → 會員不用重新登入就進得了後台，自己的訂單標示並不能修改、自己的管理者權限不能移除 → 管理者移除後會員被導向後台登入頁 |
 | `member.spec.js` | 首頁註冊 → Header 顯示姓名 → 重新整理仍登入 → 登出 → 以大小寫不同的 email 再登入；會員開啟後台被導向後台登入頁 → 會員帳號被拒 → 改用管理者登入；360px 寬時訪客、管理者與會員的 Header 都不換行（jsdom 不套用 CSS，只能在這裡測）；會員中心填寫電話與地址 → 填寫資料頁已帶入 → 變更密碼後仍登入、舊 token 401 → 在會員中心登出回首頁 → 以新密碼登入 |
 

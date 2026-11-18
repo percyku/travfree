@@ -19,7 +19,9 @@
 | 會員列表、設定與移除管理者 | ✅ 完成 | ✓ | 後台 `/admin/users`，不能移除自己，至少保留一位管理者 |
 | 管理者不能修改自己的訂單 | ✅ 完成 | ✓ | 以訂單的 `user_id` 判斷，後台訂單列表標示「自己的訂單」 |
 | Google 登入與註冊 | ✅ 完成 | ✓ | 登入頁、註冊頁；email 已有帳號時不自動合併 |
-| 會員中心：登入方式 | ✅ 完成 | ✓ | 連結或解除 Google；只用 Google 的帳號可以設定密碼 |
+| GitHub 登入與註冊 | ✅ 完成 | ✓ | 授權碼流程（含 PKCE）；平台沒有已驗證的 email 時不能建立帳號 |
+| Facebook 登入與註冊 | ⏳ 規劃中 | | 端點已在 spec，後端未設定時回 503，計畫見 `docs/plans/2026-11-18-github-facebook-signin.md` |
+| 會員中心：登入方式 | ✅ 完成 | ✓ | 連結或解除 Google、GitHub；只用第三方登入的帳號可以設定密碼 |
 | 產品管理（Admin） | ✅ 完成 | ✓ | |
 | 圖片上傳 | ✅ 完成 | ✓ | 存本機磁碟 |
 | 文章管理（Admin） | ✅ 完成 | ✓ | |
@@ -164,7 +166,9 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 
 需要登入，**任何角色都可以**（預設 admin 也可以）。身分由 token 決定，網址不帶 id。Hexschool 沒有這組。
 
-讀取回 `{ success, profile: { email, name, tel, address, has_password, google_email } }`，`tel`、`address` 未填時是空字串；`has_password` 是否已設定密碼；`google_email` 是已連結的 Google 帳號的 email，未連結時是 null。
+讀取回 `{ success, profile: { email, name, tel, address, has_password, identities } }`，`tel`、`address` 未填時是空字串；`has_password` 是否已設定密碼；
+`identities` 是已連結的第三方登入 `[{ provider, email }]`，依 `google`、`github`、`facebook` 排列，沒有連結時是空陣列。`email` 是連結當時平台提供的 email，平台沒有提供時是 null（例如 GitHub 沒有已驗證的 email）。
+2026-11-18 以 `identities` 取代原本的 `google_email`。
 
 更新的 Body 為 `{ "data": { "name", "tel", "address" } }`，**整筆取代**：`tel` 或 `address` 沒帶或空字串時清除。`email` 不能修改，body 帶了也忽略。成功回 `已更新會員資料` 與更新後的 `profile`；`name` 改了之後 `/user/check` 也是新的姓名。
 
@@ -198,9 +202,19 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 前台會員中心的「變更密碼」卡片要求輸入兩次新密碼（只在前端比對），成功後以新的 token 取代 cookie 中的舊 token，並提示 `已變更密碼，其他裝置需要重新登入`。
 
 
-**沒有密碼的帳號是「設定密碼」。** 只用 Google 註冊的帳號沒有目前的密碼可以驗證，所以不帶 `password`，改帶 `credential`（重新以 Google 取得的 ID token），
-它的 `sub` 必須是已連結的 Google 帳號（否則 400 `Google 驗證失敗，請以已連結的 Google 帳號驗證`），避免拿到 token 的人偷設密碼。成功時 `message` 為 `已設定密碼`，其餘與變更密碼相同。
-前台會員中心的卡片標題改為「設定密碼」，填好新密碼後按 Google 按鈕送出。
+**沒有密碼的帳號是「設定密碼」。** 只用第三方登入的帳號沒有目前的密碼可以驗證，所以不帶 `password`，改為重新以已連結的平台驗證，避免拿到 token 的人偷設密碼。
+成功時 `message` 為 `已設定密碼`，其餘與變更密碼相同；第三方驗證不計入登入失敗次數。
+
+| 帶的欄位 | 檢查 | 失敗時 |
+|---|---|---|
+| `credential`（Google 的 ID token） | `sub` 是已連結的 Google 帳號 | 400 `Google 驗證失敗，請以已連結的 Google 帳號驗證` |
+| `oauth: { provider, code, redirect_uri, code_verifier }`（GitHub、Facebook 重新授權的 code） | 平台的帳號 ID 是已連結的帳號 | 400 `GitHub 驗證失敗，請以已連結的 GitHub 帳號驗證`；`provider` 不支援時 400 `找不到這個登入方式`；平台故障 502、未設定 503 |
+| 兩個都沒帶 | | 400 `請重新以已連結的登入方式驗證` |
+
+兩個都帶時只看 `credential`。前台會員中心的卡片標題改為「設定密碼」：
+- Google：填好新密碼後按 Google 按鈕送出。
+- GitHub：要離開網站去授權，所以**先**按「以 GitHub 驗證身分」，回到會員中心後再填新密碼送出（離開網站時已填的密碼會消失，也不把密碼暫存在瀏覽器）。
+  GitHub 的 code 10 分鐘內有效、只能用一次，送出失敗要重新驗證。
 
 ### Google 登入 `POST ~/user/google`
 
@@ -226,16 +240,16 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 
 **為什麼不以 email 自動合併。** 註冊不寄驗證信，帳號上的 email 只代表「有人輸入了它」。若 Google 登入遇到相同 email 就合併，
 先用別人的 email 註冊的人，在本人以 Google 登入、填了地址並下單後，仍能用自己設的密碼登入看到這些資料（搶先註冊攻擊）。
-所以第三方登入遇到既有 email 一律回 409，請使用者先用原本的方式登入，再到會員中心連結；之後加 GitHub、Facebook 也用同一條規則（它們的 email 可能未驗證或沒有）。
+所以第三方登入遇到既有 email 一律回 409，請使用者先用原本的方式登入，再到會員中心連結。GitHub、Facebook 也用同一條規則（見下方），這些規則集中在後端的 `IdentityService`。
 代價是被搶先註冊的本人無法使用自己的 email，要等「忘記密碼（寄信）」才能根治，目前由管理者處理。
 
 | 情境 | 結果 |
 |---|---|
 | 先註冊，後用 Google 登入，同一個 email | 409，用密碼登入後在會員中心連結 |
 | 先用 Google 登入，後註冊，同一個 email | 註冊回 400 `此 Email 已註冊，請改用原本的方式登入（例如 Google）`；想用密碼時在會員中心設定 |
-| A 帳號連結了 Gmail X，之後有人用 X 註冊 | 同上回 400。連結的人已證明擁有 X；若允許註冊，X 用 Google 登入與用密碼登入會進到不同帳號。解除連結後 X 才能註冊 |
+| A 帳號連結了 Gmail X，之後有人用 X 註冊 | 同上回 400。連結的人已證明擁有 X；若允許註冊，X 用 Google 登入與用密碼登入會進到不同帳號。解除連結後 X 才能註冊。連結 GitHub 的 email 也一樣。未經平台驗證的 email 不會記錄，所以不會擋住別人 |
 | 有人先用 X 註冊（未驗證），A 帳號之後連結 Gmail X | 可以連結，之後用 Google 登入 X 進的是 A。註冊不驗證 email，不能讓它擋住信箱的主人 |
-| 只用 Google 的帳號以密碼登入 | `登入失敗`，計入失敗次數，不透露帳號沒有密碼。登入頁提示用 Google 註冊的帳號改用 Google 登入 |
+| 只用 Google 的帳號以密碼登入 | `登入失敗`，計入失敗次數，不透露帳號沒有密碼。登入頁提示以第三方帳號註冊的會員改用同一種方式登入 |
 
 前台的登入頁與註冊頁有 Google 按鈕（後端沒有設定時不顯示），登入後與一般登入相同：合併訪客購物車並回到來源頁。
 
@@ -246,9 +260,50 @@ Hexschool 沒有這項。以下兩種計數同時生效，任一種達到上限�
 - 連結：Body 同 Google 登入。Google 的 email 可以與帳號的 email 不同（使用者已登入又通過 Google 驗證）。已連結同一個 Google 帳號時不做事。
   連結後，這個 Google email 視同已被使用：不能再用它註冊，也不能用帶著同一個 email 的其他 Google 帳號建立新帳號。
   這個 Google 帳號已連結其他會員回 409 `這個 Google 帳號已連結其他會員`；目前的帳號已連結另一個 Google 帳號回 409 `已連結其他 Google 帳號，請先解除連結`。
-- 解除：**至少保留一種登入方式**，沒有密碼的帳號回 400 `至少要保留一種登入方式，請先設定密碼`。沒有連結時不做事。
+- 解除：**至少保留一種登入方式**，帳號沒有密碼、也沒有連結其他平台時回 400 `至少要保留一種登入方式，請先設定密碼`。沒有連結時不做事。
 
-前台會員中心的「登入方式」卡片顯示密碼是否已設定、Google 是否已連結，並提供連結（Google 按鈕）與解除連結。
+前台會員中心的「登入方式」卡片顯示密碼是否已設定、各平台是否已連結，並提供連結（Google 按鈕、「連結 GitHub」）與解除連結。
+
+### GitHub、Facebook 登入 `POST ~/user/oauth/{provider}`
+
+公開。`provider` 為 `github` 或 `facebook`，其他值回 404 `找不到這個登入方式`。Hexschool 沒有這組。Facebook 還沒實作，目前一律回 503 `未設定 Facebook 登入`。GitHub 的設定方式見 [README.md](README.md#github-登入設定)。
+
+與 Google 不同，這兩個平台沒有前端可以直接驗證的 ID token，用**授權碼流程**：
+
+1. 前端讀 `GET ~/user/oauth/config` 取得各平台的 `enabled`、`client_id`、`authorize_url`、`scope`（GitHub 是 `user:email`），組出授權網址並導向。
+   帶上隨機的 `state`（存在 sessionStorage）；GitHub 另外帶 PKCE 的 `code_challenge`（`S256`）。`redirect_uri` 是網站根目錄（例如 `http://localhost:8000/`），因為路由用 `#`，`#` 不能放進 `redirect_uri`。
+2. 平台帶 `code`、`state` 導回網站根目錄。前端在路由啟動前把 code 留在記憶體、從網址移除，轉到 `#/oauth/callback`（code 留在網址上會隨 Referer 送出）。
+3. 回呼頁比對 `state`（不符時不送出，防 CSRF），把 `{ "data": { "code", "redirect_uri", "code_verifier" } }` 交給後端。
+4. 後端以 client secret 換 token、取得帳號資料後，規則與 Google 相同：
+   1. 這個平台帳號已連結會員 → 登入，`message` 為 `登入成功`。
+   2. 平台沒有提供 email → 400，請使用者改用其他方式註冊。GitHub 只採用 `/user/emails` 中 `primary` 且 `verified` 的 email。
+   3. email 已有帳號，或已是其他帳號連結的第三方登入 email → **409，不自動合併**。
+   4. 否則建立 `USER` 帳號並連結，`message` 為 `註冊成功`，沒有密碼。姓名：GitHub 取 `name`，沒有時取 `login`；超過 30 個字截斷。
+
+平台的帳號 ID：GitHub 用數字 `id`（不用 `login`，使用者名稱可以改）。訊息中的平台名稱依 `provider`，下表以 GitHub 為例。
+
+| 情境 | 回應 |
+|---|---|
+| `code`、`redirect_uri` 空白 | 400 `code 屬性不得為空`、`redirect_uri 屬性不得為空` |
+| `code` 無效、過期、已使用，或 `redirect_uri`、`code_verifier` 不符 | 400 `GitHub 驗證失敗，請再試一次` |
+| 要建立帳號但沒有已驗證的 email（或沒有 `user:email` 權限） | 400 `GitHub 帳號沒有已驗證的 Email，請改用其他方式註冊` |
+| email 已有帳號 | 409 `此 Email 已註冊，請先用原本的方式登入，再到會員中心連結 GitHub` |
+| GitHub 沒有回應、逾時（連線 5 秒、回應 10 秒）或回 5xx | 502 `GitHub 暫時無法連線，請稍後再試` |
+| 後端沒有設定 `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET` | 503 `未設定 GitHub 登入` |
+
+`GITHUB_CLIENT_ID` 與 `GITHUB_CLIENT_SECRET` 只設定其中一個時，後端拒絕啟動。
+
+前台：登入頁與註冊頁在 Google 按鈕下方顯示「使用 GitHub 登入／註冊」（後端沒有設定時不顯示）。成功後合併訪客購物車並回到來源頁；失敗（例如 409、取消授權、`state` 不符）時回到登入頁顯示原因。
+在回呼頁重新整理時 code 已經不在，顯示 `登入流程已失效，請重新操作一次`。
+
+### 連結與解除 GitHub、Facebook `POST`、`DELETE ~/user/oauth/{provider}/link`
+
+需要登入。規則同 Google 的連結與解除，成功時回 `已連結 GitHub`、`已解除連結 GitHub` 與更新後的 `profile`。
+
+- 連結：Body 同登入。平台的 email 可以與帳號的不同，**也可以沒有**（帳號本身已有 email）。409 `這個 GitHub 帳號已連結其他會員`、`已連結其他 GitHub 帳號，請先解除連結`。
+- 解除：至少保留一種登入方式（密碼或其他已連結的平台）。後端沒有設定這個平台時也可以解除。
+
+前台會員中心按「連結 GitHub」導向 GitHub 授權，回來後由回呼頁連結並回到會員中心，失敗時以提示訊息顯示原因。
 
 ### 預設 admin
 
